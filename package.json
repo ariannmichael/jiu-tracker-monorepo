@@ -17,7 +17,7 @@
     "mobile:test": "cd jiu-tracker-mobile && npm test",
     "mobile:lint": "cd jiu-tracker-mobile && npm run lint",
     "install:all": "npm run backend:install && npm run mobile:install",
-    "dev": "npm-run-all --parallel backend:dev mobile:start",
+    "dev": "npm-run-all --parallel backend:dev mobile:web",
     "dev:backend": "npm run backend:dev",
     "dev:mobile": "npm run mobile:start"
   },

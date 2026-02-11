@@ -18,16 +18,16 @@ export class BeltProgress {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'user_id', type: 'varchar', nullable: false })
+  @Column({ name: 'user_id', type: 'text', nullable: false })
   userId: string;
 
-  @Column({ type: 'varchar', nullable: false, default: '' })
+  @Column({ type: 'text', nullable: false, default: '' })
   user: string;
 
-  @Column({ name: 'current_belt', type: 'int', nullable: false })
+  @Column({ name: 'current_belt', type: 'bigint', nullable: false })
   currentBelt: Belt;
 
-  @Column({ name: 'stripe_count', type: 'int', default: 0 })
+  @Column({ name: 'stripe_count', type: 'bigint', default: 0 })
   stripeCount: number;
 
   @CreateDateColumn({ name: 'earned_at' })

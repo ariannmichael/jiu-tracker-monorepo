@@ -11,23 +11,33 @@ import { Technique } from '../../technique/domain/technique.entity';
 
 @Entity('training_sessions')
 export class TrainingSession {
-  @PrimaryColumn({ type: 'varchar' })
+  @PrimaryColumn({ type: 'text' })
   id: string;
 
-  @Column({ name: 'user_id', type: 'varchar', nullable: false })
+  @Column({ name: 'user_id', type: 'text', nullable: false })
   userId: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   user: string;
 
   @ManyToMany(() => Technique)
-  @JoinTable({ name: 'training_session_techniques' })
+  @JoinTable({
+    name: 'training_session_techniques',
+    joinColumn: {
+      name: 'training_session_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'technique_id',
+      referencedColumnName: 'id',
+    },
+  })
   techniques: Technique[];
 
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   duration: number; // in minutes
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   notes: string;
 
   @CreateDateColumn({ name: 'created_at' })

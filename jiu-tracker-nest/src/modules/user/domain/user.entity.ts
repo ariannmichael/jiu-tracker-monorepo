@@ -8,22 +8,22 @@ import {
 
 @Entity('users')
 export class User {
-  @PrimaryColumn({ type: 'varchar' })
+  @PrimaryColumn({ type: 'text' })
   id: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', nullable: false, unique: true })
+  @Column({ type: 'text', nullable: false, unique: true })
   username: string;
 
-  @Column({ type: 'varchar', nullable: false, default: '' })
+  @Column({ type: 'text', nullable: false, default: '' })
   avatar: string;
 
-  @Column({ type: 'varchar', nullable: false, unique: true })
+  @Column({ type: 'text', nullable: false, unique: true })
   email: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   password: string;
 
   @CreateDateColumn({ name: 'created_at' })

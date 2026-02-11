@@ -18,28 +18,28 @@ export enum Category {
 
 @Entity('techniques')
 export class Technique {
-  @PrimaryColumn({ type: 'varchar' })
+  @PrimaryColumn({ type: 'text' })
   id: string;
 
-  @Column({ type: 'varchar', nullable: false, unique: true })
+  @Column({ type: 'text', nullable: true, unique: false })
   name: string;
 
-  @Column({ name: 'name_portuguese', type: 'varchar', nullable: false })
+  @Column({ name: 'name_portuguese', type: 'text', nullable: false })
   namePortuguese: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   description: string;
 
   @Column({
     name: 'description_portuguese',
-    type: 'varchar',
+    type: 'text',
     nullable: false,
   })
   descriptionPortuguese: string;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   category: Category;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   difficulty: Difficulty;
 }
