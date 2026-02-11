@@ -20,6 +20,15 @@ export class TrainingSession {
   @Column({ type: 'text', nullable: false })
   user: string;
 
+  @Column({ name: 'date', type: 'text', nullable: false })
+  date: string;
+
+  @Column({ name: 'class_time', type: 'text', nullable: false })
+  classTime: string;
+
+  @Column({ name: 'rolling_open_mat', type: 'boolean', nullable: false })
+  rollingOpenMat: boolean;
+
   @ManyToMany(() => Technique)
   @JoinTable({
     name: 'training_session_techniques',

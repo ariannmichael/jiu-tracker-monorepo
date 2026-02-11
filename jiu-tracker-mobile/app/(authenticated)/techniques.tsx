@@ -1,19 +1,9 @@
 import { COLORS, FONTS } from "@/constants";
-import { useAuth } from "@/contexts/AuthContext";
-import TechniquesService from "@/services/techniques";
-import { useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TechniquesScreen() {
   const insets = useSafeAreaInsets();
-  const { token } = useAuth();
-
-  useEffect(() => {
-    TechniquesService.getTechniquesList(token).then((response: any) => {
-      console.log(response);
-    });
-  }, [token]);
 
   return (
     <View style={styles.container}>
