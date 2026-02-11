@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Technique, Category, Difficulty } from '../domain/technique.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { TechniqueListDto } from '../application/dto/list-technique.dto';
 
 @Injectable()
 export class TechniqueRepository {
@@ -50,5 +51,11 @@ export class TechniqueRepository {
 
   async findAll(): Promise<Technique[]> {
     return this.repo.find();
+  }
+
+  async findAllList(): Promise<TechniqueListDto[]> {
+    return this.repo.find({
+      select: ['id', 'name', 'namePortuguese'],
+    }) as unknown as Promise<TechniqueListDto[]>;
   }
 }

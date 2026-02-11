@@ -76,4 +76,18 @@ export class TechniqueController {
       );
     }
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('techniques/list')
+  async getTechniquesList() {
+    try {
+      const techniques = await this.techniqueService.getTechniquesList();
+      return { techniques };
+    } catch (error) {
+      throw new HttpException(
+        { error: (error as Error).message },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }

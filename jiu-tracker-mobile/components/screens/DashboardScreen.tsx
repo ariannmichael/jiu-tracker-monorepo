@@ -8,7 +8,6 @@ import PieChart from "../charts/PieChart";
 import { useFonts } from 'expo-font';
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
-import HeaderComponent from "../headers/Header";
 
 
 export default function DashboardScreen() {
@@ -45,7 +44,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         showsVerticalScrollIndicator={false}
@@ -55,15 +54,15 @@ export default function DashboardScreen() {
           {/* Row 1 */}
           <StatCard title="CLASSES ATTENDED" value={userData.classesAttended.toString()} />
           <StatCard title="CLASSES HOURS" value={userData.classesHours} />
-          
+
           {/* Row 2 */}
           <StatCard title="DAYS TRAINED" value={userData.daysTrained.toString()} color={COLORS.YELLOW} isLarge/>
           <StatCard title="MOST TRAINING HOURS IN ON DAY" value={userData.mostTrainingHoursInOneDay} color={COLORS.PURPLE} isLarge />
-          
+
           {/* Row 3 */}
           <StreakCard value={userData.dayStreak.toString()} label="day streak!" />
           <StatCard title="MILESTONES" value={userData.milestones.toString()} />
-          
+
           {/* Row 4 */}
           <StatCard title="OPEN MAT SESSIONS" value={userData.openMatSessions.toString()} />
           <StatCard title="COMPETITIONS" value={userData.competitions.toString()} />

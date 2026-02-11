@@ -16,6 +16,12 @@ async function bootstrap() {
     }),
   );
 
+  // Enable CORS for mobile app
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   // Enable cookie parsing (for JWT auth via cookies, matching Go backend)
   app.use(cookieParser());
 
@@ -26,4 +32,7 @@ async function bootstrap() {
   console.log(`Jiu Tracker API running on port ${port}`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

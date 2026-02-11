@@ -46,7 +46,7 @@ export class UserController {
         maxAge: 3600 * 24 * 1000, // 24 hours in ms
       });
 
-      return res.status(HttpStatus.OK).json({});
+      return res.status(HttpStatus.OK).json({ token });
     } catch (error) {
       throw new HttpException(
         { error: (error as Error).message },

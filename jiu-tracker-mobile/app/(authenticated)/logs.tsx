@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { MultipleSelectList } from 'react-native-dropdown-select-list'
 import { COLORS, FONTS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +22,11 @@ export default function LogsScreen() {
   const [classTime, setClassTime] = useState("");
   const [rollingOpenMat, setRollingOpenMat] = useState("");
   const [positions, setPositions] = useState("");
-  const [moves, setMoves] = useState("");
+  const [techniquesSelected, setTechniquesSelected] = useState([]);
+
+  useEffect(() => {
+
+  }, []);
 
   const handleAddLog = () => {
     setShowAddModal(true);
@@ -34,7 +39,7 @@ export default function LogsScreen() {
     setClassTime("");
     setRollingOpenMat("");
     setPositions("");
-    setMoves("");
+    setTechniquesSelected([]);
   };
 
   const renderAddLogModal = () => (
@@ -92,12 +97,9 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>MOVES</Text>
-            <TextInput
-              style={styles.fieldInput}
-              value={moves}
-              onChangeText={setMoves}
-              placeholderTextColor={COLORS.GRAY_TEXT}
+            <Text style={styles.fieldLabel}>TECHNIQUES</Text>
+            <MultipleSelectList
+
             />
           </View>
 

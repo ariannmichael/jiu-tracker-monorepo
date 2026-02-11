@@ -1,11 +1,13 @@
-import { Text, View, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
 import { useFonts } from "expo-font";
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function StartScreen() {
+  const { login: authLogin } = useAuth();
   const [fontsLoaded] = useFonts({
     ZenDots_400Regular,
     Sunflower_300Light,
@@ -15,6 +17,8 @@ export default function StartScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [login, setLogin] = useState(false);
   const [signup, setSignup] = useState(false);
@@ -23,13 +27,21 @@ export default function StartScreen() {
     return null;
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!(email.length && password.length)) {
       setLogin(true);
       return;
     }
 
-    router.replace('/(authenticated)/dashboard');
+    setIsSubmitting(true);
+    setLoginError("");
+    try {
+      await authLogin(email, password);
+    } catch (error) {
+      setLoginError((error as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSignUp = () => {
@@ -109,11 +121,16 @@ export default function StartScreen() {
           </View>
         }
 
+        {/* Error message */}
+        {loginError ? (
+          <Text style={styles.errorText}>{loginError}</Text>
+        ) : null}
+
         {/* Buttons */}
         <View style={styles.buttonContainer}>
           {!signup &&
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.buttonText}>LOGIN</Text>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isSubmitting}>
+              <Text style={styles.buttonText}>{isSubmitting ? 'LOGGING IN...' : 'LOGIN'}</Text>
             </TouchableOpacity>
           }
 
@@ -236,5 +253,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     width: '100%',
     paddingBottom: 50,
+  },
+  errorText: {
+    fontFamily: 'Sunflower_300Light',
+    fontSize: 14,
+    color: '#FF6B6B',
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });

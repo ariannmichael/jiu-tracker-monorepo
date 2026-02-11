@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { TechniqueRepository } from '../infrastructure/technique.repository';
-import {
-  Technique,
-  Category,
-  Difficulty,
-} from '../domain/technique.entity';
+import { Technique, Category, Difficulty } from '../domain/technique.entity';
 import { CreateTechniqueDto } from './dto/create-technique.dto';
 import { UpdateTechniqueDto } from './dto/update-technique.dto';
+import { TechniqueListDto } from './dto/list-technique.dto';
 
 @Injectable()
 export class TechniqueService {
@@ -58,5 +55,9 @@ export class TechniqueService {
 
   async getAllTechniques(): Promise<Technique[]> {
     return this.techniqueRepo.findAll();
+  }
+
+  async getTechniquesList(): Promise<TechniqueListDto[]> {
+    return this.techniqueRepo.findAllList();
   }
 }
