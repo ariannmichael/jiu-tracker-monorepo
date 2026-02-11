@@ -3,10 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "description": "Jiu Tracker monorepo - Backend API and Mobile App",
+  "workspaces": [
+    "jiu-tracker-mobile",
+    "jiu-tracker-nest",
+    "packages/*"
+  ],
   "scripts": {
+    "shared:build": "npm run build -w @jiu-tracker/shared",
+    "shared:watch": "npm run watch -w @jiu-tracker/shared",
     "backend:install": "cd jiu-tracker-nest && npm install",
     "backend:dev": "cd jiu-tracker-nest && npm run start:dev",
-    "backend:build": "cd jiu-tracker-nest && npm run build",
+    "backend:build": "npm run build -w jiu-tracker-nest",
     "backend:test": "cd jiu-tracker-nest && npm test",
     "backend:lint": "cd jiu-tracker-nest && npm run lint",
     "mobile:install": "cd jiu-tracker-mobile && npm install",
@@ -16,7 +23,8 @@
     "mobile:web": "cd jiu-tracker-mobile && npm run web",
     "mobile:test": "cd jiu-tracker-mobile && npm test",
     "mobile:lint": "cd jiu-tracker-mobile && npm run lint",
-    "install:all": "npm run backend:install && npm run mobile:install",
+    "install:all": "npm install",
+    "build:all": "npm run shared:build && npm run backend:build",
     "dev": "npm-run-all --parallel backend:dev mobile:web",
     "dev:backend": "npm run backend:dev",
     "dev:mobile": "npm run mobile:start"

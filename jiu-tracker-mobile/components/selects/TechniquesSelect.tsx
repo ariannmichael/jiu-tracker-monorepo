@@ -8,12 +8,11 @@ import {
   TextInput,
   Pressable,
 } from "react-native";
+import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "@/constants";
 
-export type TechniqueOption = { id: string; name: string };
-
 type TechniquesSelectProps = {
-  options: TechniqueOption[];
+  options: TechniqueListItem[];
   selected: string[];
   onSelectionChange: (selected: string[]) => void;
   placeholder?: string;

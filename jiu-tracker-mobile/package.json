@@ -15,6 +15,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@jiu-tracker/shared": "*",
     "@expo-google-fonts/sunflower": "^0.4.0",
     "@expo-google-fonts/zen-dots": "^0.4.1",
     "@expo/vector-icons": "^14.0.2",

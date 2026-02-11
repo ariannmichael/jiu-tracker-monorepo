@@ -7,10 +7,29 @@ This monorepo contains the Jiu Tracker application, consisting of a NestJS backe
 ```
 jiu-tracker-monorepo/
 ├── jiu-tracker-nest/     # NestJS backend API
-└── jiu-tracker-mobile/   # React Native mobile app (Expo)
+├── jiu-tracker-mobile/   # React Native mobile app (Expo)
+└── packages/
+    └── shared/           # Shared TypeScript types
 ```
 
+This monorepo uses **npm workspaces** to manage dependencies and share types between the frontend and backend.
+
 ## Projects
+
+### Shared Types (`packages/shared`)
+
+A shared TypeScript package containing common types, interfaces, and enums used by both the backend and mobile app. This provides:
+- **Type safety** for API contracts
+- **Single source of truth** for domain types
+- **No runtime dependencies** - works in both Node.js and React Native
+
+See [packages/shared/README.md](packages/shared/README.md) for detailed documentation.
+
+**Building:**
+```bash
+npm run shared:build     # Build the shared types
+npm run shared:watch     # Watch mode for development
+```
 
 ### Backend (`jiu-tracker-nest`)
 
@@ -65,6 +84,10 @@ npm run dev:mobile     # Run mobile app only
 
 ### Available Commands
 
+#### Shared Package Commands
+- `npm run shared:build` - Build the shared types package
+- `npm run shared:watch` - Watch mode for shared types development
+
 #### Backend Commands
 - `npm run backend:install` - Install backend dependencies
 - `npm run backend:dev` - Run the NestJS backend in watch mode
@@ -82,7 +105,8 @@ npm run dev:mobile     # Run mobile app only
 - `npm run mobile:lint` - Lint mobile app code
 
 #### Combined Commands
-- `npm run install:all` - Install all dependencies (backend + mobile)
+- `npm run install:all` - Install all dependencies (includes workspace linking)
+- `npm run build:all` - Build shared package and backend
 - `npm run dev` - Run both backend and mobile app in parallel
 
 ### Manual Development

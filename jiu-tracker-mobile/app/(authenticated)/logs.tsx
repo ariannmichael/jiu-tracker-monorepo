@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,11 +27,11 @@ export default function LogsScreen() {
   const [rollingOpenMat, setRollingOpenMat] = useState(false);
   const [notes, setNotes] = useState("");
 
-  const [techniques, setTechniques] = useState<{ id: string; name: string }[]>([]);
+  const [techniques, setTechniques] = useState<TechniqueListItem[]>([]);
   const [techniquesSelected, setTechniquesSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    TechniquesService.getTechniquesList(token).then((response: any) => {
+    TechniquesService.getTechniquesList(token).then((response) => {
       setTechniques(response.techniques);
     });
   }, [token]);
