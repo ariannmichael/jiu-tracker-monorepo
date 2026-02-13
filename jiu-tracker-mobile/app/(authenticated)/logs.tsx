@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +23,8 @@ export default function LogsScreen() {
   const { token } = useAuth();
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [classTime, setClassTime] = useState("");
   const [rollingOpenMat, setRollingOpenMat] = useState(false);
   const [notes, setNotes] = useState("");
@@ -40,10 +42,28 @@ export default function LogsScreen() {
     setShowAddModal(true);
   };
 
+  const handleDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  const formatDate = (d: Date) => {
+    return d.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   const handleSubmit = () => {
     // TODO: handle form submission
     setShowAddModal(false);
-    setDate("");
+    setDate(new Date());
     setClassTime("");
     setRollingOpenMat(false);
     setNotes("");
@@ -66,12 +86,59 @@ export default function LogsScreen() {
 
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>DATE</Text>
-            <TextInput
-              style={styles.fieldInput}
-              value={date}
-              onChangeText={setDate}
-              placeholderTextColor={COLORS.GRAY_TEXT}
-            />
+            {Platform.OS === "web" ? (
+              <View style={styles.datePickerContainer}>
+                <input
+                  type="date"
+                  value={date.toISOString().split("T")[0]}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const newDate = new Date(e.target.value + "T00:00:00");
+                    if (!isNaN(newDate.getTime())) {
+                      setDate(newDate);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontFamily: FONTS.SUNFLOWER_LIGHT,
+                    fontSize: 16,
+                    color: COLORS.WHITE,
+                    width: "100%",
+                    colorScheme: "dark",
+                  }}
+                />
+              </View>
+            ) : Platform.OS === "ios" ? (
+              <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="compact"
+                  onChange={handleDateChange}
+                  themeVariant="dark"
+                  accentColor={COLORS.WHITE}
+                />
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.fieldInput}
+                  onPress={() => setShowDatePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dateText}>{formatDate(date)}</Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
+                  />
+                )}
+              </>
+            )}
           </View>
 
           <View style={styles.fieldGroup}>
@@ -85,7 +152,7 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>ROLLING/OPEN MAT</Text>
+            <Text style={styles.fieldLabel}>OPEN MAT</Text>
             <View style={styles.boxSelectRow}>
               <TouchableOpacity
                 style={[styles.boxSelectOption, rollingOpenMat && styles.boxSelectOptionSelected]}
@@ -240,6 +307,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 16,
+    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontSize: 16,
+    color: COLORS.WHITE,
+  },
+  datePickerContainer: {
+    backgroundColor: COLORS.GRAY_LIGHT,
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "flex-start",
+  },
+  dateText: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,
     fontSize: 16,
     color: COLORS.WHITE,

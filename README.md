@@ -1,6 +1,24 @@
 # Jiu Tracker Monorepo
 
-This monorepo contains the Jiu Tracker application, consisting of a NestJS backend API and a React Native mobile application.
+This monorepo contains the Jiu Tracker application: a NestJS backend API and a React Native mobile app (Expo) with web support.
+
+## Quick start (Docker)
+
+Run the full stack (database, backend, frontend web) with the Makefile:
+
+```bash
+make setup-env   # optional: create .env from .env.docker.example
+make up          # start db + backend + frontend (foreground)
+# In another terminal, after services are up:
+make migrate     # run database migrations (first time only)
+make seed        # optional: seed data
+```
+
+- **Frontend (web):** http://localhost:8081  
+- **Backend API:** http://localhost:3006  
+- **Database:** PostgreSQL 16 on `localhost:5432`  
+
+To run in the background: `make run`. To stop: `make down`. See all commands: `make help`.
 
 ## Project Structure
 
@@ -52,7 +70,7 @@ API runs at `http://localhost:3006` (or `PORT` from `.env`).
 
 ### Mobile App (`jiu-tracker-mobile`)
 
-A React Native mobile application built with:
+A React Native mobile application (Expo) with web support, built with:
 - Expo
 - TypeScript
 - Expo Router for navigation
@@ -61,7 +79,9 @@ A React Native mobile application built with:
 ```bash
 cd jiu-tracker-mobile
 npm install
-npx expo start
+npx expo start          # then press 'w' for web
+# or
+npm run mobile:web     # from repo root: web only
 ```
 
 ## Development
@@ -112,6 +132,28 @@ npm run dev:mobile     # Run mobile app only
 ### Manual Development
 
 Each project can also be developed independently. Refer to the individual project READMEs for specific setup instructions.
+
+### Docker
+
+The stack runs in Docker: PostgreSQL, NestJS backend, and Expo web frontend. Prefer the Makefile:
+
+| Command        | Description                          |
+|----------------|--------------------------------------|
+| `make up`      | Start stack (foreground, with logs) |
+| `make run`     | Start stack in background           |
+| `make down`    | Stop and remove containers          |
+| `make build`   | Build images only                   |
+| `make ps`      | List running containers             |
+| `make logs`    | Follow logs (`make logs SVC=backend` for one service) |
+| `make setup-env` | Copy `.env.docker.example` → `.env` if missing |
+| `make migrate` | Run database migrations             |
+| `make seed`    | Run database seeds                  |
+
+Without Make: `docker compose up --build`. Optional env: copy `.env.docker.example` to `.env` and set `DB_PASSWORD`, `JWT_SECRET`, etc.; otherwise defaults from `docker-compose.yml` are used.
+
+### Makefile
+
+All Make targets: run `make help` from the repo root. Local variants (no Docker): `make migrate-local`, `make seed-local`. Tests: `make test`, `make test-backend`, `make test-mobile`.
 
 ## License
 

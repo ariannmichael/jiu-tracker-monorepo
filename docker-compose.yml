@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: jiu-tracker-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-jiu_tracker}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-jiu_tracker}"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: jiu-tracker-nest/Dockerfile
+    container_name: jiu-tracker-backend
+    environment:
+      PORT: 3006
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-jiu_tracker}
+      SECRET: ${JWT_SECRET:-change-me-in-production}
+    ports:
+      - "3006:3006"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: jiu-tracker-mobile/Dockerfile
+    container_name: jiu-tracker-frontend
+    environment:
+      # Expo web app; browser on host uses this URL to reach the API
+      EXPO_PUBLIC_API_URL: http://localhost:3006/api
+    ports:
+      - "8081:8081"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

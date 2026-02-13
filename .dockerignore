@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+.next
+.expo
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.md
+!README.md
+
+# Env files (use compose env or secrets)
+.env
+.env.*
+!.env.example
+
+# Tests and coverage
+coverage
+**/__tests__
+**/*.spec.ts
+**/*.test.ts
+**/jest.config.*
+**/test
+
+# Misc
+*.log
+.DS_Store
+*.tgz
