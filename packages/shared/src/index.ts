@@ -23,6 +23,7 @@ export {
 // User types
 export {
   type User,
+  type CreateUserDto,
   type CreateUserRequest,
   type LoginUserRequest,
   type UpdateUserRequest,

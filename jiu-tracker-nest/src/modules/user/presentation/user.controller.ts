@@ -24,6 +24,10 @@ export class UserController {
   @Post('user/signup')
   async createUser(@Body() dto: CreateUserDto) {
     try {
+      // Log the dto in the console
+      // console.log doesn't work in the terminal, so we use console.log directly
+      console.log('dto', dto);
+
       const user = await this.userService.createUser(dto);
       return { user };
     } catch (error) {

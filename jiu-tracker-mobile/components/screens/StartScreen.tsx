@@ -1,10 +1,12 @@
-import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, Platform } from "react-native";
 import { useFonts } from "expo-font";
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import * as SecureStore from 'expo-secure-store';
+
 
 export default function StartScreen() {
   const { login: authLogin } = useAuth();
@@ -15,6 +17,7 @@ export default function StartScreen() {
     Sunflower_700Bold,
   });
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -50,7 +53,10 @@ export default function StartScreen() {
       return;
     }
 
-    router.replace('/(signup)/signup');
+    router.replace({
+      pathname: '/(signup)/signup',
+      params: { name, email, password },
+    });
   };
 
 
@@ -73,8 +79,24 @@ export default function StartScreen() {
         {/* Title */}
         <Text style={styles.title}>Jiu Tracker</Text>
 
+
         {(login || signup) &&
           <View style={styles.inputContainer}>
+            {!login && (
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Name"
+                  placeholderTextColor="#CCCCCC"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <View style={styles.inputLine} />
+              </View>
+            )}
+
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}

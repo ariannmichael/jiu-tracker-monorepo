@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger(bootstrap.name);
+
+  logger.log('Starting Jiu Tracker API...');
 
   // Enable validation pipes (equivalent to Gin's ShouldBindJSON validation)
   app.useGlobalPipes(
@@ -29,7 +32,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3006);
 
   await app.listen(port);
-  console.log(`Jiu Tracker API running on port ${port}`);
+  logger.log(`Jiu Tracker API running on port ${port}`);
 }
 
 bootstrap().catch((error) => {

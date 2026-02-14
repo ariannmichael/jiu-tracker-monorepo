@@ -87,10 +87,10 @@ export default function TechniquesSelect({
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
-            {filteredOptions.length === 0 ? (
+            {filteredOptions?.length === 0 ? (
               <Text style={styles.emptyText}>No techniques found</Text>
             ) : (
-              filteredOptions.map((opt) => {
+              filteredOptions?.map((opt) => {
                 const isSelected = selected.includes(opt.id);
                 return (
                   <TouchableOpacity

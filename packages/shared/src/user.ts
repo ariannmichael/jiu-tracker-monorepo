@@ -30,6 +30,15 @@ export interface UpdateUserRequest {
   avatar?: string;
 }
 
+export interface CreateUserDto {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  belt_color: number;
+  belt_stripe: number;
+}
+
 // Response types
 export interface UserResponse {
   user: User;

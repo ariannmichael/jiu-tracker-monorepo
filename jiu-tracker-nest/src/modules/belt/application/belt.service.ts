@@ -9,15 +9,15 @@ export class BeltService {
 
   getBeltByColor(color: string): Belt {
     switch (color.toLowerCase()) {
-      case 'white':
+      case 'white belt':
         return Belt.White;
-      case 'blue':
+      case 'blue belt':
         return Belt.Blue;
-      case 'purple':
+      case 'purple belt':
         return Belt.Purple;
-      case 'brown':
+      case 'brown belt':
         return Belt.Brown;
-      case 'black':
+      case 'black belt':
         return Belt.Black;
       default:
         throw new Error(`Invalid belt color: ${color}`);

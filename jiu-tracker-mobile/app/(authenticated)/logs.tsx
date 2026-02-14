@@ -30,7 +30,8 @@ export default function LogsScreen() {
   const [notes, setNotes] = useState("");
 
   const [techniques, setTechniques] = useState<TechniqueListItem[]>([]);
-  const [techniquesSelected, setTechniquesSelected] = useState<string[]>([]);
+  const [submitUsingOptions, setSubmitUsingOptions] = useState<TechniqueListItem[]>([]);
+  const [submittedByOptions, setSubmittedByOptions] = useState<TechniqueListItem[]>([]);
 
   useEffect(() => {
     TechniquesService.getTechniquesList(token).then((response) => {
@@ -67,7 +68,8 @@ export default function LogsScreen() {
     setClassTime("");
     setRollingOpenMat(false);
     setNotes("");
-    setTechniquesSelected([]);
+    setSubmitUsingOptions([]);
+    setSubmittedByOptions([]);
   };
 
   const renderAddLogModal = () => (
@@ -172,11 +174,21 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>TECHNIQUES</Text>
+            <Text style={styles.fieldLabel}>SUBMIT USING</Text>
             <TechniquesSelect
               options={techniques}
-              selected={techniquesSelected}
-              onSelectionChange={setTechniquesSelected}
+              selected={submitUsingOptions.map((option) => option.id)}
+              onSelectionChange={(selected) => setSubmitUsingOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
+              placeholder="Select techniques"
+            />
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>WAS SUBMITTED BY</Text>
+            <TechniquesSelect
+              options={techniques}
+              selected={submittedByOptions.map((option) => option.id)}
+              onSelectionChange={(selected) => setSubmittedByOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
               placeholder="Select techniques"
             />
           </View>

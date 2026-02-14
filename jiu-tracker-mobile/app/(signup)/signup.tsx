@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, FlatList } 
 import { useFonts } from 'expo-font';
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import {
   BeltRank,
   BELT_RANKS,
@@ -17,6 +17,7 @@ import {
   FONTS,
   COLORS
 } from '../../constants';
+import SignupService from '@/services/signup.service';
 
 interface SignupData {
   country: string;
@@ -37,7 +38,7 @@ export default function Signup() {
   const [currentStep, setCurrentStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({
     country: 'Brazil',
-    rank: 'White Belt',
+    rank: 'White Belt' as BeltRank,
     stripes: 0,
     birthDate: { day: '01', month: 'Jan', year: '2000' },
     username: ''
@@ -51,15 +52,32 @@ export default function Signup() {
     return null;
   }
 
+  const { name, email, password } = useLocalSearchParams<{ name: string; email: string; password: string }>();
+
   const totalSteps = 4;
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete signup
-      router.replace('/(authenticated)/dashboard');
+      handleSubmit();
     }
+  };
+
+  const handleSubmit = () => {
+    // Complete signup
+    SignupService.signup({
+      name: name,
+      username: signupData.username,
+      email: email,  
+      password: password,
+      belt_color: signupData.rank,
+      belt_stripe: signupData.stripes,
+    }).then((response) => {
+      router.replace('/(authenticated)/dashboard');
+    }).catch((error) => {
+      console.error(error);
+    });
   };
 
   const handleBack = () => {
