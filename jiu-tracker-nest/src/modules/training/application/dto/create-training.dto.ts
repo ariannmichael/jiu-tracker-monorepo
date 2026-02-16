@@ -5,6 +5,8 @@ import {
   IsArray,
   ArrayMinSize,
   IsOptional,
+  IsDateString,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateTrainingDto {
@@ -12,10 +14,23 @@ export class CreateTrainingDto {
   @IsNotEmpty()
   user_id: string;
 
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  is_open_mat: boolean;
+
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
-  techniques_ids: string[];
+  submit_using_options_ids: string[];
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  submitted_by_options_ids: string[];
 
   @IsInt()
   @IsNotEmpty()

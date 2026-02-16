@@ -7,6 +7,7 @@ import { User } from '../domain/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginResponse } from '@jiu-tracker/shared';
 
 @Injectable()
 export class UserService {
@@ -44,7 +45,7 @@ export class UserService {
     return user;
   }
 
-  async login(dto: LoginUserDto): Promise<string> {
+  async login(dto: LoginUserDto): Promise<LoginResponse> {
     if (!dto.email || !dto.password) {
       throw new Error('Email and password are required');
     }
@@ -60,7 +61,7 @@ export class UserService {
       sub: user.id,
     });
 
-    return token;
+    return { access_token: token, user };
   }
 
   async getUserById(id: string): Promise<User> {

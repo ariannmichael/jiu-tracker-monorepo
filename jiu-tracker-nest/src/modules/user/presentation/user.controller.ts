@@ -24,10 +24,6 @@ export class UserController {
   @Post('user/signup')
   async createUser(@Body() dto: CreateUserDto) {
     try {
-      // Log the dto in the console
-      // console.log doesn't work in the terminal, so we use console.log directly
-      console.log('dto', dto);
-
       const user = await this.userService.createUser(dto);
       return { user };
     } catch (error) {
@@ -41,16 +37,16 @@ export class UserController {
   @Post('user/login')
   async loginUser(@Body() dto: LoginUserDto, @Res() res: Response) {
     try {
-      const token = await this.userService.login(dto);
+      const loginResponse = await this.userService.login(dto);
 
-      res.cookie('Authorization', token, {
+      res.cookie('Authorization', loginResponse.access_token, {
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
         maxAge: 3600 * 24 * 1000, // 24 hours in ms
       });
 
-      return res.status(HttpStatus.OK).json({ token });
+      return res.status(HttpStatus.OK).json(loginResponse);
     } catch (error) {
       throw new HttpException(
         { error: (error as Error).message },

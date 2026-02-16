@@ -19,7 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
-    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts"
+    "migration:run": "node -r tsconfig-paths/register -r ts-node/register \"$(node -p \"require.resolve('typeorm/cli.js')\")\" migration:run -d src/data-source.ts",
+    "migration:generate": "node scripts/migration-generate.js",
+    "migration:create": "node scripts/migration-create.js"
   },
   "dependencies": {
     "@jiu-tracker/shared": "*",

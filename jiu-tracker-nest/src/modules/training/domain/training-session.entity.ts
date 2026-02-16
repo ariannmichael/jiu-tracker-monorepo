@@ -17,31 +17,31 @@ export class TrainingSession {
   @Column({ name: 'user_id', type: 'text', nullable: false })
   userId: string;
 
-  @Column({ type: 'text', nullable: false })
-  user: string;
-
   @Column({ name: 'date', type: 'text', nullable: false })
   date: string;
 
-  @Column({ name: 'class_time', type: 'text', nullable: false })
-  classTime: string;
-
-  @Column({ name: 'rolling_open_mat', type: 'boolean', nullable: false })
-  rollingOpenMat: boolean;
+  @Column({ name: 'is_open_mat', type: 'boolean', nullable: false })
+  is_open_mat: boolean;
 
   @ManyToMany(() => Technique)
   @JoinTable({
-    name: 'training_session_techniques',
+    name: 'training_session_submit_using_options',
     joinColumn: {
       name: 'training_session_id',
       referencedColumnName: 'id',
     },
-    inverseJoinColumn: {
-      name: 'technique_id',
+  })
+  submit_using_options: Technique[];
+
+  @ManyToMany(() => Technique)
+  @JoinTable({
+    name: 'training_session_submitted_by_options',
+    joinColumn: {
+      name: 'training_session_id',
       referencedColumnName: 'id',
     },
   })
-  techniques: Technique[];
+  submitted_by_options: Technique[];
 
   @Column({ type: 'bigint', nullable: false })
   duration: number; // in minutes

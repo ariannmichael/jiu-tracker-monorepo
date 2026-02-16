@@ -17,15 +17,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 import TechniquesService from "@/services/techniques.service";
 import TechniquesSelect from "@/components/selects/TechniquesSelect";
+import TrainingService from "@/services/training.service";
+import { CreateTrainingRequest } from "@jiu-tracker/shared";
 
 export default function LogsScreen() {
   const insets = useSafeAreaInsets();
-  const { token } = useAuth();
+  const { user, token } = useAuth();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [classTime, setClassTime] = useState("");
+  const [classTime, setClassTime] = useState<Date | null>(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [rollingOpenMat, setRollingOpenMat] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -52,6 +55,15 @@ export default function LogsScreen() {
     }
   };
 
+  const handleTimeChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+    }
+    if (selectedDate) {
+      setClassTime(selectedDate);
+    }
+  };
+
   const formatDate = (d: Date) => {
     return d.toLocaleDateString("en-US", {
       weekday: "short",
@@ -61,15 +73,37 @@ export default function LogsScreen() {
     });
   };
 
+  const formatTime = (d: Date) => {
+    return d.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const formatTimeForInput = (d: Date) => {
+    const h = d.getHours();
+    const m = d.getMinutes();
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+
   const handleSubmit = () => {
-    // TODO: handle form submission
-    setShowAddModal(false);
-    setDate(new Date());
-    setClassTime("");
-    setRollingOpenMat(false);
-    setNotes("");
-    setSubmitUsingOptions([]);
-    setSubmittedByOptions([]);
+    const data: CreateTrainingRequest = {
+      user_id: user?.id ?? '',
+      date: date.toISOString(),
+      is_open_mat: rollingOpenMat,
+      submit_using_options_ids: submitUsingOptions.map((option) => option.id),
+      submitted_by_options_ids: submittedByOptions.map((option) => option.id),
+      duration: classTime ? classTime.getHours() * 60 + classTime.getMinutes() : 0,
+      notes: notes,
+    };
+
+    console.log(data); 
+    TrainingService.createTraining(data, token ?? '').then((response) => {
+      console.log(response);
+    }).catch((error) => {
+      console.error(error);
+    });
   };
 
   const renderAddLogModal = () => (
@@ -84,6 +118,13 @@ export default function LogsScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowAddModal(false)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
           <Text style={styles.modalTitle}>NEW LOG</Text>
 
           <View style={styles.fieldGroup}>
@@ -144,13 +185,62 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>CLASS TIME</Text>
-            <TextInput
-              style={styles.fieldInput}
-              value={classTime}
-              onChangeText={setClassTime}
-              placeholderTextColor={COLORS.GRAY_TEXT}
-            />
+            <Text style={styles.fieldLabel}>DURATION</Text>
+            {Platform.OS === "web" ? (
+              <View style={styles.datePickerContainer}>
+                <input
+                  type="time"
+                  value={classTime ? formatTimeForInput(classTime) : ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const [hours, minutes] = (e.target.value || "00:00").split(":").map(Number);
+                    const d = new Date();
+                    d.setHours(hours, minutes, 0, 0);
+                    setClassTime(d);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontFamily: FONTS.SUNFLOWER_LIGHT,
+                    fontSize: 16,
+                    color: COLORS.WHITE,
+                    width: "100%",
+                    colorScheme: "dark",
+                  }}
+                />
+              </View>
+            ) : Platform.OS === "ios" ? (
+              <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                  value={classTime ?? new Date()}
+                  mode="time"
+                  display="compact"
+                  onChange={handleTimeChange}
+                  themeVariant="dark"
+                  accentColor={COLORS.WHITE}
+                />
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.fieldInput}
+                  onPress={() => setShowTimePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.dateText, !classTime && { color: COLORS.GRAY_TEXT }]}>
+                    {classTime ? formatTime(classTime) : "Select time"}
+                  </Text>
+                </TouchableOpacity>
+                {showTimePicker && (
+                  <DateTimePicker
+                    value={classTime ?? new Date()}
+                    mode="time"
+                    display="default"
+                    onChange={handleTimeChange}
+                  />
+                )}
+              </>
+            )}
           </View>
 
           <View style={styles.fieldGroup}>
@@ -296,6 +386,21 @@ const styles = StyleSheet.create({
     width: '85%',
     maxHeight: '100%',
     overflowY: 'auto',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 1,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontSize: 20,
+    color: COLORS.WHITE,
   },
   modalTitle: {
     fontFamily: FONTS.SUNFLOWER_BOLD,

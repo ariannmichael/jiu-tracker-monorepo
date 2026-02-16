@@ -18,12 +18,12 @@ export interface TrainingSession {
 // Request types
 export interface CreateTrainingRequest {
   user_id: string;
-  techniques_ids: string[];
+  submit_using_options_ids: string[];
+  submitted_by_options_ids: string[];
   duration: number;
   notes?: string;
-  date?: string;
-  class_time?: string;
-  rolling_open_mat?: boolean;
+  date: string;
+  is_open_mat: boolean;
 }
 
 export interface UpdateTrainingRequest {

@@ -3,11 +3,13 @@ import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import Api from '@/services/api';
+import { User } from '@jiu-tracker/shared';
 
 const TOKEN_KEY = 'auth_token';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -44,6 +46,7 @@ async function removeToken(): Promise<void> {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Restore token on app start
@@ -76,9 +79,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json();
-    await saveToken(data.token);
-    setToken(data.token);
+    await saveToken(data.access_token);
+    setToken(data.access_token);
     setIsAuthenticated(true);
+    setUser(data.user);
     router.replace('/(authenticated)/dashboard');
   };
 
@@ -90,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

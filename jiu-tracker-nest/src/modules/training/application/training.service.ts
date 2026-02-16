@@ -13,16 +13,23 @@ export class TrainingService {
   ) {}
 
   async createTraining(dto: CreateTrainingDto): Promise<TrainingSession> {
-    const techniques = await this.techniqueService.getTechniquesByIds(
-      dto.techniques_ids,
-    );
+    const submitUsingTechniques =
+      await this.techniqueService.getTechniquesByIds(
+        dto.submit_using_options_ids,
+      );
+    const submittedByTechniques =
+      await this.techniqueService.getTechniquesByIds(
+        dto.submitted_by_options_ids,
+      );
 
     const trainingSession: Partial<TrainingSession> = {
       userId: dto.user_id,
-      user: '',
-      techniques,
+      submit_using_options: submitUsingTechniques,
+      submitted_by_options: submittedByTechniques,
       duration: dto.duration,
       notes: dto.notes ?? '',
+      is_open_mat: dto.is_open_mat,
+      date: dto.date,
     };
 
     return this.trainingRepo.createTrainingSession(trainingSession);
@@ -41,13 +48,22 @@ export class TrainingService {
     dto: UpdateTrainingDto,
   ): Promise<TrainingSession> {
     const training = await this.trainingRepo.getTrainingSessionById(id);
-    const techniques = await this.techniqueService.getTechniquesByIds(
-      dto.techniques_ids,
-    );
+    const submitUsingTechniques =
+      await this.techniqueService.getTechniquesByIds(
+        dto.submit_using_options_ids,
+      );
+    const submittedByTechniques =
+      await this.techniqueService.getTechniquesByIds(
+        dto.submitted_by_options_ids,
+      );
 
-    training.techniques = techniques;
+    training.is_open_mat = dto.is_open_mat;
+    training.date = dto.date;
+    training.submit_using_options = submitUsingTechniques;
+    training.submitted_by_options = submittedByTechniques;
     training.duration = dto.duration;
     training.notes = dto.notes ?? training.notes;
+    training.updatedAt = new Date();
 
     return this.trainingRepo.updateTrainingSession(training);
   }
