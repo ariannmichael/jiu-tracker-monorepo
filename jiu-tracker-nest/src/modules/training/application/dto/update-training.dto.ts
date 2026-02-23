@@ -22,7 +22,7 @@ export class UpdateTrainingDto {
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
-  submitted_by_options_ids: string[];
+  tapped_by_options_ids: string[];
 
   @IsDateString()
   @IsNotEmpty()

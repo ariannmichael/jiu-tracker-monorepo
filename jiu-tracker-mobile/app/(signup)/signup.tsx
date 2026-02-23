@@ -248,7 +248,7 @@ export default function Signup() {
           value={signupData.username}
           onChangeText={(text) => updateSignupData('username', text)}
           placeholder="Enter username"
-          placeholderTextColor="#666666"
+          placeholderTextColor={COLORS.GRAY_TEXT}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -603,10 +603,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.GRAY_DARK,
+    backgroundColor: COLORS.CARD,
     padding: 20,
     width: '80%',
     maxHeight: '70%',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   modalTitle: {
     fontFamily: FONTS.SUNFLOWER_MEDIUM,

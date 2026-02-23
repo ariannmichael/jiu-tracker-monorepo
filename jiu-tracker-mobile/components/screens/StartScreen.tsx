@@ -1,11 +1,11 @@
-import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, Platform } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet, TextInput, Platform } from "react-native";
 import { useFonts } from "expo-font";
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import * as SecureStore from 'expo-secure-store';
+import { COLORS } from "@/constants";
 
 
 export default function StartScreen() {
@@ -87,7 +87,7 @@ export default function StartScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Name"
-                  placeholderTextColor="#CCCCCC"
+                  placeholderTextColor={COLORS.GRAY_TEXT}
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="none"
@@ -100,8 +100,8 @@ export default function StartScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#CCCCCC"
+                  placeholder="Email"
+                  placeholderTextColor={COLORS.GRAY_TEXT}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -114,8 +114,8 @@ export default function StartScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#CCCCCC"
+                  placeholder="Password"
+                  placeholderTextColor={COLORS.GRAY_TEXT}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -130,7 +130,7 @@ export default function StartScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Confirm Password"
-                  placeholderTextColor="#CCCCCC"
+                  placeholderTextColor={COLORS.GRAY_TEXT}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
@@ -175,7 +175,7 @@ export default function StartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0E',
+    backgroundColor: COLORS.BACKGROUND,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'ZenDots_400Regular',
     fontSize: 36,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     marginBottom: 60,
     letterSpacing: 2,
   },
@@ -195,44 +195,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginButton: {
-    backgroundColor: '#79787E',
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: '#FFFFFF',
+    backgroundColor: COLORS.BUTTON,
+    borderWidth: 0,
+    borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 60,
     marginBottom: 20,
     width: 255,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   signupButton: {
-    backgroundColor: '#32313B',
+    backgroundColor: COLORS.CARD,
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: COLORS.BORDER,
     paddingVertical: 15,
     paddingHorizontal: 60,
-    borderRadius: 8,
+    borderRadius: 12,
     width: 255,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   buttonText: {
     fontFamily: 'Sunflower_300Light',
     fontSize: 32,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     textAlign: 'center',
     letterSpacing: 1,
   },
@@ -244,7 +232,7 @@ const styles = StyleSheet.create({
   footerText: {
     fontFamily: 'ZenDots_400Regular',
     fontSize: 14,
-    color: '#FFFFFF',
+    color: COLORS.GRAY_TEXT,
   },
   inputContainer: {
     width: '100%',
@@ -255,19 +243,19 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     paddingVertical: 15,
     paddingHorizontal: 0,
     fontFamily: 'Sunflower_300Light',
   },
   inputLine: {
     height: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.BORDER,
     marginTop: 5,
   },
   backArrow: {
     fontSize: 24,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontFamily: 'Sunflower_500Medium',
   },
   backButton: {
@@ -279,7 +267,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: 'Sunflower_300Light',
     fontSize: 14,
-    color: '#FF6B6B',
+    color: COLORS.ACCENT_PINK,
     textAlign: 'center',
     marginBottom: 20,
   },

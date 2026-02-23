@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View, ScrollView, StyleSheet } from "react-native";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatCard from "../cards/StatCard";
 import StreakCard from "../cards/StreakCard";
@@ -35,10 +35,13 @@ export default function DashboardScreen() {
     newTechniquesLearned: 0,
   };
 
+  const nextMilestone = 3000;
+  const progressToMilestone = userData.dayStreak >= nextMilestone ? 100 : (userData.dayStreak / nextMilestone) * 100;
+
   const performanceData = [
-    { label: "Gold", value: 5.9, color: "#FFD700" },
-    { label: "Silver", value: 29.4, color: "#C0C0C0" },
-    { label: "Bronze", value: 23.5, color: "#CD7F32" },
+    { label: "Gold", value: 5.9, color: COLORS.ACCENT_YELLOW },
+    { label: "Silver", value: 29.4, color: COLORS.GRAY_TEXT },
+    { label: "Bronze", value: 23.5, color: COLORS.ACCENT_ORANGE },
     { label: "None", value: 41.2, color: COLORS.GRAY_MEDIUM },
   ];
 
@@ -49,30 +52,36 @@ export default function DashboardScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Statistics Grid */}
+        {/* Day Streak — central hero */}
+        <StreakCard
+          value={userData.dayStreak.toString()}
+          label="day streak"
+          nextMilestone={nextMilestone}
+          progressPercent={progressToMilestone}
+        />
+
+        {/* Summary stats: Sessions & Total Hours */}
+        <View style={styles.summaryRow}>
+          <StatCard title="Sessions" value={userData.classesAttended.toString()} accentColor="purple" />
+          <StatCard title="Total Hours" value={userData.classesHours} accentColor="orange" />
+        </View>
+
+        {/* Other stats grid */}
         <View style={styles.statsGridContainer}>
-          {/* Row 1 */}
-          <StatCard title="CLASSES ATTENDED" value={userData.classesAttended.toString()} />
-          <StatCard title="CLASSES HOURS" value={userData.classesHours} />
-
-          {/* Row 2 */}
-          <StatCard title="DAYS TRAINED" value={userData.daysTrained.toString()} color={COLORS.YELLOW} isLarge/>
-          <StatCard title="MOST TRAINING HOURS IN ON DAY" value={userData.mostTrainingHoursInOneDay} color={COLORS.PURPLE} isLarge />
-
-          {/* Row 3 */}
-          <StreakCard value={userData.dayStreak.toString()} label="day streak!" />
-          <StatCard title="MILESTONES" value={userData.milestones.toString()} />
-
-          {/* Row 4 */}
-          <StatCard title="OPEN MAT SESSIONS" value={userData.openMatSessions.toString()} />
-          <StatCard title="COMPETITIONS" value={userData.competitions.toString()} />
-          <StatCard title="NEW TECHNIQUES" value={userData.newTechniquesLearned.toString()} />
+          <StatCard title="Days trained" value={userData.daysTrained.toString()} accentColor="orange" />
+          <StatCard title="Most hours in one day" value={userData.mostTrainingHoursInOneDay} accentColor="purple" />
+          <StatCard title="Milestones" value={userData.milestones.toString()} />
+          <StatCard title="Open mat" value={userData.openMatSessions.toString()} />
+          <StatCard title="Competitions" value={userData.competitions.toString()} />
+          <StatCard title="New techniques" value={userData.newTechniquesLearned.toString()} />
         </View>
 
         {/* Performance Breakdown */}
         <View style={styles.performanceSection}>
-          <Text style={styles.sectionTitle}>Performance Breakdown</Text>
-          <PieChart data={performanceData} />
+          <View style={styles.performanceCard}>
+            <Text style={styles.sectionTitle}>Performance breakdown</Text>
+            <PieChart data={performanceData} />
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -90,9 +99,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingBottom: 100,
+    width: "100%",
   },
   performanceSection: {
     marginBottom: 20,
+  },
+  performanceCard: {
+    backgroundColor: COLORS.CARD,
+    borderRadius: RADIUS.LG,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   sectionTitle: {
     fontFamily: FONTS.SUNFLOWER_MEDIUM,
@@ -100,12 +117,16 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     marginBottom: 20,
   },
-  statsGridContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+  summaryRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 24,
+    marginBottom: 10,
+    width: "100%",
+  },
+  statsGridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 30,
+    width: "100%",
   },
 });

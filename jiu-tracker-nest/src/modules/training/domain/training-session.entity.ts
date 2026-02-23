@@ -35,13 +35,13 @@ export class TrainingSession {
 
   @ManyToMany(() => Technique)
   @JoinTable({
-    name: 'training_session_submitted_by_options',
+    name: 'training_session_tapped_by_options',
     joinColumn: {
       name: 'training_session_id',
       referencedColumnName: 'id',
     },
   })
-  submitted_by_options: Technique[];
+  tapped_by_options: Technique[];
 
   @Column({ type: 'bigint', nullable: false })
   duration: number; // in minutes

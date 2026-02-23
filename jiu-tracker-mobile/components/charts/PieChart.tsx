@@ -20,12 +20,12 @@ const PieChart: React.FC<{ data: { label: string; value: number; color: string }
         <View style={styles.pieChartLabels}>
           <View style={styles.pieChartLabelColumn}>
             <View style={styles.pieChartLabelItem}>
-              <View style={[styles.pieChartColorDot, { backgroundColor: '#FFD700' }]} />
+              <View style={[styles.pieChartColorDot, { backgroundColor: goldSegment?.color || COLORS.ACCENT_YELLOW }]} />
               <Text style={styles.pieChartLabelText}>Gold</Text>
               <Text style={styles.pieChartPercentage}>{goldSegment?.percentage.toFixed(1) || '0'}%</Text>
             </View>
             <View style={styles.pieChartLabelItem}>
-              <View style={[styles.pieChartColorDot, { backgroundColor: '#C0C0C0' }]} />
+              <View style={[styles.pieChartColorDot, { backgroundColor: silverSegment?.color || COLORS.GRAY_TEXT }]} />
               <Text style={styles.pieChartLabelText}>Silver</Text>
               <Text style={styles.pieChartPercentage}>{silverSegment?.percentage.toFixed(1) || '0'}%</Text>
             </View>
@@ -37,9 +37,9 @@ const PieChart: React.FC<{ data: { label: string; value: number; color: string }
               {/* Base circle - None (gray, largest segment ~41%) */}
               <View style={[styles.pieBaseCircle, { backgroundColor: noneSegment?.color || COLORS.GRAY_MEDIUM }]} />
               {/* Overlay circles for other segments */}
-              <View style={[styles.pieOverlayCircle, styles.pieOverlay1, { backgroundColor: silverSegment?.color || '#C0C0C0' }]} />
-              <View style={[styles.pieOverlayCircle, styles.pieOverlay2, { backgroundColor: bronzeSegment?.color || '#CD7F32' }]} />
-              <View style={[styles.pieOverlayCircle, styles.pieOverlay3, { backgroundColor: goldSegment?.color || '#FFD700' }]} />
+              <View style={[styles.pieOverlayCircle, styles.pieOverlay1, { backgroundColor: silverSegment?.color || COLORS.GRAY_TEXT }]} />
+              <View style={[styles.pieOverlayCircle, styles.pieOverlay2, { backgroundColor: bronzeSegment?.color || COLORS.ACCENT_ORANGE }]} />
+              <View style={[styles.pieOverlayCircle, styles.pieOverlay3, { backgroundColor: goldSegment?.color || COLORS.ACCENT_YELLOW }]} />
             </View>
           </View>
           
@@ -50,7 +50,7 @@ const PieChart: React.FC<{ data: { label: string; value: number; color: string }
               <Text style={styles.pieChartPercentage}>{noneSegment?.percentage.toFixed(1) || '0'}%</Text>
             </View>
             <View style={styles.pieChartLabelItem}>
-              <View style={[styles.pieChartColorDot, { backgroundColor: '#CD7F32' }]} />
+              <View style={[styles.pieChartColorDot, { backgroundColor: bronzeSegment?.color || COLORS.ACCENT_ORANGE }]} />
               <Text style={styles.pieChartLabelText}>Bronze</Text>
               <Text style={styles.pieChartPercentage}>{bronzeSegment?.percentage.toFixed(1) || '0'}%</Text>
             </View>
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         position: "relative",
         overflow: "hidden",
+        backgroundColor: COLORS.CARD,
     },
     pieBaseCircle: {
         width: 100,

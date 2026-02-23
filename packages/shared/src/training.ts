@@ -19,7 +19,7 @@ export interface TrainingSession {
 export interface CreateTrainingRequest {
   user_id: string;
   submit_using_options_ids: string[];
-  submitted_by_options_ids: string[];
+  tapped_by_options_ids: string[];
   duration: number;
   notes?: string;
   date: string;

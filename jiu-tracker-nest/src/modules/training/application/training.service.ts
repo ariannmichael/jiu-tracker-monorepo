@@ -17,15 +17,15 @@ export class TrainingService {
       await this.techniqueService.getTechniquesByIds(
         dto.submit_using_options_ids,
       );
-    const submittedByTechniques =
+    const tappedByTechniques =
       await this.techniqueService.getTechniquesByIds(
-        dto.submitted_by_options_ids,
+        dto.tapped_by_options_ids,
       );
 
     const trainingSession: Partial<TrainingSession> = {
       userId: dto.user_id,
       submit_using_options: submitUsingTechniques,
-      submitted_by_options: submittedByTechniques,
+      tapped_by_options: tappedByTechniques,
       duration: dto.duration,
       notes: dto.notes ?? '',
       is_open_mat: dto.is_open_mat,
@@ -52,15 +52,15 @@ export class TrainingService {
       await this.techniqueService.getTechniquesByIds(
         dto.submit_using_options_ids,
       );
-    const submittedByTechniques =
+    const tappedByTechniques =
       await this.techniqueService.getTechniquesByIds(
-        dto.submitted_by_options_ids,
+        dto.tapped_by_options_ids,
       );
 
     training.is_open_mat = dto.is_open_mat;
     training.date = dto.date;
     training.submit_using_options = submitUsingTechniques;
-    training.submitted_by_options = submittedByTechniques;
+    training.tapped_by_options = tappedByTechniques;
     training.duration = dto.duration;
     training.notes = dto.notes ?? training.notes;
     training.updatedAt = new Date();

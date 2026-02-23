@@ -59,13 +59,13 @@ const BottomNavigation: React.FC = () => {
           >
             <Ionicons
               name={item.icon}
-              size={24}
+              size={22}
               color={active ? COLORS.WHITE : COLORS.GRAY_TEXT}
             />
             <Text
               style={[
                 styles.navLabel,
-                { color: active ? COLORS.WHITE : COLORS.GRAY_TEXT },
+                { color: active ? COLORS.WHITE : COLORS.GRAY_TEXT_SECONDARY },
               ]}
             >
               {item.label}
@@ -83,12 +83,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.GRAY_DARK,
+    backgroundColor: COLORS.CARD,
     flexDirection: "row",
     justifyContent: "space-around",
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: COLORS.GRAY_LIGHT,
+    borderTopColor: COLORS.BORDER,
   },
   navItem: {
     alignItems: "center",

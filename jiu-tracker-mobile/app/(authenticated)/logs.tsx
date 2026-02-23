@@ -34,7 +34,7 @@ export default function LogsScreen() {
 
   const [techniques, setTechniques] = useState<TechniqueListItem[]>([]);
   const [submitUsingOptions, setSubmitUsingOptions] = useState<TechniqueListItem[]>([]);
-  const [submittedByOptions, setSubmittedByOptions] = useState<TechniqueListItem[]>([]);
+  const [tappedByOptions, setTappedByOptions] = useState<TechniqueListItem[]>([]);
 
   useEffect(() => {
     TechniquesService.getTechniquesList(token).then((response) => {
@@ -93,7 +93,7 @@ export default function LogsScreen() {
       date: date.toISOString(),
       is_open_mat: rollingOpenMat,
       submit_using_options_ids: submitUsingOptions.map((option) => option.id),
-      submitted_by_options_ids: submittedByOptions.map((option) => option.id),
+      tapped_by_options_ids: tappedByOptions.map((option) => option.id),
       duration: classTime ? classTime.getHours() * 60 + classTime.getMinutes() : 0,
       notes: notes,
     };
@@ -160,7 +160,7 @@ export default function LogsScreen() {
                   display="compact"
                   onChange={handleDateChange}
                   themeVariant="dark"
-                  accentColor={COLORS.WHITE}
+                  accentColor={COLORS.BUTTON}
                 />
               </View>
             ) : (
@@ -217,7 +217,7 @@ export default function LogsScreen() {
                   display="compact"
                   onChange={handleTimeChange}
                   themeVariant="dark"
-                  accentColor={COLORS.WHITE}
+                  accentColor={COLORS.BUTTON}
                 />
               </View>
             ) : (
@@ -274,11 +274,11 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>WAS SUBMITTED BY</Text>
+            <Text style={styles.fieldLabel}>WAS TAPPED BY</Text>
             <TechniquesSelect
               options={techniques}
-              selected={submittedByOptions.map((option) => option.id)}
-              onSelectionChange={(selected) => setSubmittedByOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
+              selected={tappedByOptions.map((option) => option.id)}
+              onSelectionChange={(selected) => setTappedByOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
               placeholder="Select techniques"
             />
           </View>
@@ -358,12 +358,11 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: COLORS.BUTTON,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderWidth: 0,
     paddingVertical: 15,
     paddingHorizontal: 30,
     marginTop: 45,
-    borderRadius: 8,
+    borderRadius: 12,
     width: '100%',
   },
   addButtonText: {
@@ -380,12 +379,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.GRAY_DARKER,
+    backgroundColor: COLORS.CARD,
     borderRadius: 16,
     padding: 24,
     width: '85%',
     maxHeight: '100%',
     overflowY: 'auto',
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   closeButton: {
     position: 'absolute',
@@ -420,8 +421,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   fieldInput: {
-    backgroundColor: COLORS.GRAY_LIGHT,
-    borderRadius: 8,
+    backgroundColor: COLORS.GRAY_MEDIUM,
+    borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontFamily: FONTS.SUNFLOWER_LIGHT,
@@ -429,8 +430,8 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
   },
   datePickerContainer: {
-    backgroundColor: COLORS.GRAY_LIGHT,
-    borderRadius: 8,
+    backgroundColor: COLORS.GRAY_MEDIUM,
+    borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: "flex-start",
@@ -446,8 +447,8 @@ const styles = StyleSheet.create({
   },
   boxSelectOption: {
     flex: 1,
-    backgroundColor: COLORS.GRAY_LIGHT,
-    borderRadius: 8,
+    backgroundColor: COLORS.GRAY_MEDIUM,
+    borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -456,8 +457,8 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   boxSelectOptionSelected: {
-    backgroundColor: COLORS.GRAY_MEDIUM,
-    borderColor: COLORS.WHITE,
+    backgroundColor: COLORS.BUTTON,
+    borderColor: COLORS.BUTTON,
   },
   boxSelectOptionText: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,
@@ -466,9 +467,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 12,
-    borderWidth: 2,
-    borderColor: '#ffffff',
-    borderRadius: 8,
+    backgroundColor: COLORS.BUTTON,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
