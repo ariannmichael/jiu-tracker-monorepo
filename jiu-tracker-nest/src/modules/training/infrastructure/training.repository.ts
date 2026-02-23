@@ -22,7 +22,7 @@ export class TrainingRepository {
   async getTrainingSessionById(id: string): Promise<TrainingSession> {
     const session = await this.repo.findOne({
       where: { id },
-      relations: ['techniques'],
+      relations: ['submit_using_options', 'tapped_by_options'],
     });
     if (!session) {
       throw new Error(`Failed to find training session with id ${id}`);
@@ -31,7 +31,10 @@ export class TrainingRepository {
   }
 
   async getAllTrainingSessions(): Promise<TrainingSession[]> {
-    return this.repo.find({ relations: ['techniques'] });
+    return this.repo.find({
+      relations: ['submit_using_options', 'tapped_by_options'],
+      order: { date: 'DESC' },
+    });
   }
 
   async updateTrainingSession(

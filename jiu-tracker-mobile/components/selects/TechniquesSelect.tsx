@@ -16,6 +16,8 @@ type TechniquesSelectProps = {
   selected: string[];
   onSelectionChange: (selected: string[]) => void;
   placeholder?: string;
+  /** "submit" = blue chips (submit using), "tapped" = red chips (was tapped by) */
+  chipVariant?: "default" | "submit" | "tapped";
 };
 
 export default function TechniquesSelect({
@@ -23,6 +25,7 @@ export default function TechniquesSelect({
   selected,
   onSelectionChange,
   placeholder = "Select techniques",
+  chipVariant = "default",
 }: TechniquesSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -59,7 +62,14 @@ export default function TechniquesSelect({
           {selectedNames.length > 0 ? (
             <View style={styles.chips}>
               {selectedNames.map((name) => (
-                <View key={name} style={styles.chip}>
+                <View
+                  key={name}
+                  style={[
+                    styles.chip,
+                    chipVariant === "submit" && styles.chipSubmit,
+                    chipVariant === "tapped" && styles.chipTapped,
+                  ]}
+                >
                   <Text style={styles.chipText} numberOfLines={1}>
                     {name}
                   </Text>
@@ -144,6 +154,16 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     maxWidth: "100%",
+  },
+  chipSubmit: {
+    backgroundColor: "rgba(59, 130, 246, 0.35)",
+    borderWidth: 1,
+    borderColor: "rgba(59, 130, 246, 0.5)",
+  },
+  chipTapped: {
+    backgroundColor: "rgba(239, 68, 68, 0.35)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.5)",
   },
   chipText: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,

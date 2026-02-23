@@ -9,6 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { TechniqueListItem } from "@jiu-tracker/shared";
@@ -18,7 +19,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import TechniquesService from "@/services/techniques.service";
 import TechniquesSelect from "@/components/selects/TechniquesSelect";
 import TrainingService from "@/services/training.service";
-import { CreateTrainingRequest } from "@jiu-tracker/shared";
+import { CreateTrainingRequest, Technique, TrainingSession } from "@jiu-tracker/shared";
+import LogCard from "@/components/cards/LogCard";
+
+/** Training session as returned by API with submit/tapped options */
+type TrainingWithOptions = TrainingSession & {
+  submit_using_options?: Technique[];
+  tapped_by_options?: Technique[];
+};
 
 export default function LogsScreen() {
   const insets = useSafeAreaInsets();
@@ -36,10 +44,26 @@ export default function LogsScreen() {
   const [submitUsingOptions, setSubmitUsingOptions] = useState<TechniqueListItem[]>([]);
   const [tappedByOptions, setTappedByOptions] = useState<TechniqueListItem[]>([]);
 
+  const [trainings, setTrainings] = useState<TrainingWithOptions[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(true);
+
   useEffect(() => {
     TechniquesService.getTechniquesList(token).then((response) => {
       setTechniques(response.techniques);
     });
+  }, [token]);
+
+  const fetchTrainings = () => {
+    if (!token) return;
+    setLoadingLogs(true);
+    TrainingService.getTrainings(token)
+      .then((list) => setTrainings(list as TrainingWithOptions[]))
+      .catch(() => setTrainings([]))
+      .finally(() => setLoadingLogs(false));
+  };
+
+  useEffect(() => {
+    fetchTrainings();
   }, [token]);
 
   const handleAddLog = () => {
@@ -98,12 +122,19 @@ export default function LogsScreen() {
       notes: notes,
     };
 
-    console.log(data); 
-    TrainingService.createTraining(data, token ?? '').then((response) => {
-      console.log(response);
-    }).catch((error) => {
-      console.error(error);
-    });
+    TrainingService.createTraining(data, token ?? "")
+      .then(() => {
+        setShowAddModal(false);
+        setSubmitUsingOptions([]);
+        setTappedByOptions([]);
+        setNotes("");
+        setClassTime(null);
+        fetchTrainings();
+      })
+      .catch((error) => {
+        console.error(error);
+        Alert.alert("Could not save log", error instanceof Error ? error.message : "Please try again.");
+      });
   };
 
   const renderAddLogModal = () => (
@@ -270,6 +301,7 @@ export default function LogsScreen() {
               selected={submitUsingOptions.map((option) => option.id)}
               onSelectionChange={(selected) => setSubmitUsingOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
               placeholder="Select techniques"
+              chipVariant="submit"
             />
           </View>
 
@@ -280,6 +312,7 @@ export default function LogsScreen() {
               selected={tappedByOptions.map((option) => option.id)}
               onSelectionChange={(selected) => setTappedByOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
               placeholder="Select techniques"
+              chipVariant="tapped"
             />
           </View>
 
@@ -312,14 +345,30 @@ export default function LogsScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.content}>
+        <View style={styles.headerRow}>
           <Text style={styles.title}>Training Logs</Text>
-          <Text style={styles.subtitle}>Your training sessions will appear here</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddLog}>
+            <Text style={styles.addButtonText}>+ ADD LOG</Text>
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={handleAddLog}>
-          <Text style={styles.addButtonText}>+ ADD LOG</Text>
-        </TouchableOpacity>
+        {loadingLogs ? (
+          <Text style={styles.subtitle}>Loading logs…</Text>
+        ) : trainings.length === 0 ? (
+          <Text style={styles.subtitle}>Your training sessions will appear here</Text>
+        ) : (
+          <View style={styles.logList}>
+            {trainings.map((t) => (
+              <LogCard
+                key={t.id}
+                date={t.date}
+                durationMinutes={t.duration}
+                submitted={(t.submit_using_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
+                tapped={(t.tapped_by_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
       {renderAddLogModal()}
     </View>
@@ -330,7 +379,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
-    alignItems: "center"
+    alignItems: "center",
+    paddingTop: 24
   },
   scrollView: {
     flex: 1,
@@ -338,6 +388,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingBottom: 100,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  logList: {
+    marginBottom: 24,
   },
   content: {
     flex: 1,
@@ -349,21 +410,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.SUNFLOWER_BOLD,
     fontSize: 24,
     color: COLORS.WHITE,
-    marginBottom: 10,
   },
   subtitle: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,
     fontSize: 16,
     color: COLORS.GRAY_TEXT,
+    marginTop: 8,
   },
   addButton: {
     backgroundColor: COLORS.BUTTON,
     borderWidth: 0,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    marginTop: 45,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 12,
-    width: '100%',
   },
   addButtonText: {
     fontFamily: FONTS.SUNFLOWER_BOLD,

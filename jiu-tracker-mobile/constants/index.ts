@@ -68,13 +68,13 @@ export const FONTS = {
 // Design system — dark theme with gradients (glassmorphism, rounded cards)
 export const COLORS = {
   // Backgrounds
-  BACKGROUND: '#1A1A1A',
-  CARD: '#282828',
-  CARD_ELEVATED: '#2E2E2E',
+  BACKGROUND: '#1C1A24',
+  CARD: '#28262E',
+  CARD_ELEVATED: '#2E2C36',
   WHITE: '#FFFFFF',
   // Grays
-  GRAY_DARKER: '#1E1E1E',
-  GRAY_DARK: '#252525',
+  GRAY_DARKER: '#221F28',
+  GRAY_DARK: '#28252E',
   GRAY_MEDIUM: '#333333',
   GRAY_LIGHT: '#3D3D3D',
   GRAY_TEXT: '#8E8E93',

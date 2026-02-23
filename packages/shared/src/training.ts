@@ -4,11 +4,14 @@ import { Technique } from './technique';
 export interface TrainingSession {
   id: string;
   user_id: string;
-  user: string;
+  user?: string;
   date: string;
-  class_time: string;
-  rolling_open_mat: boolean;
-  techniques: Technique[];
+  class_time?: string;
+  rolling_open_mat?: boolean;
+  is_open_mat?: boolean;
+  techniques?: Technique[];
+  submit_using_options?: Technique[];
+  tapped_by_options?: Technique[];
   duration: number; // in minutes
   notes: string;
   created_at?: Date | string;
