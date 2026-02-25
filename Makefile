@@ -1,97 +1,151 @@
-# Jiu Tracker Monorepo — common tasks
-# Docker targets assume compose; -local targets run on the host.
+# Jiu Tracker Monorepo — Makefile
+# Run `make help` for targets.
 
-.DEFAULT_GOAL := help
+.PHONY: help install env infra infra-down migrate build \
+	backend-dev backend-build backend-start backend-test backend-lint backend-e2e \
+	mobile-start mobile-web mobile-ios mobile-android mobile-test mobile-lint \
+	dev docker-up docker-down docker-build \
+	test test-e2e benchmark-baseline benchmark-analytics-read benchmark-analytics-recompute clean
 
-.PHONY: up down run build ps logs migrate migrate-local seed seed-local test test-backend test-mobile setup-env help
+# Default target
+help:
+	@echo "Jiu Tracker — available targets:"
+	@echo ""
+	@echo "  setup          install deps + copy .env.example → .env (edit before use)"
+	@echo "  install        npm install (all workspaces)"
+	@echo "  env            copy jiu-tracker-nest/.env.example → .env"
+	@echo "  infra          start Postgres + Redis (docker compose up -d db redis)"
+	@echo "  infra-down     stop infra containers"
+	@echo "  migrate        run backend TypeORM migrations"
+	@echo "  build          build shared + backend"
+	@echo ""
+	@echo "  backend-dev    start Nest backend (watch)"
+	@echo "  backend-build  compile backend"
+	@echo "  backend-start  start backend (production build)"
+	@echo "  backend-test   backend unit tests"
+	@echo "  backend-lint   backend ESLint"
+	@echo "  backend-e2e    backend E2E (requires infra + migrate)"
+	@echo ""
+	@echo "  mobile-start   expo start"
+	@echo "  mobile-web     expo start --web"
+	@echo "  mobile-ios     expo start --ios"
+	@echo "  mobile-android expo start --android"
+	@echo "  mobile-test    mobile Jest"
+	@echo "  mobile-lint    mobile lint"
+	@echo ""
+	@echo "  dev            backend + mobile web in parallel"
+	@echo "  docker-up      full stack (db, redis, rabbitmq, backend, frontend)"
+	@echo "  docker-down    stop all compose services"
+	@echo "  docker-build   build backend + frontend images"
+	@echo ""
+	@echo "  test           backend unit tests"
+	@echo "  test-e2e       backend E2E (infra must be up, run migrate first)"
+	@echo "  benchmark-baseline         k6 health check (no auth)"
+	@echo "  benchmark-analytics-read   k6 GET /api/analytics (set AUTH_HEADER)"
+	@echo "  benchmark-analytics-recompute  k6 POST /api/analytics/recompute (set AUTH_HEADER)"
+	@echo ""
+	@echo "  clean          docker compose down + remove backend dist"
+	@echo ""
+	@echo "Override: API_URL=http://localhost:3006 API_URL_API=http://localhost:3006/api AUTH_HEADER='Bearer <jwt>'"
 
-# --- Docker stack ---
+# --- Setup ---
+install:
+	npm install
 
-## Start database, backend, and frontend in foreground (builds if needed)
-up:
-	docker compose up --build
+env:
+	@test -f jiu-tracker-nest/.env || cp jiu-tracker-nest/.env.example jiu-tracker-nest/.env
+	@echo "Created/kept jiu-tracker-nest/.env — edit DB_PASSWORD, SECRET, REDIS_* as needed."
 
-## Start stack in background (detached)
-run:
-	docker compose up -d --build
+setup: install env
+	@echo "Run: make infra && make migrate && make backend-dev"
 
-## Stop and remove containers
-down:
-	docker compose down
+# --- Infrastructure ---
+infra:
+	docker compose up -d db redis
 
-## Build images without starting
-build:
-	docker compose build
-
-## List running containers
-ps:
-	docker compose ps
-
-## Follow logs (optional: make logs SVC=backend)
-logs:
-	docker compose logs -f $(or $(SVC),)
-
-# --- Env ---
-
-## Copy .env.docker.example to .env if .env does not exist
-setup-env:
-	@if [ ! -f .env ]; then cp .env.docker.example .env && echo "Created .env from .env.docker.example"; else echo ".env already exists"; fi
+infra-down:
+	docker compose stop db redis
 
 # --- Migrations ---
-
-## Run migrations in backend container (run after 'make up' or 'make run')
 migrate:
-	docker compose run --rm backend node /app/node_modules/typeorm/cli.js migration:run -d dist/data-source.js
-
-## Run migrations locally (DB must be reachable, e.g. localhost)
-migrate-local:
 	npm run migration:run -w jiu-tracker-nest
 
-# --- Seeds ---
+# --- Build ---
+build:
+	npm run shared:build && npm run backend:build
 
-## Run seeds in backend container
-seed:
-	docker compose run --rm backend node dist/seed.js
+# --- Backend ---
+backend-dev:
+	npm run backend:dev
 
-## Run seeds locally
-seed-local:
-	npm run seed -w jiu-tracker-nest
+backend-build: build
 
-# --- Tests ---
+backend-start: build
+	cd jiu-tracker-nest && npm run start:prod
 
-## Run all tests (backend + mobile)
-test: test-backend test-mobile
-
-## Backend tests only
-test-backend:
+backend-test:
 	npm run backend:test
 
-## Mobile tests only
-test-mobile:
+backend-lint:
+	npm run backend:lint
+
+backend-e2e:
+	npm run test:e2e -w jiu-tracker-nest
+
+# --- Mobile ---
+mobile-start:
+	npm run mobile:start
+
+mobile-web:
+	npm run mobile:web
+
+mobile-ios:
+	npm run mobile:ios
+
+mobile-android:
+	npm run mobile:android
+
+mobile-test:
 	npm run mobile:test
 
-# --- Help ---
+mobile-lint:
+	npm run mobile:lint
 
-help:
-	@echo "Jiu Tracker — Make targets"
-	@echo ""
-	@echo "  up          Start db + backend + frontend (foreground)"
-	@echo "  run         Start stack in background (detached)"
-	@echo "  down        Stop and remove containers"
-	@echo "  build       Build Docker images"
-	@echo "  ps          List running containers"
-	@echo "  logs        Follow logs (optional: make logs SVC=backend)"
-	@echo ""
-	@echo "  setup-env   Copy .env.docker.example to .env if missing"
-	@echo ""
-	@echo "  migrate         Run migrations (Docker)"
-	@echo "  migrate-local  Run migrations locally"
-	@echo ""
-	@echo "  seed        Run seeds (Docker)"
-	@echo "  seed-local  Run seeds locally"
-	@echo ""
-	@echo "  test          Run backend + mobile tests"
-	@echo "  test-backend  Backend tests only"
-	@echo "  test-mobile   Mobile tests only"
-	@echo ""
-	@echo "  help        Show this help"
+# --- Dev (parallel) ---
+dev:
+	npm run dev
+
+# --- Docker full stack ---
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
+
+docker-build:
+	docker compose build
+
+# --- Tests ---
+test: backend-test
+
+test-e2e: backend-e2e
+
+# --- Benchmarks (k6) ---
+API_URL ?= http://localhost:3006
+API_URL_API ?= $(API_URL)/api
+AUTH_HEADER ?= Bearer
+
+benchmark-baseline:
+	k6 run -e API_URL=$(API_URL) benchmarks/baseline.js
+
+benchmark-analytics-read:
+	k6 run -e API_URL=$(API_URL_API) -e AUTH_HEADER="$(AUTH_HEADER)" benchmarks/analytics-read.js
+
+benchmark-analytics-recompute:
+	k6 run -e API_URL=$(API_URL_API) -e AUTH_HEADER="$(AUTH_HEADER)" benchmarks/analytics-recompute.js
+
+# --- Clean ---
+clean: infra-down
+	docker compose down 2>/dev/null || true
+	rm -rf jiu-tracker-nest/dist
+	@echo "Stopped infra and removed backend dist."

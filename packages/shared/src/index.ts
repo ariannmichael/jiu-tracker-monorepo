@@ -30,3 +30,10 @@ export {
   type UserResponse,
   type LoginResponse,
 } from './user';
+
+// Analytics types
+export {
+  type TopTechniqueRow,
+  type AnalyticsResponse,
+  type AnalyticsApiResponse,
+} from './analytic';

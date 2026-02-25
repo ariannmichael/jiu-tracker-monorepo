@@ -37,6 +37,14 @@ export class TrainingRepository {
     });
   }
 
+  async getTrainingSessionsByUserId(userId: string): Promise<TrainingSession[]> {
+    return this.repo.find({
+      where: { userId },
+      relations: ['submit_using_options', 'tapped_by_options'],
+      order: { date: 'ASC' },
+    });
+  }
+
   async updateTrainingSession(
     trainingSession: TrainingSession,
   ): Promise<TrainingSession> {

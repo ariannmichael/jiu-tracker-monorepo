@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TrainingRepository } from '../infrastructure/training.repository';
 import { TechniqueService } from '../../technique/application/technique.service';
 import { TrainingSession } from '../domain/training-session.entity';
 import { CreateTrainingDto } from './dto/create-training.dto';
 import { UpdateTrainingDto } from './dto/update-training.dto';
+import {
+  TrainingCreatedEvent,
+  TrainingUpdatedEvent,
+  TrainingDeletedEvent,
+} from '../domain/events';
 
 @Injectable()
 export class TrainingService {
   constructor(
     private readonly trainingRepo: TrainingRepository,
     private readonly techniqueService: TechniqueService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async createTraining(dto: CreateTrainingDto): Promise<TrainingSession> {
@@ -32,7 +39,14 @@ export class TrainingService {
       date: dto.date,
     };
 
-    return this.trainingRepo.createTrainingSession(trainingSession);
+    const training =
+      await this.trainingRepo.createTrainingSession(trainingSession);
+    const idempotencyKey = `training.created:${training.id}`;
+    this.eventEmitter.emit(
+      'training.created',
+      new TrainingCreatedEvent(dto.user_id, training.id, idempotencyKey),
+    );
+    return training;
   }
 
   async getTrainingById(id: string): Promise<TrainingSession> {
@@ -41,6 +55,10 @@ export class TrainingService {
 
   async getAllTrainings(): Promise<TrainingSession[]> {
     return this.trainingRepo.getAllTrainingSessions();
+  }
+
+  async getTrainingsByUserId(userId: string): Promise<TrainingSession[]> {
+    return this.trainingRepo.getTrainingSessionsByUserId(userId);
   }
 
   async updateTraining(
@@ -65,10 +83,24 @@ export class TrainingService {
     training.notes = dto.notes ?? training.notes;
     training.updatedAt = new Date();
 
-    return this.trainingRepo.updateTrainingSession(training);
+    const updated =
+      await this.trainingRepo.updateTrainingSession(training);
+    const idempotencyKey = `training.updated:${id}`;
+    this.eventEmitter.emit(
+      'training.updated',
+      new TrainingUpdatedEvent(training.userId, id, idempotencyKey),
+    );
+    return updated;
   }
 
   async deleteTraining(id: string): Promise<void> {
-    return this.trainingRepo.deleteTrainingSession(id);
+    const training = await this.trainingRepo.getTrainingSessionById(id);
+    const userId = training.userId;
+    await this.trainingRepo.deleteTrainingSession(id);
+    const idempotencyKey = `training.deleted:${id}`;
+    this.eventEmitter.emit(
+      'training.deleted',
+      new TrainingDeletedEvent(userId, id, idempotencyKey),
+    );
   }
 }

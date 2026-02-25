@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TrainingService } from './training.service';
 import { TrainingRepository } from '../infrastructure/training.repository';
 import { TechniqueService } from '../../technique/application/technique.service';
@@ -30,6 +31,7 @@ describe('TrainingService', () => {
     deleteTrainingSession: jest.Mock;
   }>;
   let mockTechniqueService: jest.Mocked<Pick<TechniqueService, 'getTechniquesByIds'>>;
+  let mockEventEmitter: jest.Mocked<Pick<EventEmitter2, 'emit'>>;
 
   beforeEach(() => {
     mockTrainingRepo = {
@@ -42,9 +44,11 @@ describe('TrainingService', () => {
     mockTechniqueService = {
       getTechniquesByIds: jest.fn(),
     };
+    mockEventEmitter = { emit: jest.fn() };
     service = new TrainingService(
       mockTrainingRepo as unknown as TrainingRepository,
       mockTechniqueService as unknown as TechniqueService,
+      mockEventEmitter as unknown as EventEmitter2,
     );
   });
 
@@ -52,7 +56,10 @@ describe('TrainingService', () => {
     it('successful creation', async () => {
       const dto: CreateTrainingDto = {
         user_id: 'test-user-id',
-        techniques_ids: ['tech-1', 'tech-2'],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options_ids: ['tech-1', 'tech-2'],
+        tapped_by_options_ids: ['tech-1'],
         duration: 60,
         notes: 'Great training session',
       };
@@ -64,8 +71,10 @@ describe('TrainingService', () => {
       const saved: TrainingSession = {
         id: 'training-id',
         userId: dto.user_id,
-        user: '',
-        techniques,
+        date: dto.date,
+        is_open_mat: dto.is_open_mat,
+        submit_using_options: techniques,
+        tapped_by_options: [baseTechnique],
         duration: dto.duration,
         notes: dto.notes ?? '',
         createdAt: new Date(),
@@ -77,16 +86,19 @@ describe('TrainingService', () => {
 
       expect(result.userId).toBe(dto.user_id);
       expect(result.duration).toBe(60);
-      expect(mockTechniqueService.getTechniquesByIds).toHaveBeenCalledWith(
-        dto.techniques_ids,
-      );
+      expect(mockTechniqueService.getTechniquesByIds).toHaveBeenCalledWith(dto.submit_using_options_ids);
+      expect(mockTechniqueService.getTechniquesByIds).toHaveBeenCalledWith(dto.tapped_by_options_ids);
       expect(mockTrainingRepo.createTrainingSession).toHaveBeenCalled();
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('training.created', expect.anything());
     });
 
     it('propagates technique service error', async () => {
       const dto: CreateTrainingDto = {
         user_id: 'test-user-id',
-        techniques_ids: ['tech-1'],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options_ids: ['tech-1'],
+        tapped_by_options_ids: ['tech-1'],
         duration: 60,
         notes: '',
       };
@@ -103,7 +115,10 @@ describe('TrainingService', () => {
     it('propagates repository error', async () => {
       const dto: CreateTrainingDto = {
         user_id: 'test-user-id',
-        techniques_ids: ['tech-1'],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options_ids: ['tech-1'],
+        tapped_by_options_ids: ['tech-1'],
         duration: 60,
         notes: 'Great session',
       };
@@ -123,8 +138,10 @@ describe('TrainingService', () => {
       const session: TrainingSession = {
         id: 'test-training-id',
         userId: 'test-user-id',
-        user: '',
-        techniques: [],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options: [],
+        tapped_by_options: [],
         duration: 60,
         notes: 'Great session',
         createdAt: new Date(),
@@ -165,8 +182,10 @@ describe('TrainingService', () => {
         {
           id: '1',
           userId: 'user-1',
-          user: '',
-          techniques: [],
+          date: '2025-01-01',
+          is_open_mat: false,
+          submit_using_options: [],
+          tapped_by_options: [],
           duration: 60,
           notes: '',
           createdAt: new Date(),
@@ -175,8 +194,10 @@ describe('TrainingService', () => {
         {
           id: '2',
           userId: 'user-2',
-          user: '',
-          techniques: [],
+          date: '2025-01-02',
+          is_open_mat: false,
+          submit_using_options: [],
+          tapped_by_options: [],
           duration: 90,
           notes: '',
           createdAt: new Date(),
@@ -213,15 +234,20 @@ describe('TrainingService', () => {
     it('successful update', async () => {
       const id = 'test-training-id';
       const dto: UpdateTrainingDto = {
-        techniques_ids: ['tech-1', 'tech-2'],
+        date: '2025-01-16',
+        is_open_mat: false,
+        submit_using_options_ids: ['tech-1', 'tech-2'],
+        tapped_by_options_ids: ['tech-1'],
         duration: 90,
         notes: 'Updated notes',
       };
       const existing: TrainingSession = {
         id,
         userId: 'test-user-id',
-        user: '',
-        techniques: [baseTechnique],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options: [baseTechnique],
+        tapped_by_options: [],
         duration: 60,
         notes: 'Old notes',
         createdAt: new Date(),
@@ -235,7 +261,8 @@ describe('TrainingService', () => {
       mockTechniqueService.getTechniquesByIds.mockResolvedValue(techniques);
       const updated: TrainingSession = {
         ...existing,
-        techniques,
+        submit_using_options: techniques,
+        tapped_by_options: [baseTechnique],
         duration: dto.duration,
         notes: dto.notes ?? '',
       };
@@ -245,6 +272,7 @@ describe('TrainingService', () => {
 
       expect(result.duration).toBe(dto.duration);
       expect(result.notes).toBe(dto.notes);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('training.updated', expect.anything());
     });
 
     it('propagates training not found', async () => {
@@ -254,7 +282,10 @@ describe('TrainingService', () => {
 
       await expect(
         service.updateTraining('non-existent', {
-          techniques_ids: ['tech-1'],
+          date: '2025-01-15',
+          is_open_mat: false,
+          submit_using_options_ids: ['tech-1'],
+          tapped_by_options_ids: ['tech-1'],
           duration: 90,
           notes: 'Updated',
         }),
@@ -265,8 +296,10 @@ describe('TrainingService', () => {
       const existing: TrainingSession = {
         id: 'test-training-id',
         userId: 'test-user-id',
-        user: '',
-        techniques: [],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options: [],
+        tapped_by_options: [],
         duration: 60,
         notes: '',
         createdAt: new Date(),
@@ -279,7 +312,10 @@ describe('TrainingService', () => {
 
       await expect(
         service.updateTraining('test-training-id', {
-          techniques_ids: ['tech-1'],
+          date: '2025-01-15',
+          is_open_mat: false,
+          submit_using_options_ids: ['tech-1'],
+          tapped_by_options_ids: ['tech-1'],
           duration: 90,
           notes: 'Updated',
         }),
@@ -290,8 +326,10 @@ describe('TrainingService', () => {
       const existing: TrainingSession = {
         id: 'test-training-id',
         userId: 'test-user-id',
-        user: '',
-        techniques: [],
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options: [],
+        tapped_by_options: [],
         duration: 60,
         notes: '',
         createdAt: new Date(),
@@ -305,7 +343,10 @@ describe('TrainingService', () => {
 
       await expect(
         service.updateTraining('test-training-id', {
-          techniques_ids: ['tech-1'],
+          date: '2025-01-15',
+          is_open_mat: false,
+          submit_using_options_ids: ['tech-1'],
+          tapped_by_options_ids: ['tech-1'],
           duration: 90,
           notes: 'Updated',
         }),
@@ -315,17 +356,30 @@ describe('TrainingService', () => {
 
   describe('deleteTraining', () => {
     it('successful deletion', async () => {
+      const session: TrainingSession = {
+        id: 'test-training-id',
+        userId: 'test-user-id',
+        date: '2025-01-15',
+        is_open_mat: false,
+        submit_using_options: [],
+        tapped_by_options: [],
+        duration: 60,
+        notes: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockTrainingRepo.getTrainingSessionById.mockResolvedValue(session);
       mockTrainingRepo.deleteTrainingSession.mockResolvedValue(undefined);
 
       await service.deleteTraining('test-training-id');
 
-      expect(mockTrainingRepo.deleteTrainingSession).toHaveBeenCalledWith(
-        'test-training-id',
-      );
+      expect(mockTrainingRepo.getTrainingSessionById).toHaveBeenCalledWith('test-training-id');
+      expect(mockTrainingRepo.deleteTrainingSession).toHaveBeenCalledWith('test-training-id');
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('training.deleted', expect.anything());
     });
 
     it('propagates repository error', async () => {
-      mockTrainingRepo.deleteTrainingSession.mockRejectedValue(
+      mockTrainingRepo.getTrainingSessionById.mockRejectedValue(
         new Error('database error'),
       );
 

@@ -1,4 +1,6 @@
+import Api from '@/services/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export interface UserData {
   name: string;
@@ -24,7 +26,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserContextProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<UserData>(defaultUserData);
-
+  const { token } = useAuth();
   // Load user data on mount (e.g., from AsyncStorage or API)
   useEffect(() => {
     loadUserData();
@@ -32,27 +34,47 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
 
   const loadUserData = async () => {
     try {
-      // TODO: Replace with actual API call or AsyncStorage retrieval
-      // For now, using default data
-      // const data = await fetchUserData();
-      // setUserData(data);
+      if (!token) return;
+
+      const response = await fetch(`${Api.BASE_URL}/user`, {
+        headers: Api.authHeaders(token),
+      });
+      const data = await response.json();
+      const user = data.user;
+      if (user) {
+        setUserData((prev) => ({
+          ...prev,
+          name: user.name ?? prev.name,
+          profileImageUri: user.avatar ?? prev.profileImageUri,
+        }));
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
   };
 
-  const updateUserData = (data: Partial<UserData>) => {
-    setUserData((prevData) => ({
-      ...prevData,
-      ...data,
-    }));
+  const updateUserData = async (updateData: Partial<UserData>) => {
+    try {
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+
+      const response = await fetch(`${Api.BASE_URL}/user`, {
+        headers: Api.authHeaders(token),
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
+      const data = await response.json();
+      setUserData(data.user);
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
   };
 
   const refreshUserData = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const data = await fetchUserData();
-      // setUserData(data);
+      if (!token) return;
       await loadUserData();
     } catch (error) {
       console.error('Error refreshing user data:', error);
