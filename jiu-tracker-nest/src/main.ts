@@ -8,12 +8,18 @@ import { ConfigService } from '@nestjs/config';
 /** Adapter so Nest can use PinoLogger (has info, not log) as LoggerService */
 function pinoLoggerAdapter(pino: PinoLogger) {
   return {
-    log: (message: unknown, ...args: unknown[]) => pino.info(message as string, ...args),
-    error: (message: unknown, ...args: unknown[]) => pino.error(message as string, ...args),
-    warn: (message: unknown, ...args: unknown[]) => pino.warn(message as string, ...args),
-    debug: (message: unknown, ...args: unknown[]) => pino.debug(message as string, ...args),
-    verbose: (message: unknown, ...args: unknown[]) => pino.debug(message as string, ...args),
-    fatal: (message: unknown, ...args: unknown[]) => pino.fatal(message as string, ...args),
+    log: (message: unknown, ...args: unknown[]) =>
+      pino.info(message as string, ...args),
+    error: (message: unknown, ...args: unknown[]) =>
+      pino.error(message as string, ...args),
+    warn: (message: unknown, ...args: unknown[]) =>
+      pino.warn(message as string, ...args),
+    debug: (message: unknown, ...args: unknown[]) =>
+      pino.debug(message as string, ...args),
+    verbose: (message: unknown, ...args: unknown[]) =>
+      pino.debug(message as string, ...args),
+    fatal: (message: unknown, ...args: unknown[]) =>
+      pino.fatal(message as string, ...args),
   };
 }
 
