@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Text,
   View,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Modal,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
+  RefreshControl,
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { TechniqueListItem } from "@jiu-tracker/shared";
@@ -44,8 +45,13 @@ export default function LogsScreen() {
   const [submitUsingOptions, setSubmitUsingOptions] = useState<TechniqueListItem[]>([]);
   const [tappedByOptions, setTappedByOptions] = useState<TechniqueListItem[]>([]);
 
+  const PAGE_SIZE = 10;
   const [trainings, setTrainings] = useState<TrainingWithOptions[]>([]);
+  const [totalLogs, setTotalLogs] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [loadingLogs, setLoadingLogs] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     TechniquesService.getTechniquesList(token).then((response) => {
@@ -53,18 +59,61 @@ export default function LogsScreen() {
     });
   }, [token]);
 
-  const fetchTrainings = () => {
-    if (!token) return;
-    setLoadingLogs(true);
-    TrainingService.getTrainings(token)
-      .then((list) => setTrainings(list as TrainingWithOptions[]))
-      .catch(() => setTrainings([]))
-      .finally(() => setLoadingLogs(false));
-  };
+  const fetchTrainings = useCallback(
+    (options?: { refresh?: boolean }) => {
+      if (!token || !user?.id) return;
+      const isRefresh = options?.refresh ?? false;
+      const currentOffset = isRefresh ? 0 : offset;
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else if (currentOffset === 0) {
+        setLoadingLogs(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      TrainingService.getTrainings(token, PAGE_SIZE, currentOffset, user.id)
+        .then(({ trainings: next, total }) => {
+          setTotalLogs(total);
+          if (isRefresh || currentOffset === 0) {
+            setTrainings(next as unknown as TrainingWithOptions[]);
+            setOffset(next.length);
+          } else {
+            setTrainings((prev) => [...prev, ...(next as unknown as TrainingWithOptions[])]);
+            setOffset((o) => o + next.length);
+          }
+        })
+        .catch(() => {
+          if (isRefresh || currentOffset === 0) setTrainings([]);
+        })
+        .finally(() => {
+          setLoadingLogs(false);
+          setLoadingMore(false);
+          setRefreshing(false);
+        });
+    },
+    [token, user?.id],
+  );
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || loadingLogs || trainings.length >= totalLogs || !token || !user?.id) return;
+    setLoadingMore(true);
+    const nextOffset = offset;
+    TrainingService.getTrainings(token, PAGE_SIZE, nextOffset, user.id)
+      .then(({ trainings: next, total }) => {
+        setTotalLogs(total);
+        setTrainings((prev) => [...prev, ...(next as unknown as TrainingWithOptions[])]);
+        setOffset(nextOffset + next.length);
+      })
+      .finally(() => setLoadingMore(false));
+  }, [token, user?.id, offset, loadingMore, loadingLogs, trainings.length, totalLogs]);
 
   useEffect(() => {
-    fetchTrainings();
-  }, [token]);
+    if (!token || !user?.id) return;
+    setOffset(0);
+    fetchTrainings({ refresh: true });
+  }, [token, user?.id, fetchTrainings]);
 
   const handleAddLog = () => {
     setShowAddModal(true);
@@ -129,7 +178,7 @@ export default function LogsScreen() {
         setTappedByOptions([]);
         setNotes("");
         setClassTime(null);
-        fetchTrainings();
+        fetchTrainings({ refresh: true });
       })
       .catch((error) => {
         console.error(error);
@@ -338,38 +387,63 @@ export default function LogsScreen() {
     </Modal>
   );
 
+  const renderLogItem = useCallback(
+    ({ item: t }: { item: TrainingWithOptions }) => (
+      <LogCard
+        date={t.date}
+        durationMinutes={t.duration}
+        submitted={(t.submit_using_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
+        tapped={(t.tapped_by_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
+      />
+    ),
+    [],
+  );
+
+  const listHeader = (
+    <View style={[styles.scrollContent, { paddingTop: insets.top }]}>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Training Logs</Text>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddLog}>
+          <Text style={styles.addButtonText}>+ ADD LOG</Text>
+        </TouchableOpacity>
+      </View>
+      {loadingLogs ? (
+        <Text style={styles.subtitle}>Loading logs…</Text>
+      ) : trainings.length === 0 && !loadingMore ? (
+        <Text style={styles.subtitle}>Your training sessions will appear here</Text>
+      ) : null}
+    </View>
+  );
+
+  const listFooter =
+    loadingMore ? (
+      <View style={styles.footerLoader}>
+        <Text style={styles.subtitle}>Loading more…</Text>
+      </View>
+    ) : null;
+
   return (
     <View style={styles.container}>
-      <ScrollView
+      <FlatList
+        data={trainings}
+        renderItem={renderLogItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={listHeader}
+        ListFooterComponent={listFooter}
+        contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Training Logs</Text>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddLog}>
-            <Text style={styles.addButtonText}>+ ADD LOG</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loadingLogs ? (
-          <Text style={styles.subtitle}>Loading logs…</Text>
-        ) : trainings.length === 0 ? (
-          <Text style={styles.subtitle}>Your training sessions will appear here</Text>
-        ) : (
-          <View style={styles.logList}>
-            {trainings.map((t) => (
-              <LogCard
-                key={t.id}
-                date={t.date}
-                durationMinutes={t.duration}
-                submitted={(t.submit_using_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
-                tapped={(t.tapped_by_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+        onEndReached={() => {
+          if (trainings.length < totalLogs && !loadingMore && !loadingLogs) loadMore();
+        }}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchTrainings({ refresh: true })}
+          />
+        }
+      />
       {renderAddLogModal()}
     </View>
   );
@@ -387,7 +461,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 100,
+    paddingBottom: 30,
   },
   headerRow: {
     flexDirection: "row",
@@ -399,6 +473,11 @@ const styles = StyleSheet.create({
   },
   logList: {
     marginBottom: 24,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    paddingBottom: 100,
+    alignItems: "center",
   },
   content: {
     flex: 1,

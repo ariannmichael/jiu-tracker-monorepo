@@ -19,7 +19,7 @@ jest.mock('@/services/techniques.service', () => ({
 jest.mock('@/services/training.service', () => ({
   __esModule: true,
   default: {
-    getTrainings: jest.fn().mockResolvedValue([]),
+    getTrainings: jest.fn().mockResolvedValue({ trainings: [], total: 0 }),
     createTraining: jest.fn().mockResolvedValue(undefined),
   },
 }));

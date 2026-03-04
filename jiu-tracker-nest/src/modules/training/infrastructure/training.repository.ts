@@ -37,12 +37,23 @@ export class TrainingRepository {
     });
   }
 
-  async getTrainingSessionsByUserId(userId: string): Promise<TrainingSession[]> {
-    return this.repo.find({
-      where: { userId },
-      relations: ['submit_using_options', 'tapped_by_options'],
-      order: { date: 'ASC' },
-    });
+  async getTrainingSessionsByUserId(
+    userId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ trainings: TrainingSession[]; total: number }> {
+    return this.repo
+      .findAndCount({
+        where: { userId },
+        relations: ['submit_using_options', 'tapped_by_options'],
+        order: { date: 'ASC' },
+        take: limit,
+        skip: offset,
+      })
+      .then(([trainings, total]) => ({
+        trainings: trainings,
+        total,
+      }));
   }
 
   async updateTrainingSession(

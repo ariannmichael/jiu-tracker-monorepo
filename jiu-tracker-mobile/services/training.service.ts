@@ -16,12 +16,21 @@ export default class TrainingService {
         return body.training;
     }
 
-    static async getTrainings(token: string): Promise<TrainingSession[]> {
-        const response = await fetch(`${Api.BASE_URL}/trainings`, {
+    static async getTrainings(
+        token: string,
+        limit: number,
+        offset: number,
+        userId: string,
+    ): Promise<{ trainings: TrainingSession[]; total: number }> {
+        const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+        const response = await fetch(`${Api.BASE_URL}/trainings/user/${userId}?${params}`, {
             method: 'GET',
             headers: Api.authHeaders(token),
         });
-        const data: TrainingSessionsResponse = await response.json();
-        return data.trainings ?? [];
+        const data: TrainingSessionsResponse & { total?: number } = await response.json();
+        return {
+            trainings: data.trainings ?? [],
+            total: data.total ?? 0,
+        };
     }
 }

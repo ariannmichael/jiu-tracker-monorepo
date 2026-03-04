@@ -9,6 +9,7 @@ import {
   HttpStatus,
   HttpException,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { TrainingService } from '../application/training.service';
 import { CreateTrainingDto } from '../application/dto/create-training.dto';
@@ -34,20 +35,6 @@ export class TrainingController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('training/:id')
-  async getTrainingById(@Param('id') id: string) {
-    try {
-      const training = await this.trainingService.getTrainingById(id);
-      return { training };
-    } catch (error) {
-      throw new HttpException(
-        { error: (error as Error).message },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('trainings')
   async getAllTrainings() {
     try {
@@ -59,6 +46,18 @@ export class TrainingController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('trainings/user/:userId')
+  async getTrainingListByUserId(
+    @Param('userId') userId: string,
+    @Query('limit') limit: number = 10,
+    @Query('offset') offset: number = 0,
+  ) {
+    const { trainings, total } =
+      await this.trainingService.getTrainingsByUserId(userId, limit, offset);
+    return { trainings, total };
   }
 
   @UseGuards(JwtAuthGuard)

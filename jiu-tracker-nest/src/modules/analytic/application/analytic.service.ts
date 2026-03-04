@@ -14,11 +14,15 @@ export class AnalyticService {
   ) {}
 
   async recomputeForUser(userId: string): Promise<void> {
-    const [sessions, existing] = await Promise.all([
-      this.trainingService.getTrainingsByUserId(userId),
+    const [result, existing] = await Promise.all([
+      this.trainingService.getTrainingsByUserId(userId, 100_000, 0),
       this.analyticRepo.findByUserId(userId),
     ]);
-    const row = this.computeAnalytics(userId, sessions, existing?.id ?? null);
+    const row = this.computeAnalytics(
+      userId,
+      result.trainings,
+      existing?.id ?? null,
+    );
     await this.analyticRepo.upsert(row);
   }
 
@@ -36,7 +40,10 @@ export class AnalyticService {
 
     const totalSessions = sessions.length;
     const openMatSessions = sessions.filter((s) => s.is_open_mat).length;
-    const totalMinutes = sessions.reduce((sum, s) => sum + Number(s.duration), 0);
+    const totalMinutes = sessions.reduce(
+      (sum, s) => sum + Number(s.duration),
+      0,
+    );
 
     const dateToMinutes = new Map<string, number>();
     for (const s of sessions) {
@@ -47,11 +54,12 @@ export class AnalyticService {
     const sortedDates = Array.from(dateToMinutes.keys()).sort();
     const daysTrained = sortedDates.length;
     const maxMinutesInOneDay =
-      daysTrained === 0
-        ? 0
-        : Math.max(...Array.from(dateToMinutes.values()));
+      daysTrained === 0 ? 0 : Math.max(...Array.from(dateToMinutes.values()));
 
-    const { currentStreak, maxStreak } = this.computeStreaks(sortedDates, today);
+    const { currentStreak, maxStreak } = this.computeStreaks(
+      sortedDates,
+      today,
+    );
 
     let submissionsCount = 0;
     let tappedByCount = 0;
@@ -65,14 +73,20 @@ export class AnalyticService {
       tappedByCount += tap;
       for (const t of s.submit_using_options ?? []) {
         const key = t.id;
-        const cur = techniqueCounts.get(key) ?? { name: t.namePortuguese || t.name, count: 0 };
+        const cur = techniqueCounts.get(key) ?? {
+          name: t.namePortuguese || t.name,
+          count: 0,
+        };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
         const catKey = String(Category[Number(t.category)] ?? t.category);
         categoryCounts.set(catKey, (categoryCounts.get(catKey) ?? 0) + 1);
       }
       for (const t of s.tapped_by_options ?? []) {
         const key = t.id;
-        const cur = techniqueCounts.get(key) ?? { name: t.namePortuguese || t.name, count: 0 };
+        const cur = techniqueCounts.get(key) ?? {
+          name: t.namePortuguese || t.name,
+          count: 0,
+        };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
         const catKey = String(Category[Number(t.category)] ?? t.category);
         categoryCounts.set(catKey, (categoryCounts.get(catKey) ?? 0) + 1);
@@ -81,9 +95,13 @@ export class AnalyticService {
 
     const totalSubTap = submissionsCount + tappedByCount;
     const winRatio =
-      totalSubTap === 0 ? 0 : Math.round((submissionsCount / totalSubTap) * 10000) / 10000;
+      totalSubTap === 0
+        ? 0
+        : Math.round((submissionsCount / totalSubTap) * 10000) / 10000;
 
-    const topTechniques: TopTechniqueRow[] = Array.from(techniqueCounts.entries())
+    const topTechniques: TopTechniqueRow[] = Array.from(
+      techniqueCounts.entries(),
+    )
       .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
@@ -120,8 +138,7 @@ export class AnalyticService {
     if (typeof date === 'string') {
       return date.slice(0, 10);
     }
-    const d = date as Date;
-    return d.toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10);
   }
 
   private parseDateKey(key: string): Date {
@@ -148,7 +165,9 @@ export class AnalyticService {
     for (let i = 1; i < uniqueDates.length; i++) {
       const prev = this.parseDateKey(uniqueDates[i - 1]);
       const curr = this.parseDateKey(uniqueDates[i]);
-      const diff = Math.round((curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000));
+      const diff = Math.round(
+        (curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000),
+      );
       if (diff === 1) {
         run += 1;
         maxStreak = Math.max(maxStreak, run);

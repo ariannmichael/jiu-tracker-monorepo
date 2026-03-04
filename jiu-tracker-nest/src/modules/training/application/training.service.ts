@@ -24,10 +24,9 @@ export class TrainingService {
       await this.techniqueService.getTechniquesByIds(
         dto.submit_using_options_ids,
       );
-    const tappedByTechniques =
-      await this.techniqueService.getTechniquesByIds(
-        dto.tapped_by_options_ids,
-      );
+    const tappedByTechniques = await this.techniqueService.getTechniquesByIds(
+      dto.tapped_by_options_ids,
+    );
 
     const trainingSession: Partial<TrainingSession> = {
       userId: dto.user_id,
@@ -57,8 +56,18 @@ export class TrainingService {
     return this.trainingRepo.getAllTrainingSessions();
   }
 
-  async getTrainingsByUserId(userId: string): Promise<TrainingSession[]> {
-    return this.trainingRepo.getTrainingSessionsByUserId(userId);
+  async getTrainingsByUserId(
+    userId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ trainings: TrainingSession[]; total: number }> {
+    const { trainings, total } =
+      await this.trainingRepo.getTrainingSessionsByUserId(
+        userId,
+        limit,
+        offset,
+      );
+    return { trainings, total };
   }
 
   async updateTraining(
@@ -70,10 +79,9 @@ export class TrainingService {
       await this.techniqueService.getTechniquesByIds(
         dto.submit_using_options_ids,
       );
-    const tappedByTechniques =
-      await this.techniqueService.getTechniquesByIds(
-        dto.tapped_by_options_ids,
-      );
+    const tappedByTechniques = await this.techniqueService.getTechniquesByIds(
+      dto.tapped_by_options_ids,
+    );
 
     training.is_open_mat = dto.is_open_mat;
     training.date = dto.date;
@@ -83,8 +91,7 @@ export class TrainingService {
     training.notes = dto.notes ?? training.notes;
     training.updatedAt = new Date();
 
-    const updated =
-      await this.trainingRepo.updateTrainingSession(training);
+    const updated = await this.trainingRepo.updateTrainingSession(training);
     const idempotencyKey = `training.updated:${id}`;
     this.eventEmitter.emit(
       'training.updated',

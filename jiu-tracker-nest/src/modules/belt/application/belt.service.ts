@@ -60,10 +60,7 @@ export class BeltService {
     belt_stripe: number;
   } | null> {
     const progress: BeltProgress | null =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- repository DI type
-      (await this.beltProgressRepo.findLatestByUserId(
-        userId,
-      )) as BeltProgress | null;
+      await this.beltProgressRepo.findLatestByUserId(userId);
     if (!progress) return null;
     return {
       belt_color: this.beltToColorString(Number(progress.currentBelt)),

@@ -95,7 +95,7 @@ const HeaderComponent: React.FC = () => {
                       styles.beltStripe,
                       (userData.belt_color as BeltRank) === "White Belt"
                         ? { backgroundColor: COLORS.WHITE }
-                        : { backgroundColor: "rgba(255,255,255,0.7)" },
+                        : { backgroundColor: "rgba(255,255,255, 1)" },
                     ]}
                   />
                 ))}
