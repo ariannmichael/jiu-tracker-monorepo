@@ -74,6 +74,10 @@ export class UserService {
 
   async updateUser(id: string, dto: UpdateUserDto): Promise<User> {
     const user = await this.userRepo.findById(id);
+    const beltProgress: { belt_color: string; belt_stripe: number } | null =
+      await this.beltService.getLatestBeltForUser(id);
+    const currentBeltColor = beltProgress?.belt_color;
+    const currentBeltStripe = beltProgress?.belt_stripe;
 
     user.name = dto.name;
     user.username = dto.username;
@@ -84,8 +88,10 @@ export class UserService {
 
     const updatedUser = await this.userRepo.update(user);
 
-    // Update belt progress if provided
-    if (dto.belt_color && dto.belt_stripe >= 0) {
+    if (
+      currentBeltColor !== dto.belt_color ||
+      currentBeltStripe !== dto.belt_stripe
+    ) {
       await this.beltService.createBeltProgress({
         userId: updatedUser.id,
         color: dto.belt_color,
@@ -96,7 +102,10 @@ export class UserService {
     return updatedUser;
   }
 
-  async updateUserAvatar(id: string, avatar: string | undefined): Promise<User> {
+  async updateUserAvatar(
+    id: string,
+    avatar: string | undefined,
+  ): Promise<User> {
     const user = await this.userRepo.findById(id);
     if (avatar !== undefined) {
       user.avatar = avatar;

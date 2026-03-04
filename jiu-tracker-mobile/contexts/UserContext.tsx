@@ -105,7 +105,7 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
           name: updatedUser.username ?? updatedUser.name ?? prev.name,
           profileImageUri: updatedUser.avatar ?? prev.profileImageUri,
           belt_color: updatedUser.belt_color ?? prev.belt_color,
-          belt_stripe: updatedUser.belt_stripe ?? prev.belt_stripe,
+          belt_stripe: Number(updatedUser.belt_stripe ?? prev.belt_stripe),
         }));
       } else {
         setUserData((prev) => ({
