@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Put,
+  Patch,
   Get,
   Body,
   Param,
@@ -16,6 +17,7 @@ import { UserService } from '../application/user.service';
 import { CreateUserDto } from '../application/dto/create-user.dto';
 import { LoginUserDto } from '../application/dto/login-user.dto';
 import { UpdateUserDto } from '../application/dto/update-user.dto';
+import { UpdateAvatarDto } from '../application/dto/update-avatar.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 
 @Controller('api')
@@ -115,6 +117,23 @@ export class UserController {
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     try {
       const user = await this.userService.updateUser(id, dto);
+      return { user };
+    } catch (error) {
+      throw new HttpException(
+        { error: (error as Error).message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('user/:id/avatar')
+  async updateAvatar(
+    @Param('id') id: string,
+    @Body() dto: UpdateAvatarDto,
+  ) {
+    try {
+      const user = await this.userService.updateUserAvatar(id, dto.avatar);
       return { user };
     } catch (error) {
       throw new HttpException(

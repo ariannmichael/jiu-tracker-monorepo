@@ -93,4 +93,12 @@ export class UserService {
 
     return updatedUser;
   }
+
+  async updateUserAvatar(id: string, avatar: string | undefined): Promise<User> {
+    const user = await this.userRepo.findById(id);
+    if (avatar !== undefined) {
+      user.avatar = avatar;
+    }
+    return this.userRepo.update(user);
+  }
 }

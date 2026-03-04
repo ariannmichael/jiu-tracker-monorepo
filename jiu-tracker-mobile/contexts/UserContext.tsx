@@ -12,6 +12,7 @@ export interface UserData {
 interface UserContextType {
   userData: UserData;
   updateUserData: (data: Partial<UserData>) => void;
+  updateAvatar: (avatarUri: string) => Promise<void>;
 }
 
 const defaultUserData: UserData = {
@@ -69,8 +70,33 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const updateAvatar = async (avatarUri: string) => {
+    try {
+      if (!token) throw new Error('No token found');
+      if (!user) throw new Error('No user found');
+
+      const response = await fetch(`${Api.BASE_URL}/user/${user.id}/avatar`, {
+        headers: Api.authHeaders(token),
+        method: 'PATCH',
+        body: JSON.stringify({ avatar: avatarUri }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error ?? `Upload failed: ${response.status}`);
+      }
+      const data = await response.json();
+      const u = data.user;
+      if (u?.avatar != null) {
+        setUserData((prev) => ({ ...prev, profileImageUri: u.avatar }));
+      }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      throw error;
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ userData, updateUserData }}>
+    <UserContext.Provider value={{ userData, updateUserData, updateAvatar }}>
       {children}
     </UserContext.Provider>
   );

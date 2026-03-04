@@ -14,7 +14,9 @@
   },
   "jest": {
     "preset": "jest-expo",
-    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
     "moduleNameMapper": {
       "^@expo/vector-icons$": "<rootDir>/__mocks__/expo-vector-icons.js"
     }
@@ -32,6 +34,7 @@
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
     "expo-haptics": "~14.0.1",
+    "expo-image-picker": "~16.0.6",
     "expo-linear-gradient": "^15.0.8",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.21",

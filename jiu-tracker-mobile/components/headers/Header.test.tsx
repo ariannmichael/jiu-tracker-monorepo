@@ -8,6 +8,10 @@ jest.mock('@/contexts/UserContext', () => ({
   UserContextProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: jest.fn(() => ({ logout: jest.fn() })),
+}));
+
 const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
 
 describe('Header', () => {
@@ -20,6 +24,7 @@ describe('Header', () => {
         badges: 3,
       },
       updateUserData: jest.fn(),
+      updateAvatar: jest.fn(),
       refreshUserData: jest.fn(),
     });
   });
@@ -39,6 +44,7 @@ describe('Header', () => {
         badges: 0,
       },
       updateUserData: jest.fn(),
+      updateAvatar: jest.fn(),
       refreshUserData: jest.fn(),
     });
     render(<Header />);

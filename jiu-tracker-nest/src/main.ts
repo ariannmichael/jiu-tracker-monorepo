@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
@@ -24,7 +25,11 @@ function pinoLoggerAdapter(pino: PinoLogger) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  // Allow larger JSON payloads (e.g. avatar as base64) – default is 100kb
+  app.useBodyParser('json', { limit: '10mb' });
   const pinoLogger = await app.resolve(PinoLogger);
   pinoLogger.setContext(bootstrap.name);
   app.useLogger(pinoLoggerAdapter(pinoLogger));
