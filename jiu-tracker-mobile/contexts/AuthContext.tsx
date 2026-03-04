@@ -14,6 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,8 +94,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await saveToken(data.access_token);
     setToken(data.access_token);
     setIsAuthenticated(true);
-    setUser(data.user);
-    // Defer navigation so React commits state before dashboard mounts and reads auth
+    // Fetch full user (with belt_color, belt_stripe) from /user/me so UserContext has correct data
+    try {
+      const meRes = await fetch(`${Api.BASE_URL}/user/me`, {
+        headers: Api.authHeaders(data.access_token),
+      });
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setUser(meData.user);
+      } else {
+        setUser(data.user);
+      }
+    } catch {
+      setUser(data.user);
+    }
     queueMicrotask(() => router.replace('/(authenticated)/dashboard'));
   };
 
@@ -105,8 +118,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace('/');
   };
 
+  const refreshUser = async (): Promise<User | null> => {
+    const t = token ?? (await getToken());
+    if (!t) return null;
+    try {
+      const res = await fetch(`${Api.BASE_URL}/user/me`, {
+        headers: Api.authHeaders(t),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        return data.user;
+      }
+    } catch (err) {
+      console.error('Error refreshing user:', err);
+    }
+    return null;
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, token, isLoading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

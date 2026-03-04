@@ -9,7 +9,10 @@ jest.mock('@/contexts/UserContext', () => ({
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
-  useAuth: jest.fn(() => ({ logout: jest.fn() })),
+  useAuth: jest.fn(() => ({
+    logout: jest.fn(),
+    user: { id: '1', username: 'test', name: 'Test', email: 'test@test.com', avatar: '' },
+  })),
 }));
 
 const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
@@ -21,18 +24,18 @@ describe('Header', () => {
         name: 'Test User',
         trainingTime: '2 years',
         profileImageUri: undefined,
-        badges: 3,
+        belt_color: 'Blue Belt',
+        belt_stripe: 3,
       },
       updateUserData: jest.fn(),
+      updateUserFull: jest.fn(),
       updateAvatar: jest.fn(),
-      refreshUserData: jest.fn(),
     });
   });
 
-  it('renders user name and training time', () => {
+  it('renders user name', () => {
     render(<Header />);
     expect(screen.getByText('TEST USER')).toBeTruthy();
-    expect(screen.getByText('Training Time: 2 years')).toBeTruthy();
   });
 
   it('renders profile image when profileImageUri is set', () => {
@@ -41,11 +44,12 @@ describe('Header', () => {
         name: 'Image User',
         trainingTime: '1 year',
         profileImageUri: 'https://example.com/avatar.png',
-        badges: 0,
+        belt_color: 'Blue Belt',
+        belt_stripe: 0,
       },
       updateUserData: jest.fn(),
+      updateUserFull: jest.fn(),
       updateAvatar: jest.fn(),
-      refreshUserData: jest.fn(),
     });
     render(<Header />);
     expect(screen.getByText('IMAGE USER')).toBeTruthy();

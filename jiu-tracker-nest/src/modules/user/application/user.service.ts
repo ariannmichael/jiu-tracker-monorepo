@@ -78,7 +78,9 @@ export class UserService {
     user.name = dto.name;
     user.username = dto.username;
     user.email = dto.email;
-    user.password = await bcrypt.hash(dto.password, 10);
+    if (dto.password) {
+      user.password = await bcrypt.hash(dto.password, 10);
+    }
 
     const updatedUser = await this.userRepo.update(user);
 

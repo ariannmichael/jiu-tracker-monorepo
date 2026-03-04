@@ -1,6 +1,7 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MinLength,
   IsInt,
@@ -20,9 +21,10 @@ export class UpdateUserDto {
   @IsNotEmpty()
   email: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(6)
-  password: string;
+  password?: string;
 
   @IsString()
   @IsNotEmpty()

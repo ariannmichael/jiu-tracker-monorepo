@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import Signup from '@/app/(signup)/signup';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 jest.mock('expo-router', () => ({
   ...jest.requireActual('expo-router'),
@@ -17,13 +18,21 @@ jest.mock('@/services/signup.service', () => ({
 
 describe('Signup page', () => {
   it('renders title and step 1 content', () => {
-    render(<Signup />);
+    render(
+      <AuthProvider>
+        <Signup />
+      </AuthProvider>,
+    );
     expect(screen.getByText('Jiu Tracker')).toBeTruthy();
     expect(screen.getByText('Where were you born?')).toBeTruthy();
   });
 
   it('renders country selector and submit button on step 1', () => {
-    render(<Signup />);
+    render(
+      <AuthProvider>
+        <Signup />
+      </AuthProvider>,
+    );
     expect(screen.getByText('Brazil')).toBeTruthy();
     expect(screen.getByText(/I'M FROM/)).toBeTruthy();
   });

@@ -19,6 +19,7 @@ import {
   COLORS
 } from '../../constants';
 import SignupService from '@/services/signup.service';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SignupData {
   country: string;
@@ -54,6 +55,7 @@ export default function Signup() {
   }
 
   const { name, email, password } = useLocalSearchParams<{ name: string; email: string; password: string }>();
+  const { login } = useAuth();
 
   const totalSteps = 4;
 
@@ -65,20 +67,21 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = () => {
-    // Complete signup
-    SignupService.signup({
-      name: name,
-      username: signupData.username,
-      email: email,  
-      password: password,
-      belt_color: signupData.rank,
-      belt_stripe: signupData.stripes,
-    }).then((response) => {
-      router.replace('/(authenticated)/dashboard');
-    }).catch((error) => {
+  const handleSubmit = async () => {
+    if (!email || !password) return;
+    try {
+      await SignupService.signup({
+        name: name ?? '',
+        username: signupData.username,
+        email,
+        password,
+        belt_color: signupData.rank,
+        belt_stripe: signupData.stripes,
+      });
+      await login(email, password);
+    } catch (error) {
       console.error(error);
-    });
+    }
   };
 
   const handleBack = () => {
@@ -153,7 +156,14 @@ export default function Signup() {
       <View style={styles.beltContainer}>
         <View style={[styles.belt, { backgroundColor: getBeltColor(signupData.rank) }]}>
           {signupData.stripes > 0 && (
-            <View style={styles.stripesContainer}>
+            <View
+              style={[
+                styles.stripesContainer,
+                {
+                  backgroundColor: signupData.rank === 'Black Belt' ? '#B22222' : '#000000',
+                },
+              ]}
+            >
               {Array.from({ length: signupData.stripes }, (_, index) => (
                 <View key={index} style={styles.stripe} />
               ))}
@@ -534,6 +544,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 16,
     alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
   },
   stripe: {
     width: 2,

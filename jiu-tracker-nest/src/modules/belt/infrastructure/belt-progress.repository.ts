@@ -16,4 +16,13 @@ export class BeltProgressRepository {
     const entity = this.repo.create(beltProgress);
     return this.repo.save(entity);
   }
+
+  async findLatestByUserId(userId: string): Promise<BeltProgress | null> {
+    const list = await this.repo.find({
+      where: { userId },
+      order: { earnedAt: 'DESC' },
+      take: 1,
+    });
+    return list[0] ?? null;
+  }
 }

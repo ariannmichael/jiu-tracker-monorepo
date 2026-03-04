@@ -24,7 +24,7 @@ export const BELT_MAX_STRIPES: Record<BeltRank, number> = {
   'Blue Belt': 4,
   'Purple Belt': 4,
   'Brown Belt': 4,
-  'Black Belt': 0,
+  'Black Belt': 6,
 };
 
 // Countries

@@ -35,4 +35,34 @@ export class BeltService {
 
     return this.beltProgressRepo.createBeltProgress(beltProgress);
   }
+
+  /** Returns belt color string (e.g. "Blue Belt") and stripe count for display. */
+  beltToColorString(belt: Belt): string {
+    switch (belt) {
+      case Belt.White:
+        return 'White Belt';
+      case Belt.Blue:
+        return 'Blue Belt';
+      case Belt.Purple:
+        return 'Purple Belt';
+      case Belt.Brown:
+        return 'Brown Belt';
+      case Belt.Black:
+        return 'Black Belt';
+      default:
+        return 'White Belt';
+    }
+  }
+
+  async getLatestBeltForUser(userId: string): Promise<{
+    belt_color: string;
+    belt_stripe: number;
+  } | null> {
+    const progress = await this.beltProgressRepo.findLatestByUserId(userId);
+    if (!progress) return null;
+    return {
+      belt_color: this.beltToColorString(progress.currentBelt),
+      belt_stripe: progress.stripeCount,
+    };
+  }
 }

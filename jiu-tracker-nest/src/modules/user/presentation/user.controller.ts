@@ -19,10 +19,19 @@ import { LoginUserDto } from '../application/dto/login-user.dto';
 import { UpdateUserDto } from '../application/dto/update-user.dto';
 import { UpdateAvatarDto } from '../application/dto/update-avatar.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { BeltService } from '../../belt/application/belt.service';
+
+interface LatestBelt {
+  belt_color: string;
+  belt_stripe: number;
+}
 
 @Controller('api')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly beltService: BeltService,
+  ) {}
 
   @Post('user/signup')
   async createUser(@Body() dto: CreateUserDto) {
@@ -66,7 +75,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('user/me')
-  getMe(
+  async getMe(
     @Req()
     req: Request & {
       user: {
@@ -81,7 +90,18 @@ export class UserController {
   ) {
     const { password, ...user } = req.user;
     void password; // exclude from response
-    return { user };
+    const belt: LatestBelt | null =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
+      (await this.beltService.getLatestBeltForUser(
+        req.user.id,
+      )) as LatestBelt | null;
+    return {
+      user: {
+        ...user,
+        belt_color: belt?.belt_color,
+        belt_stripe: belt?.belt_stripe ?? 0,
+      },
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -89,7 +109,18 @@ export class UserController {
   async getUserById(@Param('id') id: string) {
     try {
       const user = await this.userService.getUserById(id);
-      return { user };
+      const { password, ...safeUser } = user;
+      void password;
+      const belt: LatestBelt | null =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
+        (await this.beltService.getLatestBeltForUser(id)) as LatestBelt | null;
+      return {
+        user: {
+          ...safeUser,
+          belt_color: belt?.belt_color,
+          belt_stripe: belt?.belt_stripe ?? 0,
+        },
+      };
     } catch (error) {
       throw new HttpException(
         { error: (error as Error).message },
@@ -128,10 +159,7 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('user/:id/avatar')
-  async updateAvatar(
-    @Param('id') id: string,
-    @Body() dto: UpdateAvatarDto,
-  ) {
+  async updateAvatar(@Param('id') id: string, @Body() dto: UpdateAvatarDto) {
     try {
       const user = await this.userService.updateUserAvatar(id, dto.avatar);
       return { user };
