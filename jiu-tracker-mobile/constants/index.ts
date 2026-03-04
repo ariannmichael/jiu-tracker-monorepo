@@ -19,6 +19,14 @@ export const BELT_COLORS: Record<BeltRank, string> = {
   'Black Belt': '#000000',
 };
 
+export const BELT_MAX_STRIPES: Record<BeltRank, number> = {
+  'White Belt': 4,
+  'Blue Belt': 4,
+  'Purple Belt': 4,
+  'Brown Belt': 4,
+  'Black Belt': 0,
+};
+
 // Countries
 export const COUNTRIES = [
   'Brazil', 

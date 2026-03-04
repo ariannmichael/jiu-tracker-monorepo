@@ -12,11 +12,10 @@ export interface UserData {
 interface UserContextType {
   userData: UserData;
   updateUserData: (data: Partial<UserData>) => void;
-  refreshUserData: () => Promise<void>;
 }
 
 const defaultUserData: UserData = {
-  name: "ARIANN MICHAEL FARIAS",
+  name: "Mica Micão",
   trainingTime: "4 years",
   profileImageUri: "https://via.placeholder.com/150",
   badges: 2,
@@ -26,63 +25,52 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserContextProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<UserData>(defaultUserData);
-  const { token } = useAuth();
-  // Load user data on mount (e.g., from AsyncStorage or API)
+  const { token, user } = useAuth();
+
   useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
-      if (!token) return;
-
-      const response = await fetch(`${Api.BASE_URL}/user`, {
-        headers: Api.authHeaders(token),
-      });
-      const data = await response.json();
-      const user = data.user;
-      if (user) {
-        setUserData((prev) => ({
-          ...prev,
-          name: user.name ?? prev.name,
-          profileImageUri: user.avatar ?? prev.profileImageUri,
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
+    if (!token) return;
+    if (!user) {
+      setUserData(defaultUserData);
+      return;
     }
-  };
+    setUserData({
+      name: user.username ?? user.name ?? defaultUserData.name,
+      profileImageUri: user.avatar ?? defaultUserData.profileImageUri,
+      trainingTime: defaultUserData.trainingTime,
+      badges: defaultUserData.badges,
+    });
+  }, [token, user]);
 
   const updateUserData = async (updateData: Partial<UserData>) => {
     try {
       if (!token) {
         throw new Error('No token found');
       }
+      if (!user) {
+        throw new Error('No user found');
+      }
 
-
-      const response = await fetch(`${Api.BASE_URL}/user`, {
+      const response = await fetch(`${Api.BASE_URL}/user/${user.id}`, {
         headers: Api.authHeaders(token),
         method: 'PUT',
         body: JSON.stringify(updateData),
       });
       const data = await response.json();
-      setUserData(data.user);
+      const u = data.user;
+      if (u) {
+        setUserData((prev) => ({
+          ...prev,
+          name: u.username ?? u.name ?? prev.name,
+          profileImageUri: u.avatar ?? prev.profileImageUri,
+        }));
+      }
     } catch (error) {
       console.error('Error updating user data:', error);
     }
   };
 
-  const refreshUserData = async () => {
-    try {
-      if (!token) return;
-      await loadUserData();
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
-    }
-  };
-
   return (
-    <UserContext.Provider value={{ userData, updateUserData, refreshUserData }}>
+    <UserContext.Provider value={{ userData, updateUserData }}>
       {children}
     </UserContext.Provider>
   );

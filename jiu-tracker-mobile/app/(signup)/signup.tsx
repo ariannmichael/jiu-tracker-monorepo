@@ -9,6 +9,7 @@ import {
   BELT_RANKS,
   BELT_RANK_VALUES,
   BELT_COLORS,
+  BELT_MAX_STRIPES,
   COUNTRIES,
   MONTHS,
   MONTH_NAMES,
@@ -139,6 +140,12 @@ export default function Signup() {
     </View>
   );
 
+  const changeBeltRank = (newRank: BeltRank) => {
+    setSignupData(prev => ({ ...prev, rank: newRank, stripes: 0 }));
+  };
+
+  const maxStripes = BELT_MAX_STRIPES[signupData.rank];
+
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>What is your rank in jiu-jitsu?</Text>
@@ -161,7 +168,7 @@ export default function Signup() {
           onPress={() => {
             const currentIndex = BELT_RANK_VALUES[signupData.rank];
             if (currentIndex > 1) {
-              updateSignupData('rank', BELT_RANKS[currentIndex - 2]);
+              changeBeltRank(BELT_RANKS[currentIndex - 2]);
             }
           }}
         >
@@ -179,7 +186,7 @@ export default function Signup() {
           onPress={() => {
             const currentIndex = BELT_RANKS.indexOf(signupData.rank);
             if (currentIndex < BELT_RANKS.length - 1) {
-              updateSignupData('rank', BELT_RANKS[currentIndex + 1]);
+              changeBeltRank(BELT_RANKS[currentIndex + 1]);
             }
           }}
         >
@@ -187,8 +194,35 @@ export default function Signup() {
         </TouchableOpacity>
       </View>
 
+      {maxStripes > 0 && (
+        <View style={styles.stripeSelector}>
+          <Text style={styles.stripeSelectorLabel}>Stripes</Text>
+          <View style={styles.stripeDotsRow}>
+            {Array.from({ length: maxStripes }, (_, index) => {
+              const stripeNumber = index + 1;
+              const isActive = signupData.stripes >= stripeNumber;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.stripeDot,
+                    isActive ? styles.stripeDotActive : styles.stripeDotInactive,
+                  ]}
+                  onPress={() => {
+                    const newStripes = signupData.stripes === stripeNumber ? stripeNumber - 1 : stripeNumber;
+                    updateSignupData('stripes', newStripes);
+                  }}
+                />
+              );
+            })}
+          </View>
+        </View>
+      )}
+
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>I'M A {signupData.rank.toUpperCase()}</Text>
+        <Text style={styles.submitButtonText}>
+          I'M A {signupData.rank.toUpperCase()}{signupData.stripes > 0 ? ` ${signupData.stripes} STRIPE${signupData.stripes > 1 ? 'S' : ''}` : ''}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -510,7 +544,7 @@ const styles = StyleSheet.create({
   rankControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   rankButton: {
     width: 40,
@@ -545,6 +579,35 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BUTTON,
     borderWidth: 2,
     borderColor: COLORS.WHITE,
+  },
+  stripeSelector: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  stripeSelectorLabel: {
+    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT,
+    marginBottom: 10,
+  },
+  stripeDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  stripeDot: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+  },
+  stripeDotActive: {
+    backgroundColor: COLORS.BUTTON,
+    borderColor: COLORS.WHITE,
+  },
+  stripeDotInactive: {
+    backgroundColor: 'transparent',
+    borderColor: COLORS.GRAY_LIGHT,
   },
   dateContainer: {
     flexDirection: 'row',

@@ -5,12 +5,13 @@ import {
   Get,
   Body,
   Param,
+  Req,
   Res,
   HttpStatus,
   HttpException,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { UserService } from '../application/user.service';
 import { CreateUserDto } from '../application/dto/create-user.dto';
 import { LoginUserDto } from '../application/dto/login-user.dto';
@@ -59,6 +60,26 @@ export class UserController {
   @Get('user/validate')
   validate() {
     return { message: "I'm logged in" };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('user/me')
+  getMe(
+    @Req()
+    req: Request & {
+      user: {
+        id: string;
+        username: string;
+        name: string;
+        avatar: string;
+        email: string;
+        password?: string;
+      };
+    },
+  ) {
+    const { password, ...user } = req.user;
+    void password; // exclude from response
+    return { user };
   }
 
   @UseGuards(JwtAuthGuard)

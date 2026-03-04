@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore token on app start
+  // Restore token and user on app start
   useEffect(() => {
     (async () => {
       try {
@@ -57,6 +57,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedToken) {
           setToken(storedToken);
           setIsAuthenticated(true);
+          try {
+            const res = await fetch(`${Api.BASE_URL}/user/me`, {
+              headers: Api.authHeaders(storedToken),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setUser(data.user);
+            }
+          } catch (err) {
+            console.error('Error fetching current user:', err);
+          }
         }
       } catch (error) {
         console.error('Error restoring auth token:', error);
@@ -83,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(data.access_token);
     setIsAuthenticated(true);
     setUser(data.user);
-    router.replace('/(authenticated)/dashboard');
+    // Defer navigation so React commits state before dashboard mounts and reads auth
+    queueMicrotask(() => router.replace('/(authenticated)/dashboard'));
   };
 
   const logout = async () => {
