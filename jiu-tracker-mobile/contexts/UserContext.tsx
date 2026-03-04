@@ -19,11 +19,17 @@ export interface UpdateUserFullDto {
   belt_stripe: number;
 }
 
+export interface UpdateBeltDto {
+  belt_color: string;
+  belt_stripe: number;
+}
+
 interface UserContextType {
   userData: UserData;
   updateUserData: (data: Partial<UserData>) => void;
   updateUserFull: (dto: UpdateUserFullDto) => Promise<void>;
   updateAvatar: (avatarUri: string) => Promise<void>;
+  updateBelt: (dto: UpdateBeltDto) => Promise<void>;
 }
 
 const defaultUserData: UserData = {
@@ -146,8 +152,35 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const updateBelt = async (dto: UpdateBeltDto) => {
+    try {
+      if (!token) throw new Error('No token found');
+      if (!user) throw new Error('No user found');
+      const response = await fetch(`${Api.BASE_URL}/user/${user.id}/belt`, {
+        headers: Api.authHeaders(token),
+        method: 'PUT',
+        body: JSON.stringify({
+          userId: user.id,
+          color: dto.belt_color,
+          stripes: dto.belt_stripe,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error ?? `Update failed: ${response.status}`);
+      }
+      const updatedUser = await refreshUser();
+      if (updatedUser) {
+        setUserData((prev) => ({ ...prev, belt_color: updatedUser.belt_color, belt_stripe: updatedUser.belt_stripe }));
+      }
+    } catch (error) {
+      console.error('Error updating belt:', error);
+      throw error;
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ userData, updateUserData, updateUserFull, updateAvatar }}>
+    <UserContext.Provider value={{ userData, updateUserData, updateUserFull, updateAvatar, updateBelt }}>
       {children}
     </UserContext.Provider>
   );

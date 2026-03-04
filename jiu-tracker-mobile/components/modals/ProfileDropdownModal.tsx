@@ -10,6 +10,7 @@ interface ProfileDropdownModalProps {
   onClose: () => void;
   onUpdateAvatar: () => void;
   onUpdateUser: () => void;
+  onUpdateBelt: () => void;
   onLogout: () => void;
 }
 
@@ -18,6 +19,7 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
   onClose,
   onUpdateAvatar,
   onUpdateUser,
+  onUpdateBelt,
   onLogout,
 }) => {
   return (
@@ -37,6 +39,10 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
             <Pressable style={styles.item} onPress={onUpdateUser}>
               <Ionicons name="settings-outline" size={22} color={COLORS.WHITE} />
               <Text style={styles.itemText}>Update User</Text>
+            </Pressable>
+            <Pressable style={styles.item} onPress={onUpdateBelt}>
+              <Ionicons name="ribbon-outline" size={22} color={COLORS.WHITE} />
+              <Text style={styles.itemText}>Update Belt</Text>
             </Pressable>
             <Pressable style={styles.item} onPress={onLogout}>
               <Ionicons name="log-out-outline" size={22} color={COLORS.WHITE} />

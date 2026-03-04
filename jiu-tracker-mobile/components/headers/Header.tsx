@@ -7,13 +7,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProfileDropdownModal from "@/components/modals/ProfileDropdownModal";
 import UpdateAvatarModal from "@/components/modals/UpdateAvatarModal";
 import UpdateUserModal from "@/components/modals/UpdateUserModal";
+import UpdateBeltModal from "@/components/modals/UpdateBeltModal";
 
 const HeaderComponent: React.FC = () => {
-  const { userData, updateAvatar, updateUserFull } = useUser();
+  const { userData, updateAvatar, updateUserFull, updateBelt } = useUser();
   const { logout, user } = useAuth();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
+  const [beltModalVisible, setBeltModalVisible] = useState(false);
 
   const handleUpdateAvatar = () => {
     setDropdownVisible(false);
@@ -28,6 +30,11 @@ const HeaderComponent: React.FC = () => {
   const handleLogout = () => {
     setDropdownVisible(false);
     logout();
+  };
+
+  const handleUpdateBelt = () => {
+    setDropdownVisible(false);
+    setBeltModalVisible(true);
   };
 
   const userModalInitialData = useMemo(
@@ -103,6 +110,7 @@ const HeaderComponent: React.FC = () => {
         onClose={() => setDropdownVisible(false)}
         onUpdateAvatar={handleUpdateAvatar}
         onUpdateUser={handleUpdateUser}
+        onUpdateBelt={handleUpdateBelt}
         onLogout={handleLogout}
       />
 
@@ -118,6 +126,16 @@ const HeaderComponent: React.FC = () => {
         onClose={() => setUserModalVisible(false)}
         onSave={updateUserFull}
         initialData={userModalInitialData}
+      />
+
+      <UpdateBeltModal
+        visible={beltModalVisible}
+        onClose={() => setBeltModalVisible(false)}
+        onSave={updateBelt}
+        initialData={{
+          belt_color: (userData.belt_color as BeltRank) ?? "Blue Belt",
+          belt_stripe: userData.belt_stripe ?? 0,
+        }}
       />
     </View>
   );

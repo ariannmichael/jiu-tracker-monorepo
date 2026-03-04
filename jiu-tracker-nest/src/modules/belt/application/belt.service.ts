@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BeltProgressRepository } from '../infrastructure/belt-progress.repository';
 import { BeltProgress, Belt } from '../domain/belt-progress.entity';
 import { CreateBeltProgressDto } from './dto/create-belt-progress.dto';
+import { UpdateBeltProgressDto } from './dto/update-belt-progress.dto';
 
 @Injectable()
 export class BeltService {
@@ -65,8 +66,19 @@ export class BeltService {
       )) as BeltProgress | null;
     if (!progress) return null;
     return {
-      belt_color: this.beltToColorString(progress.currentBelt),
+      belt_color: this.beltToColorString(Number(progress.currentBelt)),
       belt_stripe: progress.stripeCount,
     };
+  }
+
+  async updateBeltProgress(dto: UpdateBeltProgressDto): Promise<BeltProgress> {
+    const belt = this.getBeltByColor(dto.color);
+    const beltProgress: Partial<BeltProgress> = {
+      userId: dto.userId,
+      currentBelt: belt,
+      stripeCount: dto.stripes,
+    };
+
+    return this.beltProgressRepo.createBeltProgress(beltProgress);
   }
 }

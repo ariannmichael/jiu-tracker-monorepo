@@ -20,6 +20,7 @@ import { UpdateUserDto } from '../application/dto/update-user.dto';
 import { UpdateAvatarDto } from '../application/dto/update-avatar.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { BeltService } from '../../belt/application/belt.service';
+import { UpdateBeltProgressDto } from 'src/modules/belt/application/dto/update-belt-progress.dto';
 
 interface LatestBelt {
   belt_color: string;
@@ -149,6 +150,23 @@ export class UserController {
     try {
       const user = await this.userService.updateUser(id, dto);
       return { user };
+    } catch (error) {
+      throw new HttpException(
+        { error: (error as Error).message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('user/:id/belt')
+  async updateBelt(
+    @Param('id') id: string,
+    @Body() dto: UpdateBeltProgressDto,
+  ) {
+    try {
+      const beltProgress = await this.beltService.updateBeltProgress(dto);
+      return { beltProgress };
     } catch (error) {
       throw new HttpException(
         { error: (error as Error).message },
