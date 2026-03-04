@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import Index from './index';
+import Index from '@/app/index';
 
 jest.mock('@/components/screens/StartScreen', () => {
   const { Text } = require('react-native');

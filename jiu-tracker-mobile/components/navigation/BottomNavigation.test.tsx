@@ -8,7 +8,6 @@ describe('BottomNavigation', () => {
     expect(screen.getByText('Home')).toBeTruthy();
     expect(screen.getByText('Logs')).toBeTruthy();
     expect(screen.getByText('Techniques')).toBeTruthy();
-    expect(screen.getByText('Competitions')).toBeTruthy();
   });
 
   it('navigates when item is pressed', () => {

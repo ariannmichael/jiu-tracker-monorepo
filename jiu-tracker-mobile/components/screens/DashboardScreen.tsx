@@ -111,7 +111,6 @@ export default function DashboardScreen() {
             title="Open mat"
             value={(analytics?.open_mat_sessions ?? 0).toString()}
           />
-          <StatCard title="Competitions" value="0" />
           <StatCard
             title="New techniques"
             value={(analytics?.unique_techniques_count ?? 0).toString()}

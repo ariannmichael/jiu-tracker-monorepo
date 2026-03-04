@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import TechniquesScreen from './techniques';
+import TechniquesScreen from '@/app/(authenticated)/techniques';
 
 describe('TechniquesScreen page', () => {
   it('renders title and subtitle', () => {
