@@ -5,11 +5,13 @@ import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@exp
 import { router } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { COLORS } from "@/constants";
 
 
 export default function StartScreen() {
   const { login: authLogin } = useAuth();
+  const { t } = useLanguage();
   const [fontsLoaded] = useFonts({
     ZenDots_400Regular,
     Sunflower_300Light,
@@ -77,7 +79,7 @@ export default function StartScreen() {
           </TouchableOpacity>
         )}
         {/* Title */}
-        <Text style={styles.title}>Jiu Tracker</Text>
+        <Text style={styles.title}>{t("appName")}</Text>
 
 
         {(login || signup) &&
@@ -86,7 +88,7 @@ export default function StartScreen() {
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Name"
+                  placeholder={t("name")}
                   placeholderTextColor={COLORS.GRAY_TEXT}
                   value={name}
                   onChangeText={setName}
@@ -100,7 +102,7 @@ export default function StartScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                  placeholder="Email"
+                  placeholder={t("email")}
                   placeholderTextColor={COLORS.GRAY_TEXT}
                 value={email}
                 onChangeText={setEmail}
@@ -114,7 +116,7 @@ export default function StartScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                  placeholder="Password"
+                  placeholder={t("password")}
                   placeholderTextColor={COLORS.GRAY_TEXT}
                 value={password}
                 onChangeText={setPassword}
@@ -129,7 +131,7 @@ export default function StartScreen() {
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Confirm Password"
+                  placeholder={t("confirmPassword")}
                   placeholderTextColor={COLORS.GRAY_TEXT}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -143,30 +145,27 @@ export default function StartScreen() {
           </View>
         }
 
-        {/* Error message */}
         {loginError ? (
           <Text style={styles.errorText}>{loginError}</Text>
         ) : null}
 
-        {/* Buttons */}
         <View style={styles.buttonContainer}>
           {!signup &&
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isSubmitting}>
-              <Text style={styles.buttonText}>{isSubmitting ? 'LOGGING IN...' : 'LOGIN'}</Text>
+              <Text style={styles.buttonText}>{isSubmitting ? t("loggingIn") : t("loginButton")}</Text>
             </TouchableOpacity>
           }
 
           {!login &&
             <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>SIGN UP</Text>
+              <Text style={styles.buttonText}>{t("signUpButton")}</Text>
             </TouchableOpacity>
           }
         </View>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>402 Software</Text>
+        <Text style={styles.footerText}>{t("footer")}</Text>
       </View>
     </View>
   );

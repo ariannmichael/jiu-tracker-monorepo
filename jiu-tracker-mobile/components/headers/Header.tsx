@@ -4,14 +4,22 @@ import { COLORS, FONTS, BELT_COLORS } from "../../constants";
 import type { BeltRank } from "../../constants";
 import { useUser } from "@/contexts/UserContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { Language } from "@/i18n";
 import ProfileDropdownModal from "@/components/modals/ProfileDropdownModal";
 import UpdateAvatarModal from "@/components/modals/UpdateAvatarModal";
 import UpdateUserModal from "@/components/modals/UpdateUserModal";
 import UpdateBeltModal from "@/components/modals/UpdateBeltModal";
 
+const LANG_OPTIONS: { value: Language; flag: string }[] = [
+  { value: "en", flag: "🇺🇸" },
+  { value: "pt", flag: "🇧🇷" },
+];
+
 const HeaderComponent: React.FC = () => {
   const { userData, updateAvatar, updateUserFull, updateBelt } = useUser();
   const { logout, user } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
@@ -103,6 +111,21 @@ const HeaderComponent: React.FC = () => {
             )}
           </View>
         </View>
+      </View>
+
+      <View style={styles.langSwitcher}>
+        {LANG_OPTIONS.map((opt) => (
+          <Pressable
+            key={opt.value}
+            style={[
+              styles.langOption,
+              language === opt.value && styles.langOptionActive,
+            ]}
+            onPress={() => setLanguage(opt.value)}
+          >
+            <Text style={styles.langFlag}>{opt.flag}</Text>
+          </Pressable>
+        ))}
       </View>
 
       <ProfileDropdownModal
@@ -251,6 +274,28 @@ const styles = StyleSheet.create({
     width: 4,
     height: 10,
     borderRadius: 1,
+  },
+  langSwitcher: {
+    flexDirection: "row",
+    gap: 6,
+    marginLeft: 8,
+  },
+  langOption: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.GRAY_MEDIUM,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  langOptionActive: {
+    borderColor: COLORS.BUTTON,
+    backgroundColor: COLORS.CARD_ELEVATED,
+  },
+  langFlag: {
+    fontSize: 18,
   },
 });
 

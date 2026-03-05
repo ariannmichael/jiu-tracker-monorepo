@@ -21,6 +21,7 @@ import {
   BELT_MAX_STRIPES,
 } from "../../constants";
 import type { BeltRank } from "../../constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BeltFormData {
   belt_color: BeltRank;
@@ -53,6 +54,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
 }) => {
   const [form, setForm] = useState<BeltFormData>(initialFormState);
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (visible) {
@@ -72,7 +74,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
       });
       onClose();
     } catch (err) {
-      Alert.alert("Update failed", (err as Error)?.message ?? "Could not update user.");
+      Alert.alert(t("updateFailed"), (err as Error)?.message ?? t("couldNotUpdateUser"));
     } finally {
       setSaving(false);
     }
@@ -95,7 +97,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
           <Pressable style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={24} color={COLORS.WHITE} />
           </Pressable>
-          <Text style={styles.title}>Update Belt</Text>
+          <Text style={styles.title}>{t("updateBelt")}</Text>
           <ScrollView
             style={styles.formScroll}
             contentContainerStyle={styles.formScrollContent}
@@ -104,7 +106,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
             nestedScrollEnabled
           >
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Belt</Text>
+              <Text style={styles.fieldLabel}>{t("belt")}</Text>
               <View style={styles.beltRankRow}>
                 {BELT_RANKS.map((rank) => (
                   <Pressable
@@ -136,7 +138,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
               </View>
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Stripes (0–{maxStripes})</Text>
+              <Text style={styles.fieldLabel}>{t("stripesRange").replace("{max}", String(maxStripes))}</Text>
               <View style={styles.stripeDotsRow}>
                 {Array.from({ length: maxStripes + 1 }, (_, i) => (
                   <Pressable
@@ -160,7 +162,7 @@ const UpdateBeltModal: React.FC<UpdateBeltModalProps> = ({
               {saving ? (
                 <ActivityIndicator size="small" color={COLORS.WHITE} />
               ) : (
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>{t("save")}</Text>
               )}
             </Pressable>
           </View>

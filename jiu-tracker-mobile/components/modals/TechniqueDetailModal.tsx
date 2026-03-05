@@ -12,6 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { COLORS, FONTS, RADIUS } from "@/constants";
 import { Technique, Category, Difficulty } from "@jiu-tracker/shared";
 import { CATEGORY_CONFIG, DIFFICULTY_CONFIG } from "../cards/TechniqueCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TechniqueDetailModalProps {
   visible: boolean;
@@ -24,6 +25,8 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
   technique,
   onClose,
 }) => {
+  const { t } = useLanguage();
+
   if (!technique) return null;
 
   const catConfig =
@@ -84,7 +87,7 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
                   color={catConfig.gradient[0]}
                 />
                 <Text style={[styles.metaBadgeText, { color: catConfig.gradient[0] }]}>
-                  {catConfig.label}
+                  {t(catConfig.labelKey)}
                 </Text>
               </View>
               <View
@@ -97,21 +100,21 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
                   style={[styles.diffDot, { backgroundColor: diffConfig.color }]}
                 />
                 <Text style={[styles.metaBadgeText, { color: diffConfig.color }]}>
-                  {diffConfig.label}
+                  {t(diffConfig.labelKey)}
                 </Text>
               </View>
             </View>
 
             {technique.description ? (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Description</Text>
+                <Text style={styles.sectionTitle}>{t("description")}</Text>
                 <Text style={styles.sectionBody}>{technique.description}</Text>
               </View>
             ) : null}
 
             {technique.description_portuguese ? (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Descrição</Text>
+                <Text style={styles.sectionTitle}>{t("description")}</Text>
                 <Text style={styles.sectionBody}>
                   {technique.description_portuguese}
                 </Text>

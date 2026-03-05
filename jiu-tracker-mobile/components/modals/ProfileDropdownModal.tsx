@@ -2,6 +2,7 @@ import React from "react";
 import { Text, View, StyleSheet, Pressable, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "../../constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const HEADER_HEIGHT = 96;
 
@@ -22,6 +23,7 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
   onUpdateBelt,
   onLogout,
 }) => {
+  const { t } = useLanguage();
   return (
     <Modal
       visible={visible}
@@ -34,19 +36,19 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
           <View style={styles.menu}>
             <Pressable style={styles.item} onPress={onUpdateAvatar}>
               <Ionicons name="person-circle-outline" size={22} color={COLORS.WHITE} />
-              <Text style={styles.itemText}>Update Avatar</Text>
+              <Text style={styles.itemText}>{t("updateAvatar")}</Text>
             </Pressable>
             <Pressable style={styles.item} onPress={onUpdateUser}>
               <Ionicons name="settings-outline" size={22} color={COLORS.WHITE} />
-              <Text style={styles.itemText}>Update User</Text>
+              <Text style={styles.itemText}>{t("updateUser")}</Text>
             </Pressable>
             <Pressable style={styles.item} onPress={onUpdateBelt}>
               <Ionicons name="ribbon-outline" size={22} color={COLORS.WHITE} />
-              <Text style={styles.itemText}>Update Belt</Text>
+              <Text style={styles.itemText}>{t("updateBelt")}</Text>
             </Pressable>
             <Pressable style={styles.item} onPress={onLogout}>
               <Ionicons name="log-out-outline" size={22} color={COLORS.WHITE} />
-              <Text style={styles.itemText}>Logout</Text>
+              <Text style={styles.itemText}>{t("logout")}</Text>
             </Pressable>
           </View>
         </Pressable>

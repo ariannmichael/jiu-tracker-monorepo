@@ -4,24 +4,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { TranslationKeys } from "@/i18n";
 
 interface NavItem {
   name: string;
-  label: string;
+  labelKey: TranslationKeys;
   route: string;
   icon: keyof typeof Ionicons.glyphMap;
 }
 
 const navItems: NavItem[] = [
-  { name: "home", label: "Home", route: "/(authenticated)/dashboard", icon: "home" },
-  { name: "logs", label: "Logs", route: "/(authenticated)/logs", icon: "book" },
-  { name: "techniques", label: "Techniques", route: "/(authenticated)/techniques", icon: "ear" },
+  { name: "home", labelKey: "home", route: "/(authenticated)/dashboard", icon: "home" },
+  { name: "logs", labelKey: "logs", route: "/(authenticated)/logs", icon: "book" },
+  { name: "techniques", labelKey: "techniquesNav", route: "/(authenticated)/techniques", icon: "ear" },
 ];
 
 const BottomNavigation: React.FC = () => {
   const router = useRouter();
   const segments = useSegments();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [activeRoute, setActiveRoute] = useState<string>("/(authenticated)/dashboard");
 
   useEffect(() => {
@@ -67,7 +70,7 @@ const BottomNavigation: React.FC = () => {
                 { color: active ? COLORS.WHITE : COLORS.GRAY_TEXT_SECONDARY },
               ]}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Text>
           </TouchableOpacity>
         );

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "@/constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type TechniquesSelectProps = {
   options: TechniqueListItem[];
@@ -29,6 +30,7 @@ export default function TechniquesSelect({
 }: TechniquesSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const { t } = useLanguage();
 
   const filteredOptions = useMemo(() => {
     if (!search.trim()) return options;
@@ -87,7 +89,7 @@ export default function TechniquesSelect({
         <View style={styles.dropdown}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search techniques..."
+            placeholder={t("searchTechniques")}
             placeholderTextColor={COLORS.GRAY_TEXT}
             value={search}
             onChangeText={setSearch}
@@ -98,7 +100,7 @@ export default function TechniquesSelect({
             nestedScrollEnabled
           >
             {filteredOptions?.length === 0 ? (
-              <Text style={styles.emptyText}>No techniques found</Text>
+              <Text style={styles.emptyText}>{t("noTechniquesFound")}</Text>
             ) : (
               filteredOptions?.map((opt) => {
                 const isSelected = selected.includes(opt.id);

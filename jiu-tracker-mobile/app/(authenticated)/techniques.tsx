@@ -13,25 +13,28 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS, RADIUS } from "@/constants";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { TranslationKeys } from "@/i18n";
 import TechniquesService from "@/services/techniques.service";
 import TechniqueCard from "@/components/cards/TechniqueCard";
 import TechniqueDetailModal from "@/components/modals/TechniqueDetailModal";
 import { Technique, Category } from "@jiu-tracker/shared";
 
-const CATEGORY_FILTERS: { value: Category | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: Category.Submission, label: "Submission" },
-  { value: Category.Guard, label: "Guard" },
-  { value: Category.Pass, label: "Pass" },
-  { value: Category.Sweep, label: "Sweep" },
-  { value: Category.Takedown, label: "Takedown" },
-  { value: Category.Defend, label: "Defend" },
-  { value: Category.SubmissionEscape, label: "Escape" },
+const CATEGORY_FILTERS: { value: Category | "all"; labelKey: TranslationKeys }[] = [
+  { value: "all", labelKey: "all" },
+  { value: Category.Submission, labelKey: "submission" },
+  { value: Category.Guard, labelKey: "guard" },
+  { value: Category.Pass, labelKey: "pass" },
+  { value: Category.Sweep, labelKey: "sweep" },
+  { value: Category.Takedown, labelKey: "takedown" },
+  { value: Category.Defend, labelKey: "defend" },
+  { value: Category.SubmissionEscape, labelKey: "escape" },
 ];
 
 export default function TechniquesScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
+  const { t } = useLanguage();
 
   const [techniques, setTechniques] = useState<Technique[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,9 +102,9 @@ export default function TechniquesScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Text style={styles.title}>Techniques</Text>
+        <Text style={styles.title}>{t("techniques")}</Text>
         <Text style={styles.count}>
-          {filtered.length} technique{filtered.length !== 1 ? "s" : ""}
+          {filtered.length} {filtered.length !== 1 ? t("techniquesPlural") : t("technique")}
         </Text>
       </View>
 
@@ -114,7 +117,7 @@ export default function TechniquesScreen() {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search techniques..."
+          placeholder={t("searchTechniques")}
           placeholderTextColor={COLORS.GRAY_TEXT}
           value={search}
           onChangeText={setSearch}
@@ -147,7 +150,7 @@ export default function TechniquesScreen() {
                   isActive && styles.filterChipTextActive,
                 ]}
               >
-                {filter.label}
+                {t(filter.labelKey)}
               </Text>
             </Pressable>
           );
@@ -162,7 +165,7 @@ export default function TechniquesScreen() {
         <View style={styles.centered}>
           <Text style={styles.errorText}>{error}</Text>
           <Pressable style={styles.retryButton} onPress={fetchTechniques}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{t("retry")}</Text>
           </Pressable>
         </View>
       ) : (
@@ -183,11 +186,11 @@ export default function TechniquesScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="search-outline" size={48} color={COLORS.GRAY_TEXT} />
-              <Text style={styles.emptyText}>No techniques found</Text>
+              <Text style={styles.emptyText}>{t("noTechniquesFound")}</Text>
               <Text style={styles.emptySubtext}>
                 {search.trim()
-                  ? "Try a different search term"
-                  : "Techniques will appear here once available"}
+                  ? t("tryDifferentSearch")
+                  : t("techniquesAppearHere")}
               </Text>
             </View>
           }

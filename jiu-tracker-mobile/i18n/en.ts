@@ -1,0 +1,150 @@
+const en = {
+  // Common
+  appName: "Jiu Tracker",
+  footer: "402 Software",
+  submit: "SUBMIT",
+  cancel: "Cancel",
+  save: "Save",
+  yes: "Yes",
+  no: "No",
+  error: "Error",
+  retry: "Retry",
+
+  // Language
+  language: "Language",
+
+  // Start Screen
+  name: "Name",
+  email: "Email",
+  password: "Password",
+  confirmPassword: "Confirm Password",
+  loggingIn: "LOGGING IN...",
+  loginButton: "LOGIN",
+  signUpButton: "SIGN UP",
+
+  // Signup
+  whereWereYouBorn: "Where were you born?",
+  imFrom: "I'M FROM",
+  whatIsYourRank: "What is your rank in jiu-jitsu?",
+  stripes: "Stripes",
+  imA: "I'M A",
+  stripe: "STRIPE",
+  stripesPlural: "STRIPES",
+  whenWereYouBorn: "When were you born?",
+  im: "I'M",
+  chooseUsername: "Choose an username for yourself.",
+  enterUsername: "Enter username",
+  selectCountry: "Select Country",
+  select: "Select",
+
+  // Dashboard
+  dayStreak: "day streak",
+  sessions: "Sessions",
+  totalHours: "Total Hours",
+  winRatio: "Win Ratio",
+  giVsNogiRatio: "Gi vs NoGi Ratio",
+  submissionRate: "Submission Rate",
+  submissionsVsTapped: "Submissions vs tapped",
+  mostWinTechniques: "Most win techniques",
+  lostTechniques: "Lost techniques",
+  noDataYet: "No data yet",
+  daysTrained: "Days trained",
+  mostHoursInOneDay: "Most hours in one day",
+  milestones: "Milestones",
+  openMat: "Open mat",
+  newTechniques: "New techniques",
+  techniqueBreakdown: "Technique breakdown by category",
+  nextMilestone: "Next milestone:",
+
+  // Logs
+  editLog: "EDIT LOG",
+  newLog: "NEW LOG",
+  date: "DATE",
+  duration: "DURATION",
+  openMatLabel: "OPEN MAT",
+  giNogi: "GI / NOGI",
+  submitUsing: "SUBMIT USING",
+  wasTappedBy: "WAS TAPPED BY",
+  notes: "NOTES",
+  gi: "Gi",
+  nogi: "NoGi",
+  selectTechniques: "Select techniques",
+  enterNotesHere: "Enter your notes here",
+  couldNotUpdateLog: "Could not update log",
+  couldNotSaveLog: "Could not save log",
+  pleaseTryAgain: "Please try again.",
+  trainingLogs: "Training Logs",
+  addLog: "+ ADD LOG",
+  loadingLogs: "Loading logs…",
+  sessionsAppearHere: "Your training sessions will appear here",
+  loadingMore: "Loading more…",
+  selectTime: "Select time",
+
+  // Techniques
+  techniques: "Techniques",
+  technique: "technique",
+  techniquesPlural: "techniques",
+  searchTechniques: "Search techniques...",
+  all: "All",
+  submission: "Submission",
+  guard: "Guard",
+  pass: "Pass",
+  sweep: "Sweep",
+  takedown: "Takedown",
+  defend: "Defend",
+  escape: "Escape",
+  noTechniquesFound: "No techniques found",
+  tryDifferentSearch: "Try a different search term",
+  techniquesAppearHere: "Techniques will appear here once available",
+
+  // Profile / Modals
+  updateAvatar: "Update Avatar",
+  updateUser: "Update User",
+  updateBelt: "Update Belt",
+  logout: "Logout",
+  username: "Username",
+  newPasswordMin6: "New password (min 6 characters)",
+  validation: "Validation",
+  passwordMinChars: "Password must be at least 6 characters.",
+  updateFailed: "Update failed",
+  couldNotUpdateUser: "Could not update user.",
+  belt: "Belt",
+  stripesRange: "Stripes (0–{max})",
+
+  // LogCard
+  totalTime: "Total Time",
+  submitted: "Submitted",
+  tapped: "Tapped",
+  mostEfficient: "Most Efficient",
+  riskArea: "Risk Area",
+  defense: "Defense",
+
+  // TechniqueDetail
+  description: "Description",
+
+  // UploadImage
+  permissionRequired: "Permission required",
+  permissionPhotoAccess: "Permission to access your photos is needed to choose an avatar.",
+  cameraAccessNeeded: "Camera access is needed to take a photo.",
+  couldNotOpenImageLibrary: "Could not open image library.",
+  couldNotOpenCamera: "Could not open camera.",
+  uploadFailed: "Upload failed",
+  couldNotUploadImage: "Could not upload image.",
+  choosePhoto: "Choose photo",
+  takePhoto: "Take photo",
+  uploading: "Uploading…",
+  uploadImage: "Upload image",
+
+  // BottomNavigation
+  home: "Home",
+  logs: "Logs",
+  techniquesNav: "Techniques",
+
+  // Difficulty
+  beginner: "Beginner",
+  intermediate: "Intermediate",
+  advanced: "Advanced",
+} as const;
+
+export type TranslationKeys = keyof typeof en;
+export default en;

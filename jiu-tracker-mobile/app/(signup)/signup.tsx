@@ -20,6 +20,7 @@ import {
 } from '../../constants';
 import SignupService from '@/services/signup.service';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SignupData {
   country: string;
@@ -56,6 +57,7 @@ export default function Signup() {
 
   const { name, email, password } = useLocalSearchParams<{ name: string; email: string; password: string }>();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const totalSteps = 4;
 
@@ -127,7 +129,7 @@ export default function Signup() {
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Where were you born?</Text>
+      <Text style={styles.stepTitle}>{t("whereWereYouBorn")}</Text>
 
       <TouchableOpacity
         style={styles.countrySelector}
@@ -138,7 +140,7 @@ export default function Signup() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>I'M FROM {signupData.country.toUpperCase()}</Text>
+        <Text style={styles.submitButtonText}>{t("imFrom")} {signupData.country.toUpperCase()}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -151,7 +153,7 @@ export default function Signup() {
 
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>What is your rank in jiu-jitsu?</Text>
+      <Text style={styles.stepTitle}>{t("whatIsYourRank")}</Text>
 
       <View style={styles.beltContainer}>
         <View style={[styles.belt, { backgroundColor: getBeltColor(signupData.rank) }]}>
@@ -206,7 +208,7 @@ export default function Signup() {
 
       {maxStripes > 0 && (
         <View style={styles.stripeSelector}>
-          <Text style={styles.stripeSelectorLabel}>Stripes</Text>
+          <Text style={styles.stripeSelectorLabel}>{t("stripes")}</Text>
           <View style={styles.stripeDotsRow}>
             {Array.from({ length: maxStripes }, (_, index) => {
               const stripeNumber = index + 1;
@@ -231,7 +233,7 @@ export default function Signup() {
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
         <Text style={styles.submitButtonText}>
-          I'M A {signupData.rank.toUpperCase()}{signupData.stripes > 0 ? ` ${signupData.stripes} STRIPE${signupData.stripes > 1 ? 'S' : ''}` : ''}
+          {t("imA")} {signupData.rank.toUpperCase()}{signupData.stripes > 0 ? ` ${signupData.stripes} ${signupData.stripes > 1 ? t("stripesPlural") : t("stripe")}` : ''}
         </Text>
       </TouchableOpacity>
     </View>
@@ -239,7 +241,7 @@ export default function Signup() {
 
   const renderStep3 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>When were you born?</Text>
+      <Text style={styles.stepTitle}>{t("whenWereYouBorn")}</Text>
 
       <View style={styles.dateContainer}>
         <TouchableOpacity
@@ -277,21 +279,21 @@ export default function Signup() {
       </View>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>I'M {new Date().getFullYear() - parseInt(signupData.birthDate.year)}</Text>
+        <Text style={styles.submitButtonText}>{t("im")} {new Date().getFullYear() - parseInt(signupData.birthDate.year)}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderStep4 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Choose an username for yourself.</Text>
+      <Text style={styles.stepTitle}>{t("chooseUsername")}</Text>
 
       <View style={styles.usernameInputContainer}>
         <TextInput
           style={styles.usernameInput}
           value={signupData.username}
           onChangeText={(text) => updateSignupData('username', text)}
-          placeholder="Enter username"
+          placeholder={t("enterUsername")}
           placeholderTextColor={COLORS.GRAY_TEXT}
           autoCapitalize="none"
           autoCorrect={false}
@@ -299,7 +301,7 @@ export default function Signup() {
       </View>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>SUBMIT</Text>
+        <Text style={styles.submitButtonText}>{t("submit")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -323,7 +325,7 @@ export default function Signup() {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Select Country</Text>
+          <Text style={styles.modalTitle}>{t("selectCountry")}</Text>
           <FlatList
             data={COUNTRIES}
             keyExtractor={(item) => item}
@@ -343,7 +345,7 @@ export default function Signup() {
             style={styles.modalCloseButton}
             onPress={() => setShowCountryModal(false)}
           >
-            <Text style={styles.modalCloseText}>Cancel</Text>
+            <Text style={styles.modalCloseText}>{t("cancel")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -369,7 +371,7 @@ export default function Signup() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select {selectedDateField.charAt(0).toUpperCase() + selectedDateField.slice(1)}</Text>
+            <Text style={styles.modalTitle}>{t("select")} {selectedDateField.charAt(0).toUpperCase() + selectedDateField.slice(1)}</Text>
             <FlatList
               data={getDateData()}
               keyExtractor={(item) => item}
@@ -389,7 +391,7 @@ export default function Signup() {
               style={styles.modalCloseButton}
               onPress={() => setShowDateModal(false)}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t("cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -407,7 +409,7 @@ export default function Signup() {
             </TouchableOpacity>
           </View>
         )}
-        <Text style={styles.title}>Jiu Tracker</Text>
+        <Text style={styles.title}>{t("appName")}</Text>
       </View>
 
       <View style={styles.navigationContainer}>
@@ -424,7 +426,7 @@ export default function Signup() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>402 Software</Text>
+        <Text style={styles.footerText}>{t("footer")}</Text>
       </View>
 
       {renderCountryModal()}

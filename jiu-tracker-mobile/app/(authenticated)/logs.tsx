@@ -22,6 +22,7 @@ import TechniquesSelect from "@/components/selects/TechniquesSelect";
 import TrainingService from "@/services/training.service";
 import { CreateTrainingRequest, Technique, TrainingSession } from "@jiu-tracker/shared";
 import LogCard from "@/components/cards/LogCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { UpdateTrainingRequest } from "@/services/training.service";
 
 /** Training session as returned by API with submit/tapped options */
@@ -33,6 +34,7 @@ type TrainingWithOptions = TrainingSession & {
 export default function LogsScreen() {
   const insets = useSafeAreaInsets();
   const { user, token } = useAuth();
+  const { t } = useLanguage();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTraining, setEditingTraining] = useState<TrainingWithOptions | null>(null);
@@ -217,7 +219,7 @@ export default function LogsScreen() {
         })
         .catch((error) => {
           console.error(error);
-          Alert.alert("Could not update log", error instanceof Error ? error.message : "Please try again.");
+          Alert.alert(t("couldNotUpdateLog"), error instanceof Error ? error.message : t("pleaseTryAgain"));
         });
     } else {
       const data: CreateTrainingRequest = {
@@ -241,7 +243,7 @@ export default function LogsScreen() {
         })
         .catch((error) => {
           console.error(error);
-          Alert.alert("Could not save log", error instanceof Error ? error.message : "Please try again.");
+          Alert.alert(t("couldNotSaveLog"), error instanceof Error ? error.message : t("pleaseTryAgain"));
         });
     }
   };
@@ -265,10 +267,10 @@ export default function LogsScreen() {
           >
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>{editingTraining ? "EDIT LOG" : "NEW LOG"}</Text>
+          <Text style={styles.modalTitle}>{editingTraining ? t("editLog") : t("newLog")}</Text>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>DATE</Text>
+            <Text style={styles.fieldLabel}>{t("date")}</Text>
             {Platform.OS === "web" ? (
               <View style={styles.datePickerContainer}>
                 <input
@@ -325,7 +327,7 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>DURATION</Text>
+            <Text style={styles.fieldLabel}>{t("duration")}</Text>
             {Platform.OS === "web" ? (
               <View style={styles.datePickerContainer}>
                 <input
@@ -368,7 +370,7 @@ export default function LogsScreen() {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.dateText, !classTime && { color: COLORS.GRAY_TEXT }]}>
-                    {classTime ? formatTime(classTime) : "Select time"}
+                    {classTime ? formatTime(classTime) : t("selectTime")}
                   </Text>
                 </TouchableOpacity>
                 {showTimePicker && (
@@ -384,75 +386,75 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>OPEN MAT</Text>
+            <Text style={styles.fieldLabel}>{t("openMatLabel")}</Text>
             <View style={styles.boxSelectRow}>
               <TouchableOpacity
                 style={[styles.boxSelectOption, rollingOpenMat && styles.boxSelectOptionSelected]}
                 onPress={() => setRollingOpenMat(true)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.boxSelectOptionText}>Yes</Text>
+                <Text style={styles.boxSelectOptionText}>{t("yes")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.boxSelectOption, !rollingOpenMat && styles.boxSelectOptionSelected]}
                 onPress={() => setRollingOpenMat(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.boxSelectOptionText}>No</Text>
+                <Text style={styles.boxSelectOptionText}>{t("no")}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>GI / NOGI</Text>
+            <Text style={styles.fieldLabel}>{t("giNogi")}</Text>
             <View style={styles.boxSelectRow}>
               <TouchableOpacity
                 style={[styles.boxSelectOption, isGi && styles.boxSelectOptionSelected]}
                 onPress={() => setIsGi(true)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.boxSelectOptionText}>Gi</Text>
+                <Text style={styles.boxSelectOptionText}>{t("gi")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.boxSelectOption, !isGi && styles.boxSelectOptionSelected]}
                 onPress={() => setIsGi(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.boxSelectOptionText}>NoGi</Text>
+                <Text style={styles.boxSelectOptionText}>{t("nogi")}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>SUBMIT USING</Text>
+            <Text style={styles.fieldLabel}>{t("submitUsing")}</Text>
             <TechniquesSelect
               options={techniques}
               selected={submitUsingOptions.map((option) => option.id)}
-              onSelectionChange={(selected) => setSubmitUsingOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
-              placeholder="Select techniques"
+              onSelectionChange={(selected) => setSubmitUsingOptions(selected.map((id) => techniques.find((tech) => tech.id === id)!))}
+              placeholder={t("selectTechniques")}
               chipVariant="submit"
             />
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>WAS TAPPED BY</Text>
+            <Text style={styles.fieldLabel}>{t("wasTappedBy")}</Text>
             <TechniquesSelect
               options={techniques}
               selected={tappedByOptions.map((option) => option.id)}
-              onSelectionChange={(selected) => setTappedByOptions(selected.map((id) => techniques.find((t) => t.id === id)!))}
-              placeholder="Select techniques"
+              onSelectionChange={(selected) => setTappedByOptions(selected.map((id) => techniques.find((tech) => tech.id === id)!))}
+              placeholder={t("selectTechniques")}
               chipVariant="tapped"
             />
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>NOTES</Text>
+            <Text style={styles.fieldLabel}>{t("notes")}</Text>
             <TextInput
               style={styles.fieldInput}
               value={notes}
               onChangeText={setNotes}
               placeholderTextColor={COLORS.GRAY_TEXT}
-              placeholder="Enter your notes here"
+              placeholder={t("enterNotesHere")}
               multiline={true}
               numberOfLines={5}
               textAlignVertical="top"
@@ -460,7 +462,7 @@ export default function LogsScreen() {
           </View>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>SUBMIT</Text>
+            <Text style={styles.submitButtonText}>{t("submit")}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -483,15 +485,15 @@ export default function LogsScreen() {
   const listHeader = (
     <View style={[styles.scrollContent, { paddingTop: insets.top }]}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Training Logs</Text>
+        <Text style={styles.title}>{t("trainingLogs")}</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddLog}>
-          <Text style={styles.addButtonText}>+ ADD LOG</Text>
+          <Text style={styles.addButtonText}>{t("addLog")}</Text>
         </TouchableOpacity>
       </View>
       {loadingLogs ? (
-        <Text style={styles.subtitle}>Loading logs…</Text>
+        <Text style={styles.subtitle}>{t("loadingLogs")}</Text>
       ) : trainings.length === 0 && !loadingMore ? (
-        <Text style={styles.subtitle}>Your training sessions will appear here</Text>
+        <Text style={styles.subtitle}>{t("sessionsAppearHere")}</Text>
       ) : null}
     </View>
   );
@@ -499,7 +501,7 @@ export default function LogsScreen() {
   const listFooter =
     loadingMore ? (
       <View style={styles.footerLoader}>
-        <Text style={styles.subtitle}>Loading more…</Text>
+        <Text style={styles.subtitle}>{t("loadingMore")}</Text>
       </View>
     ) : null;
 

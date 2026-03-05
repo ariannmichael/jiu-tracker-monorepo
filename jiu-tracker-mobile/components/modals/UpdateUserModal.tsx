@@ -21,6 +21,7 @@ import {
   BELT_MAX_STRIPES,
 } from "../../constants";
 import type { BeltRank } from "../../constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserFormData {
   name: string;
@@ -68,6 +69,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 }) => {
   const [form, setForm] = useState<UserFormData>(initialFormState);
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (visible) {
@@ -84,7 +86,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
 
   const handleSave = async () => {
     if (form.password && form.password.length < 6) {
-      Alert.alert("Validation", "Password must be at least 6 characters.");
+      Alert.alert(t("validation"), t("passwordMinChars"));
       return;
     }
     setSaving(true);
@@ -99,7 +101,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
       });
       onClose();
     } catch (err) {
-      Alert.alert("Update failed", (err as Error)?.message ?? "Could not update user.");
+      Alert.alert(t("updateFailed"), (err as Error)?.message ?? t("couldNotUpdateUser"));
     } finally {
       setSaving(false);
     }
@@ -122,7 +124,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
           <Pressable style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={24} color={COLORS.WHITE} />
           </Pressable>
-          <Text style={styles.title}>Update User</Text>
+          <Text style={styles.title}>{t("updateUser")}</Text>
           <ScrollView
             style={styles.formScroll}
             contentContainerStyle={styles.formScrollContent}
@@ -131,53 +133,53 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
             nestedScrollEnabled
           >
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Name</Text>
+              <Text style={styles.fieldLabel}>{t("name")}</Text>
               <TextInput
                 style={styles.fieldInput}
                 value={form.name}
-                onChangeText={(t) => setForm((f) => ({ ...f, name: t }))}
-                placeholder="Name"
+                onChangeText={(v) => setForm((f) => ({ ...f, name: v }))}
+                placeholder={t("name")}
                 placeholderTextColor={COLORS.GRAY_TEXT}
                 autoCapitalize="words"
               />
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Username</Text>
+              <Text style={styles.fieldLabel}>{t("username")}</Text>
               <TextInput
                 style={styles.fieldInput}
                 value={form.username}
-                onChangeText={(t) => setForm((f) => ({ ...f, username: t }))}
-                placeholder="Username"
+                onChangeText={(v) => setForm((f) => ({ ...f, username: v }))}
+                placeholder={t("username")}
                 placeholderTextColor={COLORS.GRAY_TEXT}
                 autoCapitalize="none"
               />
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Email</Text>
+              <Text style={styles.fieldLabel}>{t("email")}</Text>
               <TextInput
                 style={styles.fieldInput}
                 value={form.email}
-                onChangeText={(t) => setForm((f) => ({ ...f, email: t }))}
-                placeholder="Email"
+                onChangeText={(v) => setForm((f) => ({ ...f, email: v }))}
+                placeholder={t("email")}
                 placeholderTextColor={COLORS.GRAY_TEXT}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>New password (min 6 characters)</Text>
+              <Text style={styles.fieldLabel}>{t("newPasswordMin6")}</Text>
               <TextInput
                 style={styles.fieldInput}
                 value={form.password}
-                onChangeText={(t) => setForm((f) => ({ ...f, password: t }))}
-                placeholder="New password"
+                onChangeText={(v) => setForm((f) => ({ ...f, password: v }))}
+                placeholder={t("password")}
                 placeholderTextColor={COLORS.GRAY_TEXT}
                 secureTextEntry
                 autoCapitalize="none"
               />
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Belt</Text>
+              <Text style={styles.fieldLabel}>{t("belt")}</Text>
               <View style={styles.beltRankRow}>
                 {BELT_RANKS.map((rank) => (
                   <Pressable
@@ -209,7 +211,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
               </View>
             </View>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Stripes (0–{maxStripes})</Text>
+              <Text style={styles.fieldLabel}>{t("stripesRange").replace("{max}", String(maxStripes))}</Text>
               <View style={styles.stripeDotsRow}>
                 {Array.from({ length: maxStripes + 1 }, (_, i) => (
                   <Pressable
@@ -233,7 +235,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({
               {saving ? (
                 <ActivityIndicator size="small" color={COLORS.WHITE} />
               ) : (
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>{t("save")}</Text>
               )}
             </Pressable>
           </View>

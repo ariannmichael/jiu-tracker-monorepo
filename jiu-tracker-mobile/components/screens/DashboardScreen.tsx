@@ -10,6 +10,7 @@ import { useFonts } from 'expo-font';
 import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { TopTechniqueRow } from "@jiu-tracker/shared";
 
 const CATEGORY_CHART_COLORS: Record<string, string> = {
@@ -32,13 +33,15 @@ function formatMinutesAsHours(minutes: number): string {
 function TechniqueList({
   items,
   total,
+  emptyLabel,
 }: {
   items: TopTechniqueRow[];
   total: number;
+  emptyLabel: string;
 }) {
   if (items.length === 0) {
     return (
-      <Text style={styles.techniqueListEmpty}>No data yet</Text>
+      <Text style={styles.techniqueListEmpty}>{emptyLabel}</Text>
     );
   }
   return (
@@ -66,6 +69,7 @@ export default function DashboardScreen() {
   });
   const insets = useSafeAreaInsets();
   const { analytics, refreshAnalytics, loading, error } = useAnalytics();
+  const { t } = useLanguage();
 
   const nextMilestone = 30;
   const currentStreak = analytics?.current_streak ?? 0;
@@ -127,19 +131,19 @@ export default function DashboardScreen() {
       >
         <StreakCard
           value={currentStreak.toString()}
-          label="day streak"
+          label={t("dayStreak")}
           nextMilestone={nextMilestone}
           progressPercent={progressToMilestone}
         />
 
         <View style={styles.summaryRow}>
           <StatCard
-            title="Sessions"
+            title={t("sessions")}
             value={(analytics?.total_sessions ?? 0).toString()}
             accentColor="purple"
           />
           <StatCard
-            title="Total Hours"
+            title={t("totalHours")}
             value={formatMinutesAsHours(analytics?.total_minutes ?? 0)}
             accentColor="orange"
           />
@@ -147,57 +151,57 @@ export default function DashboardScreen() {
 
         <View style={styles.performanceSection}>
           <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>Win Ratio</Text>
+            <Text style={styles.sectionTitle}>{t("winRatio")}</Text>
             <RatioBar segments={winRatioSegments} showPercentInBar />
           </View>
           <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>Gi vs NoGi Ratio</Text>
+            <Text style={styles.sectionTitle}>{t("giVsNogiRatio")}</Text>
             <RatioBar segments={giNogiSegments} showPercentInBar />
           </View>
           <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>Submission Rate</Text>
+            <Text style={styles.sectionTitle}>{t("submissionRate")}</Text>
             <View style={styles.submissionRateRow}>
               <Text style={styles.submissionRateValue}>{submissionRatePct}%</Text>
               <Text style={styles.submissionRateHint}>
-                Submissions vs tapped
+                {t("submissionsVsTapped")}
               </Text>
             </View>
           </View>
           <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>Most win techniques</Text>
-            <TechniqueList items={topWinTechniques} total={submissionsCount} />
+            <Text style={styles.sectionTitle}>{t("mostWinTechniques")}</Text>
+            <TechniqueList items={topWinTechniques} total={submissionsCount} emptyLabel={t("noDataYet")} />
           </View>
           <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>Lost techniques</Text>
-            <TechniqueList items={topLostTechniques} total={tappedByCount} />
+            <Text style={styles.sectionTitle}>{t("lostTechniques")}</Text>
+            <TechniqueList items={topLostTechniques} total={tappedByCount} emptyLabel={t("noDataYet")} />
           </View>
         </View>
 
         <View style={styles.statsGridContainer}>
           <StatCard
-            title="Days trained"
+            title={t("daysTrained")}
             value={(analytics?.days_trained ?? 0).toString()}
             accentColor="orange"
           />
           <StatCard
-            title="Most hours in one day"
+            title={t("mostHoursInOneDay")}
             value={formatMinutesAsHours(analytics?.max_minutes_in_one_day ?? 0)}
             accentColor="purple"
           />
-          <StatCard title="Milestones" value="0" />
+          <StatCard title={t("milestones")} value="0" />
           <StatCard
-            title="Open mat"
+            title={t("openMat")}
             value={(analytics?.open_mat_sessions ?? 0).toString()}
           />
           <StatCard
-            title="New techniques"
+            title={t("newTechniques")}
             value={(analytics?.unique_techniques_count ?? 0).toString()}
           />
         </View>
 
         <View style={styles.performanceSection}>
           <View style={styles.performanceCard}>
-            <Text style={styles.sectionTitle}>Technique breakdown by category</Text>
+            <Text style={styles.sectionTitle}>{t("techniqueBreakdown")}</Text>
             <PieChart data={performanceData} />
           </View>
         </View>

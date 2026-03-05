@@ -1,5 +1,6 @@
 import { COLORS, FONTS } from "@/constants";
 import { StyleSheet, Text, View } from "react-native";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface RatioSegment {
   label: string;
@@ -17,6 +18,7 @@ const RatioBar: React.FC<RatioBarProps> = ({
   segments,
   showPercentInBar = false,
 }) => {
+  const { t } = useLanguage();
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   const withPct =
     total > 0
@@ -30,7 +32,7 @@ const RatioBar: React.FC<RatioBarProps> = ({
     return (
       <View style={styles.container}>
         <View style={[styles.bar, styles.barEmpty]} />
-        <Text style={styles.emptyLabel}>No data yet</Text>
+        <Text style={styles.emptyLabel}>{t("noDataYet")}</Text>
       </View>
     );
   }

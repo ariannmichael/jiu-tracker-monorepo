@@ -2,6 +2,7 @@ import React from "react";
 import { Text, View, StyleSheet, Pressable, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "../../constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 import UploadImage from "@/components/UploadImage";
 
 interface UpdateAvatarModalProps {
@@ -17,6 +18,7 @@ const UpdateAvatarModal: React.FC<UpdateAvatarModalProps> = ({
   currentImageUri,
   onUpload,
 }) => {
+  const { t } = useLanguage();
   return (
     <Modal
       visible={visible}
@@ -29,7 +31,7 @@ const UpdateAvatarModal: React.FC<UpdateAvatarModalProps> = ({
           <Pressable style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={24} color={COLORS.WHITE} />
           </Pressable>
-          <Text style={styles.title}>Update Avatar</Text>
+          <Text style={styles.title}>{t("updateAvatar")}</Text>
           <UploadImage
             currentImageUri={currentImageUri}
             onUpload={async (uri) => {

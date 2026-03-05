@@ -1,6 +1,7 @@
 import { COLORS, FONTS, RADIUS, GRADIENTS } from "@/constants";
 import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const CARD_MARGIN = 10;
 const PADDING_H = 24;
@@ -14,6 +15,7 @@ interface StreakCardProps {
 
 const StreakCard: React.FC<StreakCardProps> = ({ value, label, nextMilestone, progressPercent = 0 }) => {
   const { width } = useWindowDimensions();
+  const { t } = useLanguage();
   const cardWidth = width - PADDING_H * 2;
   return (
     <View style={[styles.streakCard, { width: cardWidth }]}>
@@ -29,7 +31,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ value, label, nextMilestone, pr
       </View>
       {nextMilestone != null && (
         <View style={styles.milestoneRow}>
-          <Text style={styles.milestoneLabel}>Next milestone: {nextMilestone}</Text>
+          <Text style={styles.milestoneLabel}>{t("nextMilestone")} {nextMilestone}</Text>
           <View style={styles.milestoneBarBg}>
             <LinearGradient
               colors={[...GRADIENTS.STREAK]}

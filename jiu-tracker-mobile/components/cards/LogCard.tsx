@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { COLORS, FONTS, RADIUS } from "@/constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface LogCardTechnique {
   id: string;
@@ -51,6 +52,7 @@ const LogCard: React.FC<LogCardProps> = ({
   tapped,
   onPress,
 }) => {
+  const { t } = useLanguage();
   const submittedGrouped = groupByName(submitted);
   const tappedGrouped = groupByName(tapped);
   const totalOutcomes = submitted.length + tapped.length;
@@ -62,7 +64,7 @@ const LogCard: React.FC<LogCardProps> = ({
       : null;
   const riskArea =
     tappedGrouped.length > 0
-      ? `${tappedGrouped.reduce((a, b) => (a.count >= b.count ? a : b)).name} Defense`
+      ? `${tappedGrouped.reduce((a, b) => (a.count >= b.count ? a : b)).name} ${t("defense")}`
       : null;
 
   const cardContent = (
@@ -71,13 +73,13 @@ const LogCard: React.FC<LogCardProps> = ({
         <Text style={styles.date}>{formatDate(date)}</Text>
         <View style={styles.totalTimeBlock}>
           <Text style={styles.totalTimeValue}>{formatDuration(durationMinutes)}</Text>
-          <Text style={styles.totalTimeLabel}>Total Time</Text>
+          <Text style={styles.totalTimeLabel}>{t("totalTime")}</Text>
         </View>
       </View>
 
       <View style={styles.techniquesRow}>
         <View style={styles.techniquesColumn}>
-          <Text style={styles.columnTitle}>Submitted</Text>
+          <Text style={styles.columnTitle}>{t("submitted")}</Text>
           <View style={styles.tagsRow}>
             {submittedGrouped.length === 0 ? (
               <Text style={styles.emptyTag}>—</Text>
@@ -96,7 +98,7 @@ const LogCard: React.FC<LogCardProps> = ({
           </View>
         </View>
         <View style={styles.techniquesColumn}>
-          <Text style={styles.columnTitle}>Tapped</Text>
+          <Text style={styles.columnTitle}>{t("tapped")}</Text>
           <View style={styles.tagsRow}>
             {tappedGrouped.length === 0 ? (
               <Text style={styles.emptyTag}>—</Text>
@@ -118,17 +120,17 @@ const LogCard: React.FC<LogCardProps> = ({
 
       <View style={styles.metricsRow}>
         <View style={styles.metricBlock}>
-          <Text style={styles.metricLabel}>Submission Rate</Text>
+          <Text style={styles.metricLabel}>{t("submissionRate")}</Text>
           <Text style={styles.metricValue}>{submissionRate}%</Text>
         </View>
         <View style={styles.metricBlock}>
-          <Text style={styles.metricLabel}>Most Efficient</Text>
+          <Text style={styles.metricLabel}>{t("mostEfficient")}</Text>
           <Text style={[styles.metricValue, styles.metricValueAccent]}>
             {mostEfficient ?? "—"}
           </Text>
         </View>
         <View style={styles.metricBlock}>
-          <Text style={styles.metricLabel}>Risk Area</Text>
+          <Text style={styles.metricLabel}>{t("riskArea")}</Text>
           <Text style={styles.metricValue}>{riskArea ?? "—"}</Text>
         </View>
       </View>

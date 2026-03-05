@@ -12,6 +12,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "@/constants";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface UploadImageProps {
   /** Current image URI to display (e.g. existing avatar). */
@@ -33,6 +34,7 @@ export default function UploadImage({
   const [selectedUri, setSelectedUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const { t } = useLanguage();
 
   const displayUri = selectedUri ?? currentImageUri ?? null;
 
@@ -40,8 +42,8 @@ export default function UploadImage({
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission required",
-        "Permission to access your photos is needed to choose an avatar."
+        t("permissionRequired"),
+        t("permissionPhotoAccess")
       );
       return false;
     }
@@ -66,7 +68,7 @@ export default function UploadImage({
       }
     } catch (err) {
       console.error("Image picker error:", err);
-      Alert.alert("Error", "Could not open image library.");
+      Alert.alert(t("error"), t("couldNotOpenImageLibrary"));
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +82,8 @@ export default function UploadImage({
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission required",
-        "Camera access is needed to take a photo."
+        t("permissionRequired"),
+        t("cameraAccessNeeded")
       );
       return;
     }
@@ -99,7 +101,7 @@ export default function UploadImage({
       }
     } catch (err) {
       console.error("Camera error:", err);
-      Alert.alert("Error", "Could not open camera.");
+      Alert.alert(t("error"), t("couldNotOpenCamera"));
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +114,7 @@ export default function UploadImage({
       await onUpload(displayUri);
     } catch (err) {
       console.error("Upload error:", err);
-      Alert.alert("Upload failed", (err as Error)?.message ?? "Could not upload image.");
+      Alert.alert(t("uploadFailed"), (err as Error)?.message ?? t("couldNotUploadImage"));
     } finally {
       setIsUploading(false);
     }
@@ -143,7 +145,7 @@ export default function UploadImage({
           disabled={isLoading}
         >
           <Ionicons name="images-outline" size={20} color={COLORS.WHITE} />
-          <Text style={styles.buttonText}>Choose photo</Text>
+          <Text style={styles.buttonText}>{t("choosePhoto")}</Text>
         </Pressable>
         {allowCamera && Platform.OS !== "web" && (
           <Pressable
@@ -152,7 +154,7 @@ export default function UploadImage({
             disabled={isLoading}
           >
             <Ionicons name="camera-outline" size={20} color={COLORS.WHITE} />
-            <Text style={styles.buttonText}>Take photo</Text>
+            <Text style={styles.buttonText}>{t("takePhoto")}</Text>
           </Pressable>
         )}
         <Pressable
@@ -166,7 +168,7 @@ export default function UploadImage({
             <Ionicons name="cloud-upload-outline" size={20} color={COLORS.WHITE} />
           )}
           <Text style={styles.buttonText}>
-            {isUploading ? "Uploading…" : "Upload image"}
+            {isUploading ? t("uploading") : t("uploadImage")}
           </Text>
         </Pressable>
       </View>
