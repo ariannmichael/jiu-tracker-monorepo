@@ -29,6 +29,15 @@ export class CreateTrainingDto {
   @IsNotEmpty()
   is_open_mat: boolean;
 
+  @Transform(({ value }) => {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return value ?? true;
+  })
+  @IsBoolean()
+  @IsOptional()
+  is_gi?: boolean;
+
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })

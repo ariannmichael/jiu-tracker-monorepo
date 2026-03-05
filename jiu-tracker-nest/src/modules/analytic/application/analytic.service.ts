@@ -64,9 +64,21 @@ export class AnalyticService {
     let submissionsCount = 0;
     let tappedByCount = 0;
     const techniqueCounts = new Map<string, { name: string; count: number }>();
+    const winTechniqueCounts = new Map<
+      string,
+      { name: string; count: number }
+    >();
+    const lostTechniqueCounts = new Map<
+      string,
+      { name: string; count: number }
+    >();
     const categoryCounts = new Map<string, number>();
+    let giSessions = 0;
+    let nogiSessions = 0;
 
     for (const s of sessions) {
+      if (s.is_gi) giSessions += 1;
+      else nogiSessions += 1;
       const sub = s.submit_using_options?.length ?? 0;
       const tap = s.tapped_by_options?.length ?? 0;
       submissionsCount += sub;
@@ -78,6 +90,11 @@ export class AnalyticService {
           count: 0,
         };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
+        const winCur = winTechniqueCounts.get(key) ?? {
+          name: t.namePortuguese || t.name,
+          count: 0,
+        };
+        winTechniqueCounts.set(key, { ...winCur, count: winCur.count + 1 });
         const catKey = String(Category[Number(t.category)] ?? t.category);
         categoryCounts.set(catKey, (categoryCounts.get(catKey) ?? 0) + 1);
       }
@@ -88,6 +105,11 @@ export class AnalyticService {
           count: 0,
         };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
+        const lostCur = lostTechniqueCounts.get(key) ?? {
+          name: t.namePortuguese || t.name,
+          count: 0,
+        };
+        lostTechniqueCounts.set(key, { ...lostCur, count: lostCur.count + 1 });
         const catKey = String(Category[Number(t.category)] ?? t.category);
         categoryCounts.set(catKey, (categoryCounts.get(catKey) ?? 0) + 1);
       }
@@ -101,6 +123,20 @@ export class AnalyticService {
 
     const topTechniques: TopTechniqueRow[] = Array.from(
       techniqueCounts.entries(),
+    )
+      .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    const topWinTechniques: TopTechniqueRow[] = Array.from(
+      winTechniqueCounts.entries(),
+    )
+      .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    const topLostTechniques: TopTechniqueRow[] = Array.from(
+      lostTechniqueCounts.entries(),
     )
       .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
       .sort((a, b) => b.count - a.count)
@@ -129,6 +165,10 @@ export class AnalyticService {
       winRatio,
       uniqueTechniquesCount: techniqueCounts.size,
       topTechniques,
+      topWinTechniques,
+      topLostTechniques,
+      giSessions,
+      nogiSessions,
       categoryBreakdown,
       lastComputedAt,
     };

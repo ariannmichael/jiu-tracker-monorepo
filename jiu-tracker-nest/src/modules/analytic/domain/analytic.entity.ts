@@ -61,6 +61,26 @@ export class Analytic {
   topTechniques: TopTechniqueRow[];
 
   @Column({
+    name: 'top_win_techniques',
+    type: 'jsonb',
+    default: () => "'[]'",
+  })
+  topWinTechniques: TopTechniqueRow[];
+
+  @Column({
+    name: 'top_lost_techniques',
+    type: 'jsonb',
+    default: () => "'[]'",
+  })
+  topLostTechniques: TopTechniqueRow[];
+
+  @Column({ name: 'gi_sessions', type: 'int', default: 0 })
+  giSessions: number;
+
+  @Column({ name: 'nogi_sessions', type: 'int', default: 0 })
+  nogiSessions: number;
+
+  @Column({
     name: 'category_breakdown',
     type: 'jsonb',
     default: () => "'{}'",

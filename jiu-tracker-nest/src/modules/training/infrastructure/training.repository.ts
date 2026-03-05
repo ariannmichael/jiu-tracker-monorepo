@@ -46,7 +46,7 @@ export class TrainingRepository {
       .findAndCount({
         where: { userId },
         relations: ['submit_using_options', 'tapped_by_options'],
-        order: { date: 'ASC' },
+        order: { date: 'DESC' },
         take: limit,
         skip: offset,
       })

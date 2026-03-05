@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node -r tsconfig-paths/register src/seed.ts",
     "migration:run": "node -r tsconfig-paths/register -r ts-node/register \"$(node -p \"require.resolve('typeorm/cli.js')\")\" migration:run -d src/data-source.ts",
+    "migration:fix-history": "node -r tsconfig-paths/register -r ts-node/register scripts/fix-migration-history.ts",
     "migration:generate": "node scripts/migration-generate.js",
     "migration:create": "node scripts/migration-create.js"
   },

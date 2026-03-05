@@ -22,6 +22,7 @@ import TechniquesSelect from "@/components/selects/TechniquesSelect";
 import TrainingService from "@/services/training.service";
 import { CreateTrainingRequest, Technique, TrainingSession } from "@jiu-tracker/shared";
 import LogCard from "@/components/cards/LogCard";
+import type { UpdateTrainingRequest } from "@/services/training.service";
 
 /** Training session as returned by API with submit/tapped options */
 type TrainingWithOptions = TrainingSession & {
@@ -34,11 +35,13 @@ export default function LogsScreen() {
   const { user, token } = useAuth();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingTraining, setEditingTraining] = useState<TrainingWithOptions | null>(null);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [classTime, setClassTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [rollingOpenMat, setRollingOpenMat] = useState(false);
+  const [isGi, setIsGi] = useState(true);
   const [notes, setNotes] = useState("");
 
   const [techniques, setTechniques] = useState<TechniqueListItem[]>([]);
@@ -116,7 +119,35 @@ export default function LogsScreen() {
   }, [token, user?.id, fetchTrainings]);
 
   const handleAddLog = () => {
+    setEditingTraining(null);
+    setDate(new Date());
+    setClassTime(null);
+    setRollingOpenMat(false);
+    setIsGi(true);
+    setNotes("");
+    setSubmitUsingOptions([]);
+    setTappedByOptions([]);
     setShowAddModal(true);
+  };
+
+  const openEditModal = (t: TrainingWithOptions) => {
+    setEditingTraining(t);
+    setDate(new Date(t.date));
+    const durationMinutes = t.duration ?? 0;
+    const d = new Date();
+    d.setHours(Math.floor(durationMinutes / 60), durationMinutes % 60, 0, 0);
+    setClassTime(d);
+    setRollingOpenMat(t.is_open_mat ?? t.rolling_open_mat ?? false);
+    setIsGi(t.is_gi ?? true);
+    setNotes(t.notes ?? "");
+    setSubmitUsingOptions((t.submit_using_options ?? []) as TechniqueListItem[]);
+    setTappedByOptions((t.tapped_by_options ?? []) as TechniqueListItem[]);
+    setShowAddModal(true);
+  };
+
+  const closeLogModal = () => {
+    setShowAddModal(false);
+    setEditingTraining(null);
   };
 
   const handleDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -161,29 +192,58 @@ export default function LogsScreen() {
   };
 
   const handleSubmit = () => {
-    const data: CreateTrainingRequest = {
-      user_id: user?.id ?? '',
-      date: date.toISOString(),
-      is_open_mat: rollingOpenMat,
-      submit_using_options_ids: submitUsingOptions.map((option) => option.id),
-      tapped_by_options_ids: tappedByOptions.map((option) => option.id),
-      duration: classTime ? classTime.getHours() * 60 + classTime.getMinutes() : 0,
-      notes: notes,
-    };
+    const durationMinutes = classTime ? classTime.getHours() * 60 + classTime.getMinutes() : 0;
+    const submitIds = submitUsingOptions.map((option) => option.id);
+    const tappedIds = tappedByOptions.map((option) => option.id);
 
-    TrainingService.createTraining(data, token ?? "")
-      .then(() => {
-        setShowAddModal(false);
-        setSubmitUsingOptions([]);
-        setTappedByOptions([]);
-        setNotes("");
-        setClassTime(null);
-        fetchTrainings({ refresh: true });
-      })
-      .catch((error) => {
-        console.error(error);
-        Alert.alert("Could not save log", error instanceof Error ? error.message : "Please try again.");
-      });
+    if (editingTraining) {
+      const data: UpdateTrainingRequest = {
+        date: date.toISOString(),
+        is_open_mat: rollingOpenMat,
+        is_gi: isGi,
+        submit_using_options_ids: submitIds,
+        tapped_by_options_ids: tappedIds,
+        duration: durationMinutes,
+        notes: notes,
+      };
+      TrainingService.updateTraining(editingTraining.id, data, token ?? "")
+        .then(() => {
+          closeLogModal();
+          setSubmitUsingOptions([]);
+          setTappedByOptions([]);
+          setNotes("");
+          setClassTime(null);
+          fetchTrainings({ refresh: true });
+        })
+        .catch((error) => {
+          console.error(error);
+          Alert.alert("Could not update log", error instanceof Error ? error.message : "Please try again.");
+        });
+    } else {
+      const data: CreateTrainingRequest = {
+        user_id: user?.id ?? '',
+        date: date.toISOString(),
+        is_open_mat: rollingOpenMat,
+        is_gi: isGi,
+        submit_using_options_ids: submitIds,
+        tapped_by_options_ids: tappedIds,
+        duration: durationMinutes,
+        notes: notes,
+      };
+      TrainingService.createTraining(data, token ?? "")
+        .then(() => {
+          closeLogModal();
+          setSubmitUsingOptions([]);
+          setTappedByOptions([]);
+          setNotes("");
+          setClassTime(null);
+          fetchTrainings({ refresh: true });
+        })
+        .catch((error) => {
+          console.error(error);
+          Alert.alert("Could not save log", error instanceof Error ? error.message : "Please try again.");
+        });
+    }
   };
 
   const renderAddLogModal = () => (
@@ -191,7 +251,7 @@ export default function LogsScreen() {
       visible={showAddModal}
       transparent={true}
       animationType="slide"
-      onRequestClose={() => setShowAddModal(false)}
+      onRequestClose={closeLogModal}
     >
       <KeyboardAvoidingView
         style={styles.modalOverlay}
@@ -200,12 +260,12 @@ export default function LogsScreen() {
         <View style={styles.modalContent}>
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => setShowAddModal(false)}
+            onPress={closeLogModal}
             activeOpacity={0.7}
           >
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>NEW LOG</Text>
+          <Text style={styles.modalTitle}>{editingTraining ? "EDIT LOG" : "NEW LOG"}</Text>
 
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>DATE</Text>
@@ -344,6 +404,26 @@ export default function LogsScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>GI / NOGI</Text>
+            <View style={styles.boxSelectRow}>
+              <TouchableOpacity
+                style={[styles.boxSelectOption, isGi && styles.boxSelectOptionSelected]}
+                onPress={() => setIsGi(true)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.boxSelectOptionText}>Gi</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.boxSelectOption, !isGi && styles.boxSelectOptionSelected]}
+                onPress={() => setIsGi(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.boxSelectOptionText}>NoGi</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>SUBMIT USING</Text>
             <TechniquesSelect
               options={techniques}
@@ -394,6 +474,7 @@ export default function LogsScreen() {
         durationMinutes={t.duration}
         submitted={(t.submit_using_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
         tapped={(t.tapped_by_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
+        onPress={() => openEditModal(t)}
       />
     ),
     [],
@@ -461,7 +542,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 30,
+    paddingBottom: 60,
   },
   headerRow: {
     flexDirection: "row",

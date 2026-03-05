@@ -1,10 +1,39 @@
 import { CreateTrainingRequest, TrainingSession, TrainingSessionsResponse } from "@jiu-tracker/shared";
 import Api from "./api";
 
+/** Payload for PUT /api/training/:id (matches backend UpdateTrainingDto) */
+export interface UpdateTrainingRequest {
+    date: string;
+    is_open_mat: boolean;
+    is_gi?: boolean;
+    submit_using_options_ids: string[];
+    tapped_by_options_ids: string[];
+    duration: number;
+    notes?: string;
+}
+
 export default class TrainingService {
     static async createTraining(data: CreateTrainingRequest, token: string): Promise<TrainingSession> {
         const response = await fetch(`${Api.BASE_URL}/training`, {
             method: 'POST',
+            headers: Api.authHeaders(token),
+            body: JSON.stringify(data),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+            const message = body?.message ?? body?.error ?? 'Request failed';
+            throw new Error(Array.isArray(message) ? message.join(', ') : message);
+        }
+        return body.training;
+    }
+
+    static async updateTraining(
+        id: string,
+        data: UpdateTrainingRequest,
+        token: string,
+    ): Promise<TrainingSession> {
+        const response = await fetch(`${Api.BASE_URL}/training/${id}`, {
+            method: 'PUT',
             headers: Api.authHeaders(token),
             body: JSON.stringify(data),
         });

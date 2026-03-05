@@ -23,6 +23,9 @@ export class TrainingSession {
   @Column({ name: 'is_open_mat', type: 'boolean', nullable: false })
   is_open_mat: boolean;
 
+  @Column({ name: 'is_gi', type: 'boolean', nullable: false, default: true })
+  is_gi: boolean;
+
   @ManyToMany(() => Technique)
   @JoinTable({
     name: 'training_session_submit_using_options',

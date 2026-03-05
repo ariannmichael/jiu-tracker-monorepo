@@ -14,6 +14,10 @@ export class UpdateTrainingDto {
   @IsNotEmpty()
   is_open_mat: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  is_gi?: boolean;
+
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })

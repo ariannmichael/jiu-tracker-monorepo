@@ -130,6 +130,10 @@ export class AnalyticController {
     winRatio: number;
     uniqueTechniquesCount: number;
     topTechniques: { techniqueId: string; name: string; count: number }[];
+    topWinTechniques?: { techniqueId: string; name: string; count: number }[];
+    topLostTechniques?: { techniqueId: string; name: string; count: number }[];
+    giSessions?: number;
+    nogiSessions?: number;
     categoryBreakdown: Record<string, number>;
     lastComputedAt: Date | null;
     createdAt: Date;
@@ -150,6 +154,10 @@ export class AnalyticController {
       win_ratio: analytic.winRatio,
       unique_techniques_count: analytic.uniqueTechniquesCount,
       top_techniques: analytic.topTechniques,
+      top_win_techniques: analytic.topWinTechniques ?? [],
+      top_lost_techniques: analytic.topLostTechniques ?? [],
+      gi_sessions: analytic.giSessions ?? 0,
+      nogi_sessions: analytic.nogiSessions ?? 0,
       category_breakdown: analytic.categoryBreakdown,
       last_computed_at: analytic.lastComputedAt,
       created_at: analytic.createdAt,

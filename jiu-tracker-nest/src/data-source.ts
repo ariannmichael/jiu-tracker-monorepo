@@ -1,4 +1,9 @@
 import { DataSource } from 'typeorm';
+import path from 'path';
+
+// Use process.cwd() when loaded by TypeORM CLI (__dirname can be undefined in that context)
+const baseDir =
+  typeof __dirname !== 'undefined' ? __dirname : path.join(process.cwd(), 'src');
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -7,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME ?? 'postgres',
   password: process.env.DB_PASSWORD ?? '12345678',
   database: process.env.DB_NAME ?? 'jiu_tracker',
-  entities: [__dirname + '/**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  entities: [baseDir + '/**/*.entity{.ts,.js}'],
+  migrations: [baseDir + '/migrations/*{.ts,.js}'],
   synchronize: false,
 });

@@ -35,6 +35,7 @@ export class TrainingService {
       duration: dto.duration,
       notes: dto.notes ?? '',
       is_open_mat: dto.is_open_mat,
+      is_gi: dto.is_gi ?? true,
       date: dto.date,
     };
 
@@ -84,6 +85,7 @@ export class TrainingService {
     );
 
     training.is_open_mat = dto.is_open_mat;
+    if (dto.is_gi !== undefined) training.is_gi = dto.is_gi;
     training.date = dto.date;
     training.submit_using_options = submitUsingTechniques;
     training.tapped_by_options = tappedByTechniques;

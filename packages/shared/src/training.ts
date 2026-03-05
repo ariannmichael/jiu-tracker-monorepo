@@ -9,6 +9,7 @@ export interface TrainingSession {
   class_time?: string;
   rolling_open_mat?: boolean;
   is_open_mat?: boolean;
+  is_gi?: boolean;
   techniques?: Technique[];
   submit_using_options?: Technique[];
   tapped_by_options?: Technique[];
@@ -27,6 +28,7 @@ export interface CreateTrainingRequest {
   notes?: string;
   date: string;
   is_open_mat: boolean;
+  is_gi?: boolean;
 }
 
 export interface UpdateTrainingRequest {

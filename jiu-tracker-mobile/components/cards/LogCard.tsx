@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { COLORS, FONTS, RADIUS } from "@/constants";
 
 export interface LogCardTechnique {
@@ -12,6 +12,7 @@ export interface LogCardProps {
   durationMinutes: number;
   submitted: LogCardTechnique[];
   tapped: LogCardTechnique[];
+  onPress?: () => void;
 }
 
 function groupByName(items: LogCardTechnique[]): { name: string; count: number }[] {
@@ -48,6 +49,7 @@ const LogCard: React.FC<LogCardProps> = ({
   durationMinutes,
   submitted,
   tapped,
+  onPress,
 }) => {
   const submittedGrouped = groupByName(submitted);
   const tappedGrouped = groupByName(tapped);
@@ -63,8 +65,8 @@ const LogCard: React.FC<LogCardProps> = ({
       ? `${tappedGrouped.reduce((a, b) => (a.count >= b.count ? a : b)).name} Defense`
       : null;
 
-  return (
-    <View style={styles.card}>
+  const cardContent = (
+    <>
       <View style={styles.header}>
         <Text style={styles.date}>{formatDate(date)}</Text>
         <View style={styles.totalTimeBlock}>
@@ -130,8 +132,17 @@ const LogCard: React.FC<LogCardProps> = ({
           <Text style={styles.metricValue}>{riskArea ?? "—"}</Text>
         </View>
       </View>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+        {cardContent}
+      </TouchableOpacity>
+    );
+  }
+  return <View style={styles.card}>{cardContent}</View>;
 };
 
 const styles = StyleSheet.create({

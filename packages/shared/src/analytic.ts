@@ -19,6 +19,10 @@ export interface AnalyticsResponse {
   win_ratio: number;
   unique_techniques_count: number;
   top_techniques: TopTechniqueRow[];
+  top_win_techniques: TopTechniqueRow[];
+  top_lost_techniques: TopTechniqueRow[];
+  gi_sessions: number;
+  nogi_sessions: number;
   category_breakdown: Record<string, number>;
   last_computed_at: string | null;
   created_at: string;
