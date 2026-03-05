@@ -26,7 +26,11 @@ export class AnalyticController {
   async getAnalytics(@Request() req: { user: User }) {
     try {
       const userId = req.user.id;
-      const analytics = await this.analyticService.getByUserId(userId);
+      let analytics = await this.analyticService.getByUserId(userId);
+      if (!analytics) {
+        await this.analyticService.recomputeForUser(userId);
+        analytics = await this.analyticService.getByUserId(userId);
+      }
       if (!analytics) {
         return { analytics: null };
       }

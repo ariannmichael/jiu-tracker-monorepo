@@ -1,54 +1,337 @@
-import { COLORS, FONTS } from "@/constants";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { COLORS, FONTS, RADIUS } from "@/constants";
+import { useAuth } from "@/contexts/AuthContext";
+import TechniquesService from "@/services/techniques.service";
+import TechniqueCard from "@/components/cards/TechniqueCard";
+import TechniqueDetailModal from "@/components/modals/TechniqueDetailModal";
+import { Technique, Category } from "@jiu-tracker/shared";
+
+const CATEGORY_FILTERS: { value: Category | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: Category.Submission, label: "Submission" },
+  { value: Category.Guard, label: "Guard" },
+  { value: Category.Pass, label: "Pass" },
+  { value: Category.Sweep, label: "Sweep" },
+  { value: Category.Takedown, label: "Takedown" },
+  { value: Category.Defend, label: "Defend" },
+  { value: Category.SubmissionEscape, label: "Escape" },
+];
 
 export default function TechniquesScreen() {
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
+
+  const [techniques, setTechniques] = useState<Technique[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
+  const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const fetchTechniques = useCallback(async () => {
+    if (!token) return;
+    setError(null);
+    try {
+      const data = await TechniquesService.getAllTechniques(token);
+      setTechniques(data.techniques ?? []);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchTechniques().finally(() => setLoading(false));
+  }, [fetchTechniques]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchTechniques();
+    setRefreshing(false);
+  }, [fetchTechniques]);
+
+  const filtered = useMemo(() => {
+    let result = techniques;
+    if (activeCategory !== "all") {
+      result = result.filter((t) => t.category === activeCategory);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase().trim();
+      result = result.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.name_portuguese.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [techniques, activeCategory, search]);
+
+  const openDetail = (technique: Technique) => {
+    setSelectedTechnique(technique);
+    setModalVisible(true);
+  };
+
+  const renderItem = ({ item, index }: { item: Technique; index: number }) => (
+    <View style={index % 2 === 0 ? styles.cardLeft : styles.cardRight}>
+      <TechniqueCard
+        name={item.name}
+        category={item.category}
+        difficulty={item.difficulty}
+        onPress={() => openDetail(item)}
+      />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.content}>
-          <Text style={styles.title}>Techniques</Text>
-          <Text style={styles.subtitle}>All techniques will appear here</Text>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <Text style={styles.title}>Techniques</Text>
+        <Text style={styles.count}>
+          {filtered.length} technique{filtered.length !== 1 ? "s" : ""}
+        </Text>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <Ionicons
+          name="search"
+          size={18}
+          color={COLORS.GRAY_TEXT}
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search techniques..."
+          placeholderTextColor={COLORS.GRAY_TEXT}
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+        />
+        {search.length > 0 && (
+          <Pressable onPress={() => setSearch("")} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={18} color={COLORS.GRAY_TEXT} />
+          </Pressable>
+        )}
+      </View>
+
+      <FlatList
+        data={CATEGORY_FILTERS}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => String(item.value)}
+        contentContainerStyle={styles.filtersContent}
+        style={styles.filtersRow}
+        renderItem={({ item: filter }) => {
+          const isActive = activeCategory === filter.value;
+          return (
+            <Pressable
+              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              onPress={() => setActiveCategory(filter.value)}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isActive && styles.filterChipTextActive,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </Pressable>
+          );
+        }}
+      />
+
+      {loading && !refreshing ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={COLORS.ACCENT_PURPLE} />
         </View>
-      </ScrollView>
+      ) : error ? (
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable style={styles.retryButton} onPress={fetchTechniques}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.gridContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={COLORS.ACCENT_PURPLE}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="search-outline" size={48} color={COLORS.GRAY_TEXT} />
+              <Text style={styles.emptyText}>No techniques found</Text>
+              <Text style={styles.emptySubtext}>
+                {search.trim()
+                  ? "Try a different search term"
+                  : "Techniques will appear here once available"}
+              </Text>
+            </View>
+          }
+        />
+      )}
+
+      <TechniqueDetailModal
+        visible={modalVisible}
+        technique={selectedTechnique}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
-    alignItems: "center"
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  header: {
     paddingHorizontal: 24,
-    paddingBottom: 100,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 50,
+    paddingBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
   },
   title: {
     fontFamily: FONTS.SUNFLOWER_BOLD,
     fontSize: 24,
     color: COLORS.WHITE,
-    marginBottom: 10,
   },
-  subtitle: {
+  count: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.GRAY_TEXT,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.CARD,
+    borderRadius: RADIUS.MD,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+    marginHorizontal: 24,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontSize: 15,
+    color: COLORS.WHITE,
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  filtersRow: {
+    flexGrow: 0,
+    marginTop: 12,
+    marginBottom: 4,
+    minHeight: 40,
+  },
+  filtersContent: {
+    paddingHorizontal: 24,
+    gap: 8,
+    paddingVertical: 4,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: RADIUS.ROUND,
+    backgroundColor: COLORS.CARD,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.BUTTON,
+    borderColor: COLORS.BUTTON,
+  },
+  filterChipText: {
+    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontSize: 13,
+    color: COLORS.GRAY_TEXT,
+  },
+  filterChipTextActive: {
+    color: COLORS.WHITE,
+  },
+  gridContent: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 100,
+  },
+  cardLeft: {
+    flex: 1,
+    marginRight: 6,
+  },
+  cardRight: {
+    flex: 1,
+    marginLeft: 6,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  errorText: {
+    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontSize: 14,
+    color: COLORS.ACCENT_ORANGE,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.BUTTON,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: RADIUS.MD,
+  },
+  retryText: {
+    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontSize: 14,
+    color: COLORS.WHITE,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingTop: 60,
+    gap: 12,
+  },
+  emptyText: {
+    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontSize: 18,
+    color: COLORS.WHITE,
+  },
+  emptySubtext: {
+    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT,
+    textAlign: "center",
   },
 });

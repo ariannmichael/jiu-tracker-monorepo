@@ -27,7 +27,11 @@ export function AnalyticsContextProvider({ children }: { children: React.ReactNo
     setLoading(true);
     setError(null);
     try {
-      const data = await AnalyticsService.getAnalytics(token);
+      let data = await AnalyticsService.getAnalytics(token);
+      if (data === null) {
+        await AnalyticsService.recomputeAnalytics(token);
+        data = await AnalyticsService.getAnalytics(token);
+      }
       setAnalytics(data);
     } catch (e) {
       setError((e as Error).message);
