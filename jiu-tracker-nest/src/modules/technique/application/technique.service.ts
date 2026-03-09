@@ -53,6 +53,13 @@ export class TechniqueService {
     return this.techniqueRepo.findByIds(ids);
   }
 
+  /** Names only, with explicit DB column mapping: name = English, namePortuguese = Portuguese. */
+  async getTechniqueNamesByIds(
+    ids: string[],
+  ): Promise<{ id: string; name: string; namePortuguese: string }[]> {
+    return this.techniqueRepo.findNamesByIds(ids);
+  }
+
   async getAllTechniques(): Promise<Technique[]> {
     return this.techniqueRepo.findAll();
   }

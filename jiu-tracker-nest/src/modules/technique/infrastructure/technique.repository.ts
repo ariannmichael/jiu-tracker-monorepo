@@ -5,6 +5,12 @@ import { Technique, Category, Difficulty } from '../domain/technique.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { TechniqueListDto } from '../application/dto/list-technique.dto';
 
+export interface TechniqueNameRow {
+  id: string;
+  name: string;
+  namePortuguese: string;
+}
+
 @Injectable()
 export class TechniqueRepository {
   constructor(
@@ -39,6 +45,19 @@ export class TechniqueRepository {
 
   async findByIds(ids: string[]): Promise<Technique[]> {
     return this.repo.find({ where: { id: In(ids) } });
+  }
+
+  /** Explicit column selection so "name" is always the DB "name" column (English) and "name_portuguese" is Portuguese. */
+  async findNamesByIds(ids: string[]): Promise<TechniqueNameRow[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.repo
+      .createQueryBuilder('t')
+      .select('t.id', 'id')
+      .addSelect('t.name', 'name')
+      .addSelect('t.namePortuguese', 'namePortuguese')
+      .where('t.id IN (:...ids)', { ids })
+      .getRawMany<{ id: string; name: string; namePortuguese: string }>();
+    return rows;
   }
 
   async findByCategory(category: Category): Promise<Technique[]> {

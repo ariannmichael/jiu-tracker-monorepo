@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
-import { Text, View, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import { Text, View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatCard from "../cards/StatCard";
@@ -11,6 +12,7 @@ import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
 import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { TranslationKeys } from "@/i18n";
 import type { TopTechniqueRow } from "@jiu-tracker/shared";
 
 const CATEGORY_CHART_COLORS: Record<string, string> = {
@@ -21,6 +23,16 @@ const CATEGORY_CHART_COLORS: Record<string, string> = {
   Takedown: COLORS.ACCENT_ORANGE,
   Defend: COLORS.ACCENT_GREEN,
   SubmissionEscape: COLORS.ACCENT_YELLOW,
+};
+
+const CATEGORY_LABEL_KEYS: Record<string, TranslationKeys> = {
+  Submission: "submission",
+  Sweep: "sweep",
+  Pass: "pass",
+  Guard: "guard",
+  Takedown: "takedown",
+  Defend: "defend",
+  SubmissionEscape: "escape",
 };
 
 function formatMinutesAsHours(minutes: number): string {
@@ -39,19 +51,30 @@ function TechniqueList({
   total: number;
   emptyLabel: string;
 }) {
+  const { language } = useLanguage();
+  const isPt = language === "pt";
+
   if (items.length === 0) {
     return (
       <Text style={styles.techniqueListEmpty}>{emptyLabel}</Text>
     );
   }
+
+  const getDisplayName = (item: TopTechniqueRow) => {
+    const pt = item.namePortuguese ?? (item as { name_portuguese?: string }).name_portuguese;
+    const en = item.name;
+    return isPt ? (pt ?? en) : (en ?? pt);
+  };
+
   return (
     <View style={styles.techniqueList}>
-      {items.slice(0, 5).map((t, i) => {
-        const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
+      {items.slice(0, 5).map((item, i) => {
+        const displayName = getDisplayName(item);
+        const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
         return (
-          <View key={t.techniqueId + i} style={styles.techniqueRow}>
+          <View key={item.techniqueId} style={styles.techniqueRow}>
             <View style={[styles.techniqueDot, { backgroundColor: [COLORS.ACCENT_TEAL, COLORS.ACCENT_PURPLE, COLORS.ACCENT_ORANGE, COLORS.ACCENT_PINK, COLORS.ACCENT_BLUE][i % 5] }]} />
-            <Text style={styles.techniqueName} numberOfLines={1}>{t.name}</Text>
+            <Text style={styles.techniqueName} numberOfLines={1}>{displayName}</Text>
             <Text style={styles.techniquePct}>{pct}%</Text>
           </View>
         );
@@ -68,24 +91,25 @@ export default function DashboardScreen() {
     Sunflower_700Bold,
   });
   const insets = useSafeAreaInsets();
-  const { analytics, refreshAnalytics, loading, error } = useAnalytics();
+  const { analytics, recomputeAndRefresh, loading, error } = useAnalytics();
   const { t } = useLanguage();
+  const [refreshing, setRefreshing] = useState(false);
 
   const nextMilestone = 30;
   const currentStreak = analytics?.current_streak ?? 0;
   const progressToMilestone = currentStreak >= nextMilestone ? 100 : (currentStreak / nextMilestone) * 100;
 
   const performanceData = analytics?.category_breakdown && Object.keys(analytics.category_breakdown).length > 0
-    ? Object.entries(analytics.category_breakdown).map(([label, value]) => ({
-        label,
+    ? Object.entries(analytics.category_breakdown).map(([key, value]) => ({
+        label: t(CATEGORY_LABEL_KEYS[key] ?? "submission"),
         value,
-        color: CATEGORY_CHART_COLORS[label] ?? COLORS.GRAY_MEDIUM,
+        color: CATEGORY_CHART_COLORS[key] ?? COLORS.GRAY_MEDIUM,
       }))
     : [
-        { label: "Submission", value: 0, color: COLORS.ACCENT_PINK },
-        { label: "Guard", value: 0, color: COLORS.ACCENT_PURPLE },
-        { label: "Sweep", value: 0, color: COLORS.ACCENT_BLUE },
-        { label: "Pass", value: 0, color: COLORS.ACCENT_TEAL },
+        { label: t("submission"), value: 0, color: COLORS.ACCENT_PINK },
+        { label: t("guard"), value: 0, color: COLORS.ACCENT_PURPLE },
+        { label: t("sweep"), value: 0, color: COLORS.ACCENT_BLUE },
+        { label: t("pass"), value: 0, color: COLORS.ACCENT_TEAL },
       ];
 
   const submissionsCount = analytics?.submissions_count ?? 0;
@@ -108,9 +132,17 @@ export default function DashboardScreen() {
   const topWinTechniques = (analytics?.top_win_techniques ?? []) as TopTechniqueRow[];
   const topLostTechniques = (analytics?.top_lost_techniques ?? []) as TopTechniqueRow[];
 
-  useEffect(() => {
-    refreshAnalytics();
-  }, [refreshAnalytics]);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await recomputeAndRefresh();
+    setRefreshing(false);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      recomputeAndRefresh();
+    }, [recomputeAndRefresh]),
+  );
 
   if (!fontsLoaded) return null;
 
@@ -128,6 +160,9 @@ export default function DashboardScreen() {
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_PURPLE} />
+        }
       >
         <StreakCard
           value={currentStreak.toString()}

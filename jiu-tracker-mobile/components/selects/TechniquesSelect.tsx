@@ -30,12 +30,19 @@ export default function TechniquesSelect({
 }: TechniquesSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const getDisplayName = (item: TechniqueListItem) =>
+    language === "pt" && item.namePortuguese ? item.namePortuguese : item.name;
 
   const filteredOptions = useMemo(() => {
     if (!search.trim()) return options;
     const q = search.toLowerCase().trim();
-    return options.filter((t) => t.name.toLowerCase().includes(q));
+    return options.filter(
+      (item) =>
+        item.name.toLowerCase().includes(q) ||
+        (item.namePortuguese && item.namePortuguese.toLowerCase().includes(q))
+    );
   }, [options, search]);
 
   const toggle = (id: string) => {
@@ -46,12 +53,15 @@ export default function TechniquesSelect({
     }
   };
 
-  const selectedNames = useMemo(
+  const selectedDisplayNames = useMemo(
     () =>
       selected
-        .map((id) => options.find((o) => o.id === id)?.name)
+        .map((id) => {
+          const opt = options.find((o) => o.id === id);
+          return opt ? getDisplayName(opt) : undefined;
+        })
         .filter(Boolean) as string[],
-    [selected, options]
+    [selected, options, language]
   );
 
   return (
@@ -61,9 +71,9 @@ export default function TechniquesSelect({
         onPress={() => setOpen((o) => !o)}
       >
         <View style={styles.boxInner}>
-          {selectedNames.length > 0 ? (
+          {selectedDisplayNames.length > 0 ? (
             <View style={styles.chips}>
-              {selectedNames.map((name) => (
+              {selectedDisplayNames.map((name) => (
                 <View
                   key={name}
                   style={[
@@ -111,7 +121,7 @@ export default function TechniquesSelect({
                     onPress={() => toggle(opt.id)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.optionText}>{opt.name}</Text>
+                    <Text style={styles.optionText}>{getDisplayName(opt)}</Text>
                     {isSelected && <Text style={styles.check}>✓</Text>}
                   </TouchableOpacity>
                 );

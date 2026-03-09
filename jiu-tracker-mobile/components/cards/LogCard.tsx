@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export interface LogCardTechnique {
   id: string;
   name: string;
+  namePortuguese?: string;
 }
 
 export interface LogCardProps {
@@ -16,10 +17,14 @@ export interface LogCardProps {
   onPress?: () => void;
 }
 
-function groupByName(items: LogCardTechnique[]): { name: string; count: number }[] {
+function groupByDisplayName(
+  items: LogCardTechnique[],
+  isPt: boolean,
+): { name: string; count: number }[] {
   const map = new Map<string, number>();
   for (const item of items) {
-    map.set(item.name, (map.get(item.name) ?? 0) + 1);
+    const display = isPt && item.namePortuguese ? item.namePortuguese : item.name;
+    map.set(display, (map.get(display) ?? 0) + 1);
   }
   return Array.from(map.entries()).map(([name, count]) => ({ name, count }));
 }
@@ -52,9 +57,10 @@ const LogCard: React.FC<LogCardProps> = ({
   tapped,
   onPress,
 }) => {
-  const { t } = useLanguage();
-  const submittedGrouped = groupByName(submitted);
-  const tappedGrouped = groupByName(tapped);
+  const { t, language } = useLanguage();
+  const isPt = language === "pt";
+  const submittedGrouped = groupByDisplayName(submitted, isPt);
+  const tappedGrouped = groupByDisplayName(tapped, isPt);
   const totalOutcomes = submitted.length + tapped.length;
   const submissionRate =
     totalOutcomes > 0 ? Math.round((submitted.length / totalOutcomes) * 100) : 0;

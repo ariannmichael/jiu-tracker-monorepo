@@ -1,6 +1,7 @@
 export interface TopTechniqueRow {
   techniqueId: string;
   name: string;
+  namePortuguese: string;
   count: number;
 }
 

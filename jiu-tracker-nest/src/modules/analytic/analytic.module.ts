@@ -12,6 +12,7 @@ import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { AnalyticRepository } from './infrastructure/analytic.repository';
 import { UserModule } from '../user/user.module';
 import { TrainingModule } from '../training/training.module';
+import { TechniqueModule } from '../technique/technique.module';
 import { ANALYTICS_QUEUE_NAME } from './application/listeners/training-event.listener';
 import { TrainingEventListener } from './application/listeners/training-event.listener';
 import { AnalyticsProcessor } from './application/processors/analytics.processor';
@@ -25,6 +26,7 @@ import { InsightService } from './application/insight.service';
     PassportModule,
     UserModule,
     TrainingModule,
+    TechniqueModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

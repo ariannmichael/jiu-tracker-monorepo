@@ -6,6 +6,7 @@ import type { AnalyticsResponse } from '@jiu-tracker/shared';
 interface AnalyticsContextType {
   analytics: AnalyticsResponse | null;
   refreshAnalytics: () => Promise<void>;
+  recomputeAndRefresh: () => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -41,12 +42,28 @@ export function AnalyticsContextProvider({ children }: { children: React.ReactNo
     }
   }, [token]);
 
+  const recomputeAndRefresh = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await AnalyticsService.recomputeAnalytics(token);
+      const data = await AnalyticsService.getAnalytics(token);
+      setAnalytics(data);
+    } catch (e) {
+      setError((e as Error).message);
+      setAnalytics(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
   useEffect(() => {
     refreshAnalytics();
   }, [refreshAnalytics]);
 
   return (
-    <AnalyticsContext.Provider value={{ analytics, refreshAnalytics, loading, error }}>
+    <AnalyticsContext.Provider value={{ analytics, refreshAnalytics, recomputeAndRefresh, loading, error }}>
       {children}
     </AnalyticsContext.Provider>
   );

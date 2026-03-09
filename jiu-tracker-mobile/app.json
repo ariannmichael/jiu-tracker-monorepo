@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "bjj-tracker-mobile",
-    "slug": "bjj-tracker-mobile",
+    "name": "jiu-tracker-mobile",
+    "slug": "jiu-tracker-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

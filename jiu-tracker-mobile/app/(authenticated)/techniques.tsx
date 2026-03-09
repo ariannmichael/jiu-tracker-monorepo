@@ -34,7 +34,7 @@ const CATEGORY_FILTERS: { value: Category | "all"; labelKey: TranslationKeys }[]
 export default function TechniquesScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [techniques, setTechniques] = useState<Technique[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +92,7 @@ export default function TechniquesScreen() {
     <View style={index % 2 === 0 ? styles.cardLeft : styles.cardRight}>
       <TechniqueCard
         name={item.name}
+        namePortuguese={item.name_portuguese}
         category={item.category}
         difficulty={item.difficulty}
         onPress={() => openDetail(item)}
@@ -137,6 +138,7 @@ export default function TechniquesScreen() {
         keyExtractor={(item) => String(item.value)}
         contentContainerStyle={styles.filtersContent}
         style={styles.filtersRow}
+        extraData={language}
         renderItem={({ item: filter }) => {
           const isActive = activeCategory === filter.value;
           return (
@@ -176,6 +178,7 @@ export default function TechniquesScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.gridContent}
           showsVerticalScrollIndicator={false}
+          extraData={language}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

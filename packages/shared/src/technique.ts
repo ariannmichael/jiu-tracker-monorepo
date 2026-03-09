@@ -19,7 +19,7 @@ export enum Category {
 export interface Technique {
   id: string;
   name: string;
-  name_portuguese: string;
+  namePortuguese: string;
   description: string;
   description_portuguese: string;
   category: Category;
@@ -29,13 +29,13 @@ export interface Technique {
 export interface TechniqueListItem {
   id: string;
   name: string;
-  name_portuguese: string;
+  namePortuguese: string;
 }
 
 // Request types
 export interface CreateTechniqueRequest {
   name: string;
-  name_portuguese: string;
+  namePortuguese: string;
   description: string;
   description_portuguese: string;
   category: number;
@@ -44,7 +44,7 @@ export interface CreateTechniqueRequest {
 
 export interface UpdateTechniqueRequest {
   name?: string;
-  name_portuguese?: string;
+  namePortuguese?: string;
   description?: string;
   description_portuguese?: string;
   category?: number;

@@ -25,9 +25,15 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
   technique,
   onClose,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   if (!technique) return null;
+
+  const isPt = language === "pt";
+  const primaryName = isPt && technique.name_portuguese ? technique.name_portuguese : technique.name;
+  const secondaryName = isPt && technique.name_portuguese ? technique.name : technique.name_portuguese;
+  const primaryDescription = isPt && technique.description_portuguese ? technique.description_portuguese : technique.description;
+  const secondaryDescription = isPt && technique.description_portuguese ? technique.description : technique.description_portuguese;
 
   const catConfig =
     CATEGORY_CONFIG[technique.category] ?? CATEGORY_CONFIG[Category.Submission];
@@ -66,11 +72,11 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
             contentContainerStyle={styles.bodyContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.title}>{technique.name}</Text>
+            <Text style={styles.title}>{primaryName}</Text>
 
-            {technique.name_portuguese ? (
-              <Text style={styles.portugueseName}>
-                {technique.name_portuguese}
+            {secondaryName ? (
+              <Text style={styles.secondaryName}>
+                {secondaryName}
               </Text>
             ) : null}
 
@@ -105,18 +111,18 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
               </View>
             </View>
 
-            {technique.description ? (
+            {primaryDescription ? (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t("description")}</Text>
-                <Text style={styles.sectionBody}>{technique.description}</Text>
+                <Text style={styles.sectionBody}>{primaryDescription}</Text>
               </View>
             ) : null}
 
-            {technique.description_portuguese ? (
+            {secondaryDescription ? (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t("description")}</Text>
                 <Text style={styles.sectionBody}>
-                  {technique.description_portuguese}
+                  {secondaryDescription}
                 </Text>
               </View>
             ) : null}
@@ -178,7 +184,7 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     marginBottom: 4,
   },
-  portugueseName: {
+  secondaryName: {
     fontFamily: FONTS.SUNFLOWER_LIGHT,
     fontSize: 15,
     color: COLORS.GRAY_TEXT,

@@ -1,6 +1,7 @@
 import { AnalyticService } from './analytic.service';
 import { AnalyticRepository } from '../infrastructure/analytic.repository';
 import { TrainingService } from '../../training/application/training.service';
+import { TechniqueService } from '../../technique/application/technique.service';
 import { TrainingSession } from '../../training/domain/training-session.entity';
 import { Technique } from '../../technique/domain/technique.entity';
 import { Category, Difficulty } from '@jiu-tracker/shared';
@@ -37,6 +38,9 @@ describe('AnalyticService', () => {
   let service: AnalyticService;
   let mockAnalyticRepo: jest.Mocked<Pick<AnalyticRepository, 'findByUserId' | 'upsert'>>;
   let mockTrainingService: jest.Mocked<Pick<TrainingService, 'getTrainingsByUserId'>>;
+  let mockTechniqueService: jest.Mocked<
+    Pick<TechniqueService, 'getTechniqueNamesByIds'>
+  >;
 
   beforeEach(() => {
     mockAnalyticRepo = {
@@ -44,19 +48,38 @@ describe('AnalyticService', () => {
       upsert: jest.fn().mockResolvedValue({}),
     };
     mockTrainingService = {
-      getTrainingsByUserId: jest.fn().mockResolvedValue([]),
+      getTrainingsByUserId: jest.fn().mockResolvedValue({ trainings: [], total: 0 }),
+    };
+    mockTechniqueService = {
+      getTechniqueNamesByIds: jest.fn().mockImplementation((ids: string[]) =>
+        Promise.resolve(
+          ids.map((id) => ({
+            id,
+            name: baseTechnique.name,
+            namePortuguese: baseTechnique.namePortuguese,
+          })),
+        ),
+      ),
     };
     service = new AnalyticService(
       mockAnalyticRepo as unknown as AnalyticRepository,
       mockTrainingService as unknown as TrainingService,
+      mockTechniqueService as unknown as TechniqueService,
     );
   });
 
   describe('recomputeForUser', () => {
     it('calls trainingService.getTrainingsByUserId and repo.upsert', async () => {
-      mockTrainingService.getTrainingsByUserId.mockResolvedValue([]);
+      mockTrainingService.getTrainingsByUserId.mockResolvedValue({
+        trainings: [],
+        total: 0,
+      });
       await service.recomputeForUser('user-1');
-      expect(mockTrainingService.getTrainingsByUserId).toHaveBeenCalledWith('user-1');
+      expect(mockTrainingService.getTrainingsByUserId).toHaveBeenCalledWith(
+        'user-1',
+        100_000,
+        0,
+      );
       expect(mockAnalyticRepo.findByUserId).toHaveBeenCalledWith('user-1');
       expect(mockAnalyticRepo.upsert).toHaveBeenCalled();
       const upsertArg = mockAnalyticRepo.upsert.mock.calls[0][0];
@@ -68,10 +91,13 @@ describe('AnalyticService', () => {
     });
 
     it('computes totals from multiple sessions', async () => {
-      mockTrainingService.getTrainingsByUserId.mockResolvedValue([
-        session({ userId: 'user-1', date: '2025-01-01', duration: 60, is_open_mat: false }),
-        session({ userId: 'user-1', date: '2025-01-02', duration: 90, is_open_mat: true }),
-      ]);
+      mockTrainingService.getTrainingsByUserId.mockResolvedValue({
+        trainings: [
+          session({ userId: 'user-1', date: '2025-01-01', duration: 60, is_open_mat: false }),
+          session({ userId: 'user-1', date: '2025-01-02', duration: 90, is_open_mat: true }),
+        ],
+        total: 2,
+      });
       await service.recomputeForUser('user-1');
       const upsertArg = mockAnalyticRepo.upsert.mock.calls[0][0];
       expect(upsertArg.totalSessions).toBe(2);
@@ -84,19 +110,41 @@ describe('AnalyticService', () => {
     it('computes win ratio from submit vs tapped', async () => {
       const t1 = { ...baseTechnique, id: 't1' };
       const t2 = { ...baseTechnique, id: 't2' };
-      mockTrainingService.getTrainingsByUserId.mockResolvedValue([
-        session({
-          userId: 'user-1',
-          date: '2025-01-01',
-          submit_using_options: [t1, t2],
-          tapped_by_options: [t1],
-        }),
-      ]);
+      mockTrainingService.getTrainingsByUserId.mockResolvedValue({
+        trainings: [
+          session({
+            userId: 'user-1',
+            date: '2025-01-01',
+            submit_using_options: [t1, t2],
+            tapped_by_options: [t1],
+          }),
+        ],
+        total: 1,
+      });
       await service.recomputeForUser('user-1');
+      expect(mockTechniqueService.getTechniqueNamesByIds).toHaveBeenCalledWith(
+        expect.arrayContaining(['t1', 't2']),
+      );
       const upsertArg = mockAnalyticRepo.upsert.mock.calls[0][0];
       expect(upsertArg.submissionsCount).toBe(2);
       expect(upsertArg.tappedByCount).toBe(1);
       expect(upsertArg.winRatio).toBeCloseTo(2 / 3);
+      expect(upsertArg.topWinTechniques).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            techniqueId: 't1',
+            name: 'Armbar',
+            namePortuguese: 'Chave de Braço',
+            count: expect.any(Number),
+          }),
+          expect.objectContaining({
+            techniqueId: 't2',
+            name: 'Armbar',
+            namePortuguese: 'Chave de Braço',
+            count: expect.any(Number),
+          }),
+        ]),
+      );
     });
 
     it('reuses existing analytic id when present', async () => {
@@ -104,7 +152,10 @@ describe('AnalyticService', () => {
         id: 'existing-id',
         userId: 'user-1',
       } as any);
-      mockTrainingService.getTrainingsByUserId.mockResolvedValue([]);
+      mockTrainingService.getTrainingsByUserId.mockResolvedValue({
+        trainings: [],
+        total: 0,
+      });
       await service.recomputeForUser('user-1');
       const upsertArg = mockAnalyticRepo.upsert.mock.calls[0][0];
       expect(upsertArg.id).toBe('existing-id');

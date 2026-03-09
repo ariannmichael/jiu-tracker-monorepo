@@ -5,12 +5,14 @@ import { AnalyticRepository } from '../infrastructure/analytic.repository';
 import { Analytic, TopTechniqueRow } from '../domain/analytic.entity';
 import { TrainingService } from '../../training/application/training.service';
 import { TrainingSession } from '../../training/domain/training-session.entity';
+import { TechniqueService } from '../../technique/application/technique.service';
 
 @Injectable()
 export class AnalyticService {
   constructor(
     private readonly analyticRepo: AnalyticRepository,
     private readonly trainingService: TrainingService,
+    private readonly techniqueService: TechniqueService,
   ) {}
 
   async recomputeForUser(userId: string): Promise<void> {
@@ -18,7 +20,7 @@ export class AnalyticService {
       this.trainingService.getTrainingsByUserId(userId, 100_000, 0),
       this.analyticRepo.findByUserId(userId),
     ]);
-    const row = this.computeAnalytics(
+    const row = await this.computeAnalytics(
       userId,
       result.trainings,
       existing?.id ?? null,
@@ -30,11 +32,11 @@ export class AnalyticService {
     return this.analyticRepo.findByUserId(userId);
   }
 
-  private computeAnalytics(
+  private async computeAnalytics(
     userId: string,
     sessions: TrainingSession[],
     existingId: string | null,
-  ): Partial<Analytic> {
+  ): Promise<Partial<Analytic>> {
     const now = new Date();
     const today = this.toDateKey(now);
 
@@ -61,20 +63,50 @@ export class AnalyticService {
       today,
     );
 
+    const uniqueTechniqueIds = new Set<string>();
+    for (const s of sessions) {
+      for (const t of s.submit_using_options ?? []) uniqueTechniqueIds.add(t.id);
+      for (const t of s.tapped_by_options ?? []) uniqueTechniqueIds.add(t.id);
+    }
+    const techniqueNames = new Map<
+      string,
+      { name: string; namePortuguese: string }
+    >();
+    if (uniqueTechniqueIds.size > 0) {
+      const rows = await this.techniqueService.getTechniqueNamesByIds(
+        Array.from(uniqueTechniqueIds),
+      );
+      for (const row of rows) {
+        techniqueNames.set(row.id, {
+          name: row.name ?? '',
+          namePortuguese: row.namePortuguese ?? row.name ?? '',
+        });
+      }
+    }
+
     let submissionsCount = 0;
     let tappedByCount = 0;
-    const techniqueCounts = new Map<string, { name: string; count: number }>();
+    const techniqueCounts = new Map<
+      string,
+      { name: string; namePortuguese: string; count: number }
+    >();
     const winTechniqueCounts = new Map<
       string,
-      { name: string; count: number }
+      { name: string; namePortuguese: string; count: number }
     >();
     const lostTechniqueCounts = new Map<
       string,
-      { name: string; count: number }
+      { name: string; namePortuguese: string; count: number }
     >();
     const categoryCounts = new Map<string, number>();
     let giSessions = 0;
     let nogiSessions = 0;
+
+    const getNames = (techniqueId: string) =>
+      techniqueNames.get(techniqueId) ?? {
+        name: '',
+        namePortuguese: '',
+      };
 
     for (const s of sessions) {
       if (s.is_gi) giSessions += 1;
@@ -85,13 +117,16 @@ export class AnalyticService {
       tappedByCount += tap;
       for (const t of s.submit_using_options ?? []) {
         const key = t.id;
+        const { name, namePortuguese } = getNames(key);
         const cur = techniqueCounts.get(key) ?? {
-          name: t.namePortuguese || t.name,
+          name,
+          namePortuguese,
           count: 0,
         };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
         const winCur = winTechniqueCounts.get(key) ?? {
-          name: t.namePortuguese || t.name,
+          name,
+          namePortuguese,
           count: 0,
         };
         winTechniqueCounts.set(key, { ...winCur, count: winCur.count + 1 });
@@ -100,13 +135,16 @@ export class AnalyticService {
       }
       for (const t of s.tapped_by_options ?? []) {
         const key = t.id;
+        const { name, namePortuguese } = getNames(key);
         const cur = techniqueCounts.get(key) ?? {
-          name: t.namePortuguese || t.name,
+          name,
+          namePortuguese,
           count: 0,
         };
         techniqueCounts.set(key, { ...cur, count: cur.count + 1 });
         const lostCur = lostTechniqueCounts.get(key) ?? {
-          name: t.namePortuguese || t.name,
+          name,
+          namePortuguese,
           count: 0,
         };
         lostTechniqueCounts.set(key, { ...lostCur, count: lostCur.count + 1 });
@@ -124,21 +162,36 @@ export class AnalyticService {
     const topTechniques: TopTechniqueRow[] = Array.from(
       techniqueCounts.entries(),
     )
-      .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
+      .map(([techniqueId, { name, namePortuguese, count }]) => ({
+        techniqueId,
+        name,
+        namePortuguese,
+        count,
+      }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
     const topWinTechniques: TopTechniqueRow[] = Array.from(
       winTechniqueCounts.entries(),
     )
-      .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
+      .map(([techniqueId, { name, namePortuguese, count }]) => ({
+        techniqueId,
+        name,
+        namePortuguese,
+        count,
+      }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
     const topLostTechniques: TopTechniqueRow[] = Array.from(
       lostTechniqueCounts.entries(),
     )
-      .map(([techniqueId, { name, count }]) => ({ techniqueId, name, count }))
+      .map(([techniqueId, { name, namePortuguese, count }]) => ({
+        techniqueId,
+        name,
+        namePortuguese,
+        count,
+      }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 

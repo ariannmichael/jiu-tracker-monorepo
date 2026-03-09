@@ -12,6 +12,7 @@ const PADDING_H = 24;
 
 interface TechniqueCardProps {
   name: string;
+  namePortuguese?: string;
   category: Category;
   difficulty: Difficulty;
   onPress: () => void;
@@ -75,12 +76,14 @@ const DIFFICULTY_CONFIG: Record<Difficulty, { label: string; labelKey: Translati
 
 const TechniqueCard: React.FC<TechniqueCardProps> = ({
   name,
+  namePortuguese,
   category,
   difficulty,
   onPress,
 }) => {
   const { width } = useWindowDimensions();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const displayName = language === "pt" && namePortuguese ? namePortuguese : name;
   const cardWidth = (width - PADDING_H * 2 - CARD_GAP) / 2;
   const config = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG[Category.Submission];
   const diffConfig = DIFFICULTY_CONFIG[difficulty] ?? DIFFICULTY_CONFIG[Difficulty.Beginner];
@@ -111,7 +114,7 @@ const TechniqueCard: React.FC<TechniqueCardProps> = ({
 
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={2}>
-          {name}
+          {displayName}
         </Text>
 
         <View style={styles.badges}>

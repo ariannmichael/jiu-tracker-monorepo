@@ -34,7 +34,7 @@ type TrainingWithOptions = TrainingSession & {
 export default function LogsScreen() {
   const insets = useSafeAreaInsets();
   const { user, token } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTraining, setEditingTraining] = useState<TrainingWithOptions | null>(null);
@@ -470,16 +470,24 @@ export default function LogsScreen() {
   );
 
   const renderLogItem = useCallback(
-    ({ item: t }: { item: TrainingWithOptions }) => (
+    ({ item: training }: { item: TrainingWithOptions }) => (
       <LogCard
-        date={t.date}
-        durationMinutes={t.duration}
-        submitted={(t.submit_using_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
-        tapped={(t.tapped_by_options ?? []).map((tech: Technique) => ({ id: tech.id, name: tech.name }))}
-        onPress={() => openEditModal(t)}
+        date={training.date}
+        durationMinutes={training.duration}
+        submitted={(training.submit_using_options ?? []).map((tech: Technique) => ({
+          id: tech.id,
+          name: tech.name,
+          namePortuguese: tech.namePortuguese,
+        }))}
+        tapped={(training.tapped_by_options ?? []).map((tech: Technique) => ({
+          id: tech.id,
+          name: tech.name,
+          namePortuguese: tech.namePortuguese,
+        }))}
+        onPress={() => openEditModal(training)}
       />
     ),
-    [],
+    [language],
   );
 
   const listHeader = (
@@ -516,6 +524,7 @@ export default function LogsScreen() {
         contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        extraData={language}
         onEndReached={() => {
           if (trainings.length < totalLogs && !loadingMore && !loadingLogs) loadMore();
         }}

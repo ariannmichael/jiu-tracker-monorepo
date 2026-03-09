@@ -133,9 +133,24 @@ export class AnalyticController {
     tappedByCount: number;
     winRatio: number;
     uniqueTechniquesCount: number;
-    topTechniques: { techniqueId: string; name: string; count: number }[];
-    topWinTechniques?: { techniqueId: string; name: string; count: number }[];
-    topLostTechniques?: { techniqueId: string; name: string; count: number }[];
+    topTechniques: {
+      techniqueId: string;
+      name: string;
+      namePortuguese: string;
+      count: number;
+    }[];
+    topWinTechniques?: {
+      techniqueId: string;
+      name: string;
+      namePortuguese: string;
+      count: number;
+    }[];
+    topLostTechniques?: {
+      techniqueId: string;
+      name: string;
+      namePortuguese: string;
+      count: number;
+    }[];
     giSessions?: number;
     nogiSessions?: number;
     categoryBreakdown: Record<string, number>;
@@ -143,6 +158,20 @@ export class AnalyticController {
     createdAt: Date;
     updatedAt: Date;
   }) {
+    const mapTopTechniques = (
+      rows: {
+        techniqueId: string;
+        name: string;
+        namePortuguese?: string;
+        count: number;
+      }[],
+    ) =>
+      rows.map((r) => ({
+        techniqueId: r.techniqueId,
+        name: r.name,
+        namePortuguese: r.namePortuguese ?? r.name ?? '',
+        count: r.count,
+      }));
     return {
       id: analytic.id,
       user_id: analytic.userId,
@@ -157,9 +186,9 @@ export class AnalyticController {
       tapped_by_count: analytic.tappedByCount,
       win_ratio: analytic.winRatio,
       unique_techniques_count: analytic.uniqueTechniquesCount,
-      top_techniques: analytic.topTechniques,
-      top_win_techniques: analytic.topWinTechniques ?? [],
-      top_lost_techniques: analytic.topLostTechniques ?? [],
+      top_techniques: mapTopTechniques(analytic.topTechniques ?? []),
+      top_win_techniques: mapTopTechniques(analytic.topWinTechniques ?? []),
+      top_lost_techniques: mapTopTechniques(analytic.topLostTechniques ?? []),
       gi_sessions: analytic.giSessions ?? 0,
       nogi_sessions: analytic.nogiSessions ?? 0,
       category_breakdown: analytic.categoryBreakdown,
