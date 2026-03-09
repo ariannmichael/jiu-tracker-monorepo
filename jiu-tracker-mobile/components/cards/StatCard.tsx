@@ -54,13 +54,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   statValue: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 28,
     color: COLORS.WHITE,
     marginBottom: 4,
   },
   statTitle: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 11,
     color: COLORS.GRAY_TEXT,
     textTransform: "uppercase",

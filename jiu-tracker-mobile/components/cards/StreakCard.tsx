@@ -94,12 +94,14 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   streakValue: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 42,
     color: COLORS.WHITE,
   },
   streakLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 13,
     color: COLORS.GRAY_TEXT,
     textTransform: "uppercase",
@@ -109,7 +111,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   milestoneLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 12,
     color: COLORS.GRAY_TEXT,
     marginBottom: 6,

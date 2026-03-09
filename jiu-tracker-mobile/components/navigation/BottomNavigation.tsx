@@ -97,7 +97,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   navLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 12,
     marginTop: 4,
   },

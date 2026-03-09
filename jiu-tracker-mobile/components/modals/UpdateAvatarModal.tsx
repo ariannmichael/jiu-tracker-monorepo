@@ -72,7 +72,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   title: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 20,
     color: COLORS.WHITE,
     marginBottom: 16,

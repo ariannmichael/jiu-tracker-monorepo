@@ -170,7 +170,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   date: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -178,12 +179,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   totalTimeValue: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 22,
     color: COLORS.WHITE,
   },
   totalTimeLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 12,
     color: COLORS.GRAY_TEXT,
     marginTop: 2,
@@ -197,7 +200,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   columnTitle: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 14,
     color: COLORS.WHITE,
     marginBottom: 10,
@@ -229,7 +233,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(239, 68, 68, 0.5)",
   },
   tagText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 13,
     color: COLORS.WHITE,
   },
@@ -240,12 +245,14 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.SM,
   },
   countText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 12,
     color: COLORS.WHITE,
   },
   emptyTag: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -261,7 +268,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   metricLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 11,
     color: COLORS.GRAY_TEXT,
     textTransform: "uppercase",
@@ -269,7 +277,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   metricValue: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 15,
     color: COLORS.WHITE,
     textAlign: "center",

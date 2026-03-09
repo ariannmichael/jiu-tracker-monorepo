@@ -222,12 +222,14 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
   },
   title: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 24,
     color: COLORS.WHITE,
   },
   count: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -248,7 +250,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 15,
     color: COLORS.WHITE,
     paddingVertical: 0,
@@ -280,7 +283,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.BUTTON,
   },
   filterChipText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 13,
     color: COLORS.GRAY_TEXT,
   },
@@ -307,7 +311,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   errorText: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.ACCENT_ORANGE,
     textAlign: "center",
@@ -320,7 +325,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.MD,
   },
   retryText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 14,
     color: COLORS.WHITE,
   },
@@ -330,12 +336,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 18,
     color: COLORS.WHITE,
   },
   emptySubtext: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
     textAlign: "center",

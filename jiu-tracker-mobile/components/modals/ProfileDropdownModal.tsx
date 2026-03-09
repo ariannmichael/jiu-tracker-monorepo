@@ -84,7 +84,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   itemText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 15,
     color: COLORS.WHITE,
   },

@@ -198,7 +198,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   title: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 20,
     color: COLORS.WHITE,
     marginBottom: 16,
@@ -222,7 +223,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   fieldLabel: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 12,
     color: COLORS.GRAY_TEXT,
     marginBottom: 6,
@@ -230,7 +232,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   fieldInput: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 16,
     color: COLORS.WHITE,
     backgroundColor: COLORS.GRAY_DARKER,
@@ -255,13 +258,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.GRAY_LIGHT,
   },
   beltRankChipText: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 12,
     color: COLORS.GRAY_TEXT,
   },
   beltRankChipTextActive: {
     color: COLORS.WHITE,
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
   },
   stripeDotsRow: {
     flexDirection: "row",
@@ -294,7 +299,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   saveButtonText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 16,
     color: COLORS.WHITE,
   },

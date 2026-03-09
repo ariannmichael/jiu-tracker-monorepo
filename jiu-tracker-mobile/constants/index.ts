@@ -65,12 +65,12 @@ export const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString().padS
 
 export const YEARS = Array.from({ length: 100 }, (_, i) => (new Date().getFullYear() - i).toString());
 
-// Font families
+// Font families — Exo2 variable font (use fontWeight: '300' | '500' | '700')
 export const FONTS = {
   ZEN_DOTS: 'ZenDots_400Regular',
-  SUNFLOWER_LIGHT: 'Sunflower_300Light',
-  SUNFLOWER_MEDIUM: 'Sunflower_500Medium',
-  SUNFLOWER_BOLD: 'Sunflower_700Bold',
+  EXO2_LIGHT: 'Exo2',
+  EXO2_MEDIUM: 'Exo2',
+  EXO2_BOLD: 'Exo2',
 } as const;
 
 // Design system — dark theme with gradients (glassmorphism, rounded cards)

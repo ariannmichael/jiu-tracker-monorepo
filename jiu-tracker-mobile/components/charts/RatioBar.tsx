@@ -94,7 +94,8 @@ const styles = StyleSheet.create({
     minWidth: 4,
   },
   segmentLabel: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 12,
     color: COLORS.WHITE,
   },
@@ -107,7 +108,8 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   legendText: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 13,
     color: COLORS.GRAY_TEXT,
   },
@@ -115,7 +117,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.GRAY_MEDIUM,
   },
   emptyLabel: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 13,
     color: COLORS.GRAY_TEXT,
   },

@@ -239,7 +239,8 @@ const styles = StyleSheet.create({
     display: "flex",
   },
   userName: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 18,
     color: COLORS.WHITE,
     marginBottom: 8,

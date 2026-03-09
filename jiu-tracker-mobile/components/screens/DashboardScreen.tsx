@@ -7,9 +7,6 @@ import StatCard from "../cards/StatCard";
 import StreakCard from "../cards/StreakCard";
 import PieChart from "../charts/PieChart";
 import RatioBar from "../charts/RatioBar";
-import { useFonts } from 'expo-font';
-import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
-import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { TranslationKeys } from "@/i18n";
@@ -84,12 +81,6 @@ function TechniqueList({
 }
 
 export default function DashboardScreen() {
-  const [fontsLoaded] = useFonts({
-    ZenDots_400Regular,
-    Sunflower_300Light,
-    Sunflower_500Medium,
-    Sunflower_700Bold,
-  });
   const insets = useSafeAreaInsets();
   const { analytics, recomputeAndRefresh, loading, error } = useAnalytics();
   const { t } = useLanguage();
@@ -143,8 +134,6 @@ export default function DashboardScreen() {
       recomputeAndRefresh();
     }, [recomputeAndRefresh]),
   );
-
-  if (!fontsLoaded) return null;
 
   if (loading && !analytics) {
     return (
@@ -280,7 +269,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 18,
     color: COLORS.WHITE,
     marginBottom: 20,
@@ -290,19 +280,22 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   submissionRateValue: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 42,
     color: COLORS.ACCENT_TEAL,
   },
   submissionRateHint: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 13,
     color: COLORS.GRAY_TEXT,
     marginTop: 4,
   },
   techniqueList: { gap: 10 },
   techniqueListEmpty: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -318,12 +311,14 @@ const styles = StyleSheet.create({
   },
   techniqueName: {
     flex: 1,
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.WHITE,
   },
   techniquePct: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -340,7 +335,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   errorText: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 12,
     color: COLORS.ACCENT_ORANGE,
     marginBottom: 20,

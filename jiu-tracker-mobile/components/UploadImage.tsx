@@ -215,7 +215,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   buttonText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 14,
     color: COLORS.WHITE,
   },

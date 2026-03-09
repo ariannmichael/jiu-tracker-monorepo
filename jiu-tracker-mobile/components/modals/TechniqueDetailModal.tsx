@@ -179,13 +179,15 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 22,
     color: COLORS.WHITE,
     marginBottom: 4,
   },
   secondaryName: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 15,
     color: COLORS.GRAY_TEXT,
     marginBottom: 16,
@@ -205,7 +207,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.MD,
   },
   metaBadgeText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -219,7 +222,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 12,
     color: COLORS.GRAY_TEXT,
     textTransform: "uppercase",
@@ -227,7 +231,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionBody: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 15,
     color: COLORS.WHITE,
     lineHeight: 24,

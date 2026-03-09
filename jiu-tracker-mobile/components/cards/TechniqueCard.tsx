@@ -162,7 +162,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   name: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 14,
     color: COLORS.WHITE,
     lineHeight: 20,
@@ -191,7 +192,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   badgeText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 10,
     textTransform: "uppercase",
     letterSpacing: 0.3,

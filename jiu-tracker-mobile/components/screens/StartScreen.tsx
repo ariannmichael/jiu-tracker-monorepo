@@ -1,23 +1,14 @@
 import { Text, View, TouchableOpacity, StyleSheet, TextInput, Platform } from "react-native";
-import { useFonts } from "expo-font";
-import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
-import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { COLORS } from "@/constants";
+import { COLORS, FONTS } from "@/constants";
 
 
 export default function StartScreen() {
   const { login: authLogin } = useAuth();
   const { t } = useLanguage();
-  const [fontsLoaded] = useFonts({
-    ZenDots_400Regular,
-    Sunflower_300Light,
-    Sunflower_500Medium,
-    Sunflower_700Bold,
-  });
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -27,10 +18,6 @@ export default function StartScreen() {
 
   const [login, setLogin] = useState(false);
   const [signup, setSignup] = useState(false);
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const handleLogin = async () => {
     if (!(email.length && password.length)) {
@@ -184,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'ZenDots_400Regular',
+    fontFamily: FONTS.ZEN_DOTS,
     fontSize: 36,
     color: COLORS.WHITE,
     marginBottom: 60,
@@ -217,7 +204,8 @@ const styles = StyleSheet.create({
     width: 255,
   },
   buttonText: {
-    fontFamily: 'Sunflower_300Light',
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 32,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -229,7 +217,7 @@ const styles = StyleSheet.create({
     right: 20,
   },
   footerText: {
-    fontFamily: 'ZenDots_400Regular',
+    fontFamily: FONTS.ZEN_DOTS,
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
   },
@@ -245,7 +233,8 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     paddingVertical: 15,
     paddingHorizontal: 0,
-    fontFamily: 'Sunflower_300Light',
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
   },
   inputLine: {
     height: 1,
@@ -255,7 +244,8 @@ const styles = StyleSheet.create({
   backArrow: {
     fontSize: 24,
     color: COLORS.WHITE,
-    fontFamily: 'Sunflower_500Medium',
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
   },
   backButton: {
     justifyContent: 'flex-start',
@@ -264,7 +254,8 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
   errorText: {
-    fontFamily: 'Sunflower_300Light',
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 14,
     color: COLORS.ACCENT_PINK,
     textAlign: 'center',

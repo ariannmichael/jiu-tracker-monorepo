@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, FlatList } from 'react-native';
-import { useFonts } from 'expo-font';
-import { ZenDots_400Regular } from "@expo-google-fonts/zen-dots";
-import { Sunflower_300Light, Sunflower_500Medium, Sunflower_700Bold } from "@expo-google-fonts/sunflower";
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   BeltRank,
@@ -31,13 +28,6 @@ interface SignupData {
 }
 
 export default function Signup() {
-  const [fontsLoaded] = useFonts({
-    ZenDots_400Regular,
-    Sunflower_300Light,
-    Sunflower_500Medium,
-    Sunflower_700Bold,
-  });
-
   const [currentStep, setCurrentStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({
     country: 'Brazil',
@@ -50,10 +40,6 @@ export default function Signup() {
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
   const [selectedDateField, setSelectedDateField] = useState<'day' | 'month' | 'year'>('day');
-
-  if (!fontsLoaded) {
-    return null;
-  }
 
   const { name, email, password } = useLocalSearchParams<{ name: string; email: string; password: string }>();
   const { login } = useAuth();
@@ -464,7 +450,8 @@ const styles = StyleSheet.create({
   backArrow: {
     fontSize: 24,
     color: COLORS.WHITE,
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
   },
   progressContainer: {
     flexDirection: 'row',
@@ -490,7 +477,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepTitle: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 24,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -507,7 +495,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   countryText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 18,
     color: COLORS.WHITE,
   },
@@ -523,7 +512,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   submitButtonText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 16,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -570,7 +560,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   rankButtonText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 20,
     color: COLORS.WHITE,
     borderRadius: 8,
@@ -600,7 +591,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   stripeSelectorLabel: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 14,
     color: COLORS.GRAY_TEXT,
     marginBottom: 10,
@@ -639,13 +631,15 @@ const styles = StyleSheet.create({
     minWidth: 60,
   },
   dateText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 16,
     color: COLORS.WHITE,
     marginRight: 5,
   },
   usernameText: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 32,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -666,7 +660,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   usernameInput: {
-    fontFamily: FONTS.SUNFLOWER_BOLD,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: '700',
     fontSize: 32,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -690,7 +685,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.BORDER,
   },
   modalTitle: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 20,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -703,7 +699,8 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.GRAY_LIGHT,
   },
   modalItemText: {
-    fontFamily: FONTS.SUNFLOWER_LIGHT,
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: '300',
     fontSize: 16,
     color: COLORS.WHITE,
     textAlign: 'center',
@@ -714,7 +711,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BUTTON,
   },
   modalCloseText: {
-    fontFamily: FONTS.SUNFLOWER_MEDIUM,
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
     fontSize: 16,
     color: COLORS.WHITE,
     textAlign: 'center',
