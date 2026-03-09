@@ -83,7 +83,8 @@ const TechniqueCard: React.FC<TechniqueCardProps> = ({
 }) => {
   const { width } = useWindowDimensions();
   const { t, language } = useLanguage();
-  const displayName = language === "pt" && namePortuguese ? namePortuguese : name;
+  const isPt = language === "pt";
+  const displayName = isPt ? (namePortuguese ?? name) : (name ?? namePortuguese);
   const cardWidth = (width - PADDING_H * 2 - CARD_GAP) / 2;
   const config = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG[Category.Submission];
   const diffConfig = DIFFICULTY_CONFIG[difficulty] ?? DIFFICULTY_CONFIG[Difficulty.Beginner];

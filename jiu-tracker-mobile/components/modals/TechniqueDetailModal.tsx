@@ -30,10 +30,20 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
   if (!technique) return null;
 
   const isPt = language === "pt";
-  const primaryName = isPt && technique.name_portuguese ? technique.name_portuguese : technique.name;
-  const secondaryName = isPt && technique.name_portuguese ? technique.name : technique.name_portuguese;
-  const primaryDescription = isPt && technique.description_portuguese ? technique.description_portuguese : technique.description;
-  const secondaryDescription = isPt && technique.description_portuguese ? technique.description : technique.description_portuguese;
+  const namePt =
+    (technique as { namePortuguese?: string }).namePortuguese ??
+    (technique as { name_portuguese?: string }).name_portuguese ??
+    "";
+  const nameEn = technique.name ?? "";
+  const descPt =
+    (technique as { descriptionPortuguese?: string }).descriptionPortuguese ??
+    (technique as { description_portuguese?: string }).description_portuguese ??
+    "";
+  const descEn = technique.description ?? "";
+
+  const primaryName = isPt ? (namePt || nameEn) : (nameEn || namePt);
+  const secondaryName = isPt ? nameEn : namePt;
+  const description = isPt ? (descPt || descEn) : (descEn || descPt);
 
   const catConfig =
     CATEGORY_CONFIG[technique.category] ?? CATEGORY_CONFIG[Category.Submission];
@@ -111,19 +121,10 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
               </View>
             </View>
 
-            {primaryDescription ? (
+            {description ? (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t("description")}</Text>
-                <Text style={styles.sectionBody}>{primaryDescription}</Text>
-              </View>
-            ) : null}
-
-            {secondaryDescription ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t("description")}</Text>
-                <Text style={styles.sectionBody}>
-                  {secondaryDescription}
-                </Text>
+                <Text style={styles.sectionBody}>{description}</Text>
               </View>
             ) : null}
           </ScrollView>

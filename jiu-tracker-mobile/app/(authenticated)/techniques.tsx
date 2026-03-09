@@ -70,14 +70,16 @@ export default function TechniquesScreen() {
   const filtered = useMemo(() => {
     let result = techniques;
     if (activeCategory !== "all") {
-      result = result.filter((t) => t.category === activeCategory);
+      result = result.filter((tech) => tech.category === activeCategory);
     }
     if (search.trim()) {
       const q = search.toLowerCase().trim();
+      const ptName = (t: Technique) =>
+        (t as { namePortuguese?: string }).namePortuguese ?? (t as { name_portuguese?: string }).name_portuguese ?? "";
       result = result.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q) ||
-          t.name_portuguese.toLowerCase().includes(q)
+        (tech) =>
+          tech.name.toLowerCase().includes(q) ||
+          ptName(tech).toLowerCase().includes(q)
       );
     }
     return result;
@@ -88,11 +90,15 @@ export default function TechniquesScreen() {
     setModalVisible(true);
   };
 
+  const getPortugueseName = (item: Technique) =>
+    (item as { namePortuguese?: string }).namePortuguese ??
+    (item as { name_portuguese?: string }).name_portuguese;
+
   const renderItem = ({ item, index }: { item: Technique; index: number }) => (
     <View style={index % 2 === 0 ? styles.cardLeft : styles.cardRight}>
       <TechniqueCard
         name={item.name}
-        namePortuguese={item.name_portuguese}
+        namePortuguese={getPortugueseName(item)}
         category={item.category}
         difficulty={item.difficulty}
         onPress={() => openDetail(item)}
