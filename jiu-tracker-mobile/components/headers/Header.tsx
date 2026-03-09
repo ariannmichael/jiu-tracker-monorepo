@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Text, View, StyleSheet, Image, Pressable } from "react-native";
+import { Text, View, StyleSheet, Image, Pressable, Modal } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS, BELT_COLORS } from "../../constants";
 import type { BeltRank } from "../../constants";
 import { useUser } from "@/contexts/UserContext";
@@ -11,9 +12,9 @@ import UpdateAvatarModal from "@/components/modals/UpdateAvatarModal";
 import UpdateUserModal from "@/components/modals/UpdateUserModal";
 import UpdateBeltModal from "@/components/modals/UpdateBeltModal";
 
-const LANG_OPTIONS: { value: Language; flag: string }[] = [
-  { value: "en", flag: "🇺🇸" },
-  { value: "pt", flag: "🇧🇷" },
+const LANG_OPTIONS: { value: Language; flag: string; label: string }[] = [
+  { value: "en", flag: "🇺🇸", label: "English" },
+  { value: "pt", flag: "🇧🇷", label: "Português" },
 ];
 
 const HeaderComponent: React.FC = () => {
@@ -21,9 +22,12 @@ const HeaderComponent: React.FC = () => {
   const { logout, user } = useAuth();
   const { language, setLanguage } = useLanguage();
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [langDropdownVisible, setLangDropdownVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const [beltModalVisible, setBeltModalVisible] = useState(false);
+
+  const currentLang = LANG_OPTIONS.find((opt) => opt.value === language) ?? LANG_OPTIONS[0];
 
   const handleUpdateAvatar = () => {
     setDropdownVisible(false);
@@ -114,19 +118,47 @@ const HeaderComponent: React.FC = () => {
       </View>
 
       <View style={styles.langSwitcher}>
-        {LANG_OPTIONS.map((opt) => (
-          <Pressable
-            key={opt.value}
-            style={[
-              styles.langOption,
-              language === opt.value && styles.langOptionActive,
-            ]}
-            onPress={() => setLanguage(opt.value)}
-          >
-            <Text style={styles.langFlag}>{opt.flag}</Text>
-          </Pressable>
-        ))}
+        <Pressable
+          style={styles.langDropdownTrigger}
+          onPress={() => setLangDropdownVisible(true)}
+        >
+          <Text style={styles.langFlag}>{currentLang.flag}</Text>
+        </Pressable>
       </View>
+
+      <Modal
+        visible={langDropdownVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLangDropdownVisible(false)}
+      >
+        <Pressable style={styles.langDropdownOverlay} onPress={() => setLangDropdownVisible(false)}>
+          <Pressable onPress={() => {}} style={styles.langDropdownMenuWrap}>
+            <View style={styles.langDropdownMenu}>
+              {LANG_OPTIONS.map((opt, index) => (
+                <Pressable
+                  key={opt.value}
+                  style={[
+                    styles.langDropdownItem,
+                    language === opt.value && styles.langDropdownItemActive,
+                    index === LANG_OPTIONS.length - 1 && styles.langDropdownItemLast,
+                  ]}
+                  onPress={() => {
+                    setLanguage(opt.value);
+                    setLangDropdownVisible(false);
+                  }}
+                >
+                  <Text style={styles.langDropdownFlag}>{opt.flag}</Text>
+                  <Text style={styles.langDropdownLabel}>{opt.label}</Text>
+                  {language === opt.value && (
+                    <Ionicons name="checkmark" size={20} color={COLORS.BUTTON} />
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <ProfileDropdownModal
         visible={dropdownVisible}
@@ -277,26 +309,63 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   langSwitcher: {
-    flexDirection: "row",
-    gap: 6,
     marginLeft: 8,
   },
-  langOption: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  langDropdownTrigger: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.GRAY_MEDIUM,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.GRAY_MEDIUM,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  langOptionActive: {
-    borderColor: COLORS.BUTTON,
-    backgroundColor: COLORS.CARD_ELEVATED,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   langFlag: {
     fontSize: 18,
+  },
+  langDropdownOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingTop: 96,
+    paddingRight: 24,
+    paddingBottom: 24,
+    alignItems: "flex-end",
+  },
+  langDropdownMenuWrap: {
+    alignSelf: "flex-end",
+  },
+  langDropdownMenu: {
+    backgroundColor: COLORS.CARD_ELEVATED,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+    minWidth: 160,
+    overflow: "hidden",
+  },
+  langDropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER,
+  },
+  langDropdownItemActive: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  langDropdownItemLast: {
+    borderBottomWidth: 0,
+  },
+  langDropdownFlag: {
+    fontSize: 18,
+  },
+  langDropdownLabel: {
+    flex: 1,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontSize: 14,
+    color: COLORS.WHITE,
   },
 });
 

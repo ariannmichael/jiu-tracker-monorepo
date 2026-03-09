@@ -15,6 +15,14 @@ jest.mock('@/contexts/AuthContext', () => ({
   })),
 }));
 
+jest.mock('@/contexts/LanguageContext', () => ({
+  useLanguage: jest.fn(() => ({
+    language: "en",
+    setLanguage: jest.fn(),
+    t: (key: string) => key,
+  })),
+}));
+
 const mockUseUser = useUser as jest.MockedFunction<typeof useUser>;
 
 describe('Header', () => {
