@@ -86,11 +86,12 @@ export class UserController {
         avatar: string;
         email: string;
         password?: string;
+        isPremium?: boolean;
       };
     },
   ) {
-    const { password, ...user } = req.user;
-    void password; // exclude from response
+    const { password, isPremium, ...user } = req.user;
+    void password;
     const belt: LatestBelt | null =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
       (await this.beltService.getLatestBeltForUser(
@@ -101,6 +102,7 @@ export class UserController {
         ...user,
         belt_color: belt?.belt_color,
         belt_stripe: belt?.belt_stripe ?? 0,
+        is_premium: isPremium ?? false,
       },
     };
   }
@@ -110,7 +112,7 @@ export class UserController {
   async getUserById(@Param('id') id: string) {
     try {
       const user = await this.userService.getUserById(id);
-      const { password, ...safeUser } = user;
+      const { password, isPremium, ...safeUser } = user;
       void password;
       const belt: LatestBelt | null =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
@@ -120,6 +122,7 @@ export class UserController {
           ...safeUser,
           belt_color: belt?.belt_color,
           belt_stripe: belt?.belt_stripe ?? 0,
+          is_premium: isPremium ?? false,
         },
       };
     } catch (error) {

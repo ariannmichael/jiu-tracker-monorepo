@@ -70,7 +70,7 @@ export default function TechniquesScreen() {
   const filtered = useMemo(() => {
     let result = techniques;
     if (activeCategory !== "all") {
-      result = result.filter((tech) => tech.category === activeCategory);
+      result = result.filter((tech) => Number(tech.category) === activeCategory);
     }
     if (search.trim()) {
       const q = search.toLowerCase().trim();

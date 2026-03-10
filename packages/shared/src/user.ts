@@ -11,6 +11,8 @@ export interface User {
   belt_color?: string;
   /** Stripe count of the most recent belt. Used as badges in the UI. */
   belt_stripe?: number;
+  /** Whether the user has an active premium subscription (e.g. for analytics). */
+  is_premium?: boolean;
 }
 
 // Request types

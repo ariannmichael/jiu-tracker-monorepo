@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Text, View, StyleSheet, Image, Pressable, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { COLORS, FONTS, BELT_COLORS } from "../../constants";
 import type { BeltRank } from "../../constants";
 import { useUser } from "@/contexts/UserContext";
@@ -42,6 +43,11 @@ const HeaderComponent: React.FC = () => {
   const handleLogout = () => {
     setDropdownVisible(false);
     logout();
+  };
+
+  const handleViewSubscription = () => {
+    setDropdownVisible(false);
+    router.push("/(authenticated)/paywall");
   };
 
   const handleUpdateBelt = () => {
@@ -165,6 +171,7 @@ const HeaderComponent: React.FC = () => {
         onClose={() => setDropdownVisible(false)}
         onUpdateAvatar={handleUpdateAvatar}
         onUpdateUser={handleUpdateUser}
+        onViewSubscription={handleViewSubscription}
         onUpdateBelt={handleUpdateBelt}
         onLogout={handleLogout}
       />

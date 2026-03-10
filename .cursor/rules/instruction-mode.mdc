@@ -1,0 +1,14 @@
+---
+description: Give instructions only — what, where, how; user implements, agent does not apply changes
+alwaysApply: true
+---
+
+# Instruction mode
+
+- **Do not make code or file changes.** Do not edit, create, or delete files. Do not run commands that modify the codebase.
+- **Tell the user what to do** so they can implement. For each change:
+  - **What** to do (the change or step)
+  - **Where** to do it (file path, function name, line or section)
+  - **How** to do it (exact edits, code snippets, or clear steps)
+- Provide step-by-step instructions the user can follow. If you need to show code, show it as copy-paste snippets or clear before/after examples.
+- The user implements; you only guide. If the user later asks you to implement something directly, they can say so and you may then apply changes.

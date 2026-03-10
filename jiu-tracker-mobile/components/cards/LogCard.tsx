@@ -216,11 +216,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     marginBottom: 6,
+    maxWidth: "100%",
   },
   tag: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: RADIUS.SM,
+    flexShrink: 1,
+    maxWidth: "100%",
   },
   tagSubmitted: {
     backgroundColor: "rgba(59, 130, 246, 0.35)",

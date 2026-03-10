@@ -144,6 +144,20 @@ const en = {
   beginner: "Beginner",
   intermediate: "Intermediate",
   advanced: "Advanced",
+
+  // Premium
+  subscriptionPage: "Subscription",
+  unlockPerformanceAnalytics: "Unlock performance analytics",
+  unlockTechniqueBreakdown: "Unlock technique breakdown",
+  upgradeToPremium: "Upgrade to Premium",
+  premiumBenefits: "Win/loss ratios, submission rate, top techniques, and category breakdown.",
+  premiumWhatYouGet: "With Premium you get:",
+  premiumBenefit1: "Win/loss ratio and Gi vs NoGi ratio",
+  premiumBenefit2: "Submission rate (submissions vs tapped)",
+  premiumBenefit3: "Top winning and lost techniques",
+  premiumBenefit4: "Technique breakdown chart by category",
+  premiumComingSoonCompetitions: "In the future, subscribers will get tracking for competitions.",
+  restorePurchases: "Restore purchases",
 } as const;
 
 export type TranslationKeys = keyof typeof en;

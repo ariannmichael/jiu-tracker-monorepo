@@ -7,7 +7,10 @@ import StatCard from "../cards/StatCard";
 import StreakCard from "../cards/StreakCard";
 import PieChart from "../charts/PieChart";
 import RatioBar from "../charts/RatioBar";
+import { TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { TranslationKeys } from "@/i18n";
 import type { TopTechniqueRow } from "@jiu-tracker/shared";
@@ -82,9 +85,11 @@ function TechniqueList({
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const { analytics, recomputeAndRefresh, loading, error } = useAnalytics();
   const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
+  const isPremium = user?.is_premium ?? false;
 
   const nextMilestone = 30;
   const currentStreak = analytics?.current_streak ?? 0;
@@ -174,31 +179,45 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.performanceSection}>
-          <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>{t("winRatio")}</Text>
-            <RatioBar segments={winRatioSegments} showPercentInBar />
-          </View>
-          <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>{t("giVsNogiRatio")}</Text>
-            <RatioBar segments={giNogiSegments} showPercentInBar />
-          </View>
-          <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>{t("submissionRate")}</Text>
-            <View style={styles.submissionRateRow}>
-              <Text style={styles.submissionRateValue}>{submissionRatePct}%</Text>
-              <Text style={styles.submissionRateHint}>
-                {t("submissionsVsTapped")}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>{t("mostWinTechniques")}</Text>
-            <TechniqueList items={topWinTechniques} total={submissionsCount} emptyLabel={t("noDataYet")} />
-          </View>
-          <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
-            <Text style={styles.sectionTitle}>{t("lostTechniques")}</Text>
-            <TechniqueList items={topLostTechniques} total={tappedByCount} emptyLabel={t("noDataYet")} />
-          </View>
+          {isPremium ? (
+            <>
+              <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
+                <Text style={styles.sectionTitle}>{t("winRatio")}</Text>
+                <RatioBar segments={winRatioSegments} showPercentInBar />
+              </View>
+              <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
+                <Text style={styles.sectionTitle}>{t("giVsNogiRatio")}</Text>
+                <RatioBar segments={giNogiSegments} showPercentInBar />
+              </View>
+              <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
+                <Text style={styles.sectionTitle}>{t("submissionRate")}</Text>
+                <View style={styles.submissionRateRow}>
+                  <Text style={styles.submissionRateValue}>{submissionRatePct}%</Text>
+                  <Text style={styles.submissionRateHint}>
+                    {t("submissionsVsTapped")}
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
+                <Text style={styles.sectionTitle}>{t("mostWinTechniques")}</Text>
+                <TechniqueList items={topWinTechniques} total={submissionsCount} emptyLabel={t("noDataYet")} />
+              </View>
+              <View style={[styles.performanceCard, styles.performanceCardSpaced]}>
+                <Text style={styles.sectionTitle}>{t("lostTechniques")}</Text>
+                <TechniqueList items={topLostTechniques} total={tappedByCount} emptyLabel={t("noDataYet")} />
+              </View>
+            </>
+          ) : (
+            <TouchableOpacity
+              style={[styles.performanceCard, styles.premiumCard]}
+              onPress={() => router.push("/(authenticated)/paywall")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.sectionTitle}>{t("unlockPerformanceAnalytics")}</Text>
+              <Text style={styles.premiumCardHint}>{t("premiumBenefits")}</Text>
+              <Text style={styles.premiumCta}>{t("upgradeToPremium")}</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.statsGridContainer}>
@@ -224,10 +243,22 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.performanceSection}>
-          <View style={styles.performanceCard}>
-            <Text style={styles.sectionTitle}>{t("techniqueBreakdown")}</Text>
-            <PieChart data={performanceData} />
-          </View>
+          {isPremium ? (
+            <View style={styles.performanceCard}>
+              <Text style={styles.sectionTitle}>{t("techniqueBreakdown")}</Text>
+              <PieChart data={performanceData} />
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.performanceCard, styles.premiumCard]}
+              onPress={() => router.push("/(authenticated)/paywall")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.sectionTitle}>{t("unlockTechniqueBreakdown")}</Text>
+              <Text style={styles.premiumCardHint}>{t("premiumBenefits")}</Text>
+              <Text style={styles.premiumCta}>{t("upgradeToPremium")}</Text>
+            </TouchableOpacity>
+          )}
         </View>
         {error ? (
           <Text style={styles.errorText}>{error}</Text>
@@ -267,6 +298,25 @@ const styles = StyleSheet.create({
   },
   performanceCardSpaced: {
     marginBottom: 16,
+  },
+  premiumCard: {
+    alignItems: "center",
+    paddingVertical: 24,
+  },
+  premiumCardHint: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT,
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  premiumCta: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "500",
+    fontSize: 16,
+    color: COLORS.ACCENT_PURPLE,
   },
   sectionTitle: {
     fontFamily: FONTS.EXO2_MEDIUM,

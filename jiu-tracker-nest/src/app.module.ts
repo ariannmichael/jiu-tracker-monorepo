@@ -11,6 +11,7 @@ import { TrainingModule } from './modules/training/training.module';
 import { TechniqueModule } from './modules/technique/technique.module';
 import { BeltModule } from './modules/belt/belt.module';
 import { AnalyticModule } from './modules/analytic/analytic.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { HealthController } from './health.controller';
 import { MetricsModule } from './metrics.module';
 
@@ -55,6 +56,7 @@ import { MetricsModule } from './metrics.module';
     TechniqueModule,
     BeltModule,
     AnalyticModule,
+    SubscriptionModule,
   ],
   controllers: [HealthController],
 })

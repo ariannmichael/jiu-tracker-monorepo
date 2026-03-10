@@ -31,4 +31,7 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({ name: 'is_premium', type: 'boolean', default: false })
+  isPremium: boolean;
 }

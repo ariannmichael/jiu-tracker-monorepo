@@ -112,4 +112,10 @@ export class UserService {
     }
     return this.userRepo.update(user);
   }
+
+  async setPremium(userId: string, premium: boolean): Promise<User> {
+    const user = await this.userRepo.findById(userId);
+    user.isPremium = premium;
+    return this.userRepo.update(user);
+  }
 }

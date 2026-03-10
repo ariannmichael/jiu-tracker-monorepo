@@ -146,6 +146,20 @@ const pt: Record<TranslationKeys, string> = {
   beginner: "Iniciante",
   intermediate: "Intermediário",
   advanced: "Avançado",
+
+  // Premium
+  subscriptionPage: "Assinatura",
+  unlockPerformanceAnalytics: "Desbloqueie análises de performance",
+  unlockTechniqueBreakdown: "Desbloqueie o gráfico por categoria",
+  upgradeToPremium: "Assinar Premium",
+  premiumBenefits: "Proporção de vitórias/derrotas, taxa de finalização, melhores técnicas e gráfico por categoria.",
+  premiumWhatYouGet: "Com o Premium você tem:",
+  premiumBenefit1: "Proporção de vitórias/derrotas e Gi vs NoGi",
+  premiumBenefit2: "Taxa de finalização (finalizações vs finalizado)",
+  premiumBenefit3: "Principais técnicas de vitória e derrota",
+  premiumBenefit4: "Gráfico de técnicas por categoria",
+  premiumComingSoonCompetitions: "No futuro, assinantes terão acompanhamento de competições.",
+  restorePurchases: "Restaurar compras",
 };
 
 export default pt;
