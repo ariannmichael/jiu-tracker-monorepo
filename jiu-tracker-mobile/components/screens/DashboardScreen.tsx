@@ -170,11 +170,13 @@ export default function DashboardScreen() {
             title={t("sessions")}
             value={(analytics?.total_sessions ?? 0).toString()}
             accentColor="purple"
+            index={0}
           />
           <StatCard
             title={t("totalHours")}
             value={formatMinutesAsHours(analytics?.total_minutes ?? 0)}
             accentColor="orange"
+            index={1}
           />
         </View>
 
@@ -225,20 +227,24 @@ export default function DashboardScreen() {
             title={t("daysTrained")}
             value={(analytics?.days_trained ?? 0).toString()}
             accentColor="orange"
+            index={0}
           />
           <StatCard
             title={t("mostHoursInOneDay")}
             value={formatMinutesAsHours(analytics?.max_minutes_in_one_day ?? 0)}
             accentColor="purple"
+            index={1}
           />
-          <StatCard title={t("milestones")} value="0" />
+          <StatCard title={t("milestones")} value="0" index={2} />
           <StatCard
             title={t("openMat")}
             value={(analytics?.open_mat_sessions ?? 0).toString()}
+            index={3}
           />
           <StatCard
             title={t("newTechniques")}
             value={(analytics?.unique_techniques_count ?? 0).toString()}
+            index={4}
           />
         </View>
 
