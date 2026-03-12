@@ -114,7 +114,7 @@ export default function PaywallScreen() {
           return;
         }
       }
-      Alert.alert(t("error"), "No previous purchase found to restore.");
+      Alert.alert(t("error"), t("noPreviousPurchase"));
     } catch (e) {
       Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
     } finally {
@@ -126,12 +126,14 @@ export default function PaywallScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <Text style={styles.title}>{t("upgradeToPremium")}</Text>
-        <Text style={styles.subtitle}>You already have premium access.</Text>
+        <Text style={styles.subtitle}>{t("alreadyHavePremium")}</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t("backToDashboard")}
         >
-          <Text style={styles.buttonText}>Back to Dashboard</Text>
+          <Text style={styles.buttonText}>{t("backToDashboard")}</Text>
         </TouchableOpacity>
       </View>
     );

@@ -15,12 +15,12 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 function loadStoredLanguage(): Language {
   if (Platform.OS === "web") {
     try {
-      return (localStorage.getItem(LANGUAGE_STORAGE_KEY) as Language) ?? "en";
+      return (localStorage.getItem(LANGUAGE_STORAGE_KEY) as Language) ?? "pt";
     } catch {
-      return "en";
+      return "pt";
     }
   }
-  return "en";
+  return "pt";
 }
 
 function persistLanguage(lang: Language) {
@@ -41,7 +41,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: TranslationKeys): string => {
-      return translations[language][key] ?? translations.en[key] ?? key;
+      return translations[language][key] ?? translations.pt[key] ?? key;
     },
     [language],
   );

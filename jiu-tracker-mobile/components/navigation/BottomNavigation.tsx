@@ -58,6 +58,9 @@ const BottomNavigation: React.FC = () => {
             key={item.name}
             style={styles.navItem}
             onPress={() => handleNavigation(item.route)}
+            accessibilityRole="tab"
+            accessibilityLabel={t(item.labelKey)}
+            accessibilityState={{ selected: active }}
           >
             <Ionicons
               name={item.icon}

@@ -71,6 +71,9 @@ const HeaderComponent: React.FC = () => {
       <Pressable
         style={styles.profilePicture}
         onPress={() => setDropdownVisible(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${userData.name}, ${userData.belt_color ?? "Blue Belt"}`}
+        accessibilityHint="Opens profile menu"
       >
         {userData.profileImageUri ? (
           <Image source={{ uri: userData.profileImageUri }} style={styles.profileImage} />
@@ -127,6 +130,9 @@ const HeaderComponent: React.FC = () => {
         <Pressable
           style={styles.langDropdownTrigger}
           onPress={() => setLangDropdownVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={currentLang.label}
+          accessibilityHint="Opens language selector"
         >
           <Text style={styles.langFlag}>{currentLang.flag}</Text>
         </Pressable>
@@ -275,7 +281,6 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
-    display: "flex",
   },
   userName: {
     fontFamily: FONTS.EXO2_BOLD,
@@ -319,9 +324,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   langDropdownTrigger: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLORS.GRAY_MEDIUM,
     justifyContent: "center",
     alignItems: "center",

@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 60,
     marginBottom: 20,
-    width: 255,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -200,7 +200,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.BORDER,
     paddingVertical: 15,
     borderRadius: 12,
-    width: 255,
+    paddingHorizontal: 30,
+    width: '100%',
   },
   buttonText: {
     fontFamily: FONTS.EXO2_LIGHT,

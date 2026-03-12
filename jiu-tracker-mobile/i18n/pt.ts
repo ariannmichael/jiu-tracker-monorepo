@@ -160,6 +160,9 @@ const pt: Record<TranslationKeys, string> = {
   premiumBenefit4: "Gráfico de técnicas por categoria",
   premiumComingSoonCompetitions: "No futuro, assinantes terão acompanhamento de competições.",
   restorePurchases: "Restaurar compras",
+  alreadyHavePremium: "Você já tem acesso premium.",
+  backToDashboard: "Voltar ao Início",
+  noPreviousPurchase: "Nenhuma compra anterior encontrada para restaurar.",
 };
 
 export default pt;

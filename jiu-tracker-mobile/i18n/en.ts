@@ -158,6 +158,9 @@ const en = {
   premiumBenefit4: "Technique breakdown chart by category",
   premiumComingSoonCompetitions: "In the future, subscribers will get tracking for competitions.",
   restorePurchases: "Restore purchases",
+  alreadyHavePremium: "You already have premium access.",
+  backToDashboard: "Back to Dashboard",
+  noPreviousPurchase: "No previous purchase found to restore.",
 } as const;
 
 export type TranslationKeys = keyof typeof en;

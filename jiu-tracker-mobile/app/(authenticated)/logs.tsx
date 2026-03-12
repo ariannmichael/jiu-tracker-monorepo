@@ -170,8 +170,10 @@ export default function LogsScreen() {
     }
   };
 
+  const dateLocale = language === "pt" ? "pt-BR" : "en-US";
+
   const formatDate = (d: Date) => {
-    return d.toLocaleDateString("en-US", {
+    return d.toLocaleDateString(dateLocale, {
       weekday: "short",
       year: "numeric",
       month: "short",
@@ -180,10 +182,10 @@ export default function LogsScreen() {
   };
 
   const formatTime = (d: Date) => {
-    return d.toLocaleTimeString("en-US", {
+    return d.toLocaleTimeString(dateLocale, {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
+      hour12: language !== "pt",
     });
   };
 
@@ -264,6 +266,8 @@ export default function LogsScreen() {
             style={styles.closeButton}
             onPress={closeLogModal}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t("cancel")}
           >
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
@@ -619,17 +623,16 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '85%',
     maxHeight: '100%',
-    overflowY: 'auto',
     borderWidth: 1,
     borderColor: COLORS.BORDER,
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: 8,
+    right: 8,
     zIndex: 1,
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

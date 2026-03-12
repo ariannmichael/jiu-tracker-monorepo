@@ -72,7 +72,12 @@ const TechniqueDetailModal: React.FC<TechniqueDetailModalProps> = ({
                 color="rgba(255,255,255,0.9)"
               />
             </LinearGradient>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Pressable
+              style={styles.closeButton}
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t("cancel")}
+            >
               <Ionicons name="close" size={22} color={COLORS.WHITE} />
             </Pressable>
           </View>
@@ -162,11 +167,11 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 14,
-    right: 14,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    top: 8,
+    right: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
