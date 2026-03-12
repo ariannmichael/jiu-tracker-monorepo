@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.BORDER,
     paddingVertical: 15,
-    paddingHorizontal: 60,
     borderRadius: 12,
     width: 255,
   },

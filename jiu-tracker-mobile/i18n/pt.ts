@@ -26,7 +26,7 @@ const pt: Record<TranslationKeys, string> = {
 
   // Signup
   whereWereYouBorn: "Onde você nasceu?",
-  imFrom: "SOU DE",
+  imFrom: "SOU DO",
   whatIsYourRank: "Qual é a sua faixa no jiu-jitsu?",
   stripes: "Graus",
   imA: "SOU",

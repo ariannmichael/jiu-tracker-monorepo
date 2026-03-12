@@ -126,7 +126,7 @@ export default function Signup() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>{t("imFrom")} {signupData.country.toUpperCase()}</Text>
+        <Text style={styles.submitButtonText}>{signupData.country.toUpperCase()}</Text>
       </TouchableOpacity>
     </View>
   );
