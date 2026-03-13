@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Jiu Tracker | Acompanhe sua evolução no Jiu-Jitsu",
   description:
     "Registre treinos, acompanhe estatísticas e organize técnicas com um app feito para praticantes de Jiu-Jitsu.",
+  verification: {
+    google: "cARWrLni4VcQ_Wi_6uAoYrp164ly5CK-NSQbcZS115w",
+  },
   openGraph: {
     title: "Jiu Tracker | Acompanhe sua evolução no Jiu-Jitsu",
     description:
