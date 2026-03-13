@@ -88,7 +88,7 @@ const NavItemComponent: React.FC<NavItemProps> = ({ item, active, onPress }) => 
 
 // ─── Main navigation bar with sliding indicator ───────────────────────────────
 
-const INDICATOR_WIDTH = 32;
+const INDICATOR_WIDTH = 74;
 const INDICATOR_HEIGHT = 2;
 
 const BottomNavigation: React.FC = () => {
@@ -136,7 +136,7 @@ const BottomNavigation: React.FC = () => {
   }, [activeIndex, tabWidth, reducedMotion]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: indicatorX.value }],
+    transform: [{ translateX: indicatorX.value - 3 }],
   }));
 
   const handleNavigation = (route: string) => {
