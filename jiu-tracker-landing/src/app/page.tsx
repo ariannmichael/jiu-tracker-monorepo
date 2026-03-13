@@ -103,8 +103,15 @@ export default function Home() {
         <div className="section-container hero-grid">
           <div className="hero-copy">
             <div className="brand-lockup">
-              <div className="brand-mark" aria-hidden="true">
-                <div className="brand-mark-core" />
+              <div className="brand-mark">
+                <Image
+                  src="/jiu-tracker-logo.png"
+                  alt="Logo do Jiu Tracker"
+                  width={1024}
+                  height={1024}
+                  className="brand-logo-image"
+                  priority
+                />
               </div>
               <span className="brand-name">Jiu Tracker</span>
             </div>
@@ -310,8 +317,14 @@ export default function Home() {
       <footer className="section-container footer">
         <div>
           <div className="brand-lockup">
-            <div className="brand-mark brand-mark-small" aria-hidden="true">
-              <div className="brand-mark-core" />
+            <div className="brand-mark brand-mark-small">
+              <Image
+                src="/jiu-tracker-logo.png"
+                alt="Logo do Jiu Tracker"
+                width={1024}
+                height={1024}
+                className="brand-logo-image"
+              />
             </div>
             <span className="brand-name">Jiu Tracker</span>
           </div>
