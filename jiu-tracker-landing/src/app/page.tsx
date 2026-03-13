@@ -174,11 +174,6 @@ export default function Home() {
         <div className="section-heading">
           <p className="section-kicker">Visão completa</p>
           <h2>Cada detalhe do treino em uma interface feita para ser usada.</h2>
-          <p>
-            O produto precisa parecer real e útil logo na primeira visita. Por
-            isso, a página mostra o app por contexto: registro, análise e
-            evolução técnica.
-          </p>
         </div>
 
         <div className="proof-grid">
