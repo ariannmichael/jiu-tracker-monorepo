@@ -88,10 +88,16 @@ export class UserController {
         email: string;
         password?: string;
         isPremium?: boolean;
+        subscriptionExpiresAt?: Date | null;
       };
     },
   ) {
-    const { password, isPremium, ...user } = req.user;
+    const user = await this.userService.getUserById(req.user.id);
+    const userAfterExpiry = await this.userService.ensurePremiumExpiry(
+      user.id,
+    );
+    const { password, isPremium, subscriptionExpiresAt, ...safeUser } =
+      userAfterExpiry;
     void password;
     const belt: LatestBelt | null =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
@@ -100,10 +106,13 @@ export class UserController {
       )) as LatestBelt | null;
     return {
       user: {
-        ...user,
+        ...safeUser,
         belt_color: belt?.belt_color,
         belt_stripe: belt?.belt_stripe ?? 0,
         is_premium: isPremium ?? false,
+        subscription_expires_at: subscriptionExpiresAt
+          ? subscriptionExpiresAt.toISOString()
+          : null,
       },
     };
   }
@@ -113,7 +122,9 @@ export class UserController {
   async getUserById(@Param('id') id: string) {
     try {
       const user = await this.userService.getUserById(id);
-      const { password, isPremium, ...safeUser } = user;
+      const userAfterExpiry = await this.userService.ensurePremiumExpiry(id);
+      const { password, isPremium, subscriptionExpiresAt, ...safeUser } =
+        userAfterExpiry;
       void password;
       const belt: LatestBelt | null =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- BeltService from DI
@@ -124,6 +135,9 @@ export class UserController {
           belt_color: belt?.belt_color,
           belt_stripe: belt?.belt_stripe ?? 0,
           is_premium: isPremium ?? false,
+          subscription_expires_at: subscriptionExpiresAt
+            ? subscriptionExpiresAt.toISOString()
+            : null,
         },
       };
     } catch (error) {

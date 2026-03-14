@@ -65,6 +65,8 @@ export class UserService {
       throw new Error('Wrong password');
     }
 
+    const userAfterExpiry = await this.ensurePremiumExpiry(user.id);
+
     const token = this.jwtService.sign({
       sub: user.id,
     });
@@ -74,7 +76,7 @@ export class UserService {
       userId: user.id,
     });
 
-    return { access_token: token, user };
+    return { access_token: token, user: userAfterExpiry };
   }
 
   async getUserById(id: string): Promise<User> {
@@ -136,9 +138,14 @@ export class UserService {
     return updatedUser;
   }
 
-  async setPremium(userId: string, premium: boolean): Promise<User> {
+  async setPremium(
+    userId: string,
+    premium: boolean,
+    expiresAt?: Date | null,
+  ): Promise<User> {
     const user = await this.userRepo.findById(userId);
     user.isPremium = premium;
+    user.subscriptionExpiresAt = expiresAt ?? null;
     const updatedUser = await this.userRepo.update(user);
     this.logger.log({
       event: 'user.premium.updated',
@@ -146,6 +153,16 @@ export class UserService {
       premium,
     });
     return updatedUser;
+  }
+
+  async ensurePremiumExpiry(userId: string): Promise<User> {
+    const user = await this.userRepo.findById(userId);
+    if (user.subscriptionExpiresAt && user.subscriptionExpiresAt < new Date()) {
+      user.isPremium = false;
+      user.subscriptionExpiresAt = null;
+      return this.userRepo.update(user);
+    }
+    return user;
   }
 
   async deleteUser(userId: string): Promise<boolean> {

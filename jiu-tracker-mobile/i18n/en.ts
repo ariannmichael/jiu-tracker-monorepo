@@ -159,6 +159,7 @@ const en = {
   premiumComingSoonCompetitions: "In the future, subscribers will get tracking for competitions.",
   restorePurchases: "Restore purchases",
   alreadyHavePremium: "You already have premium access.",
+  premiumUntil: "Premium until",
   backToDashboard: "Back to Dashboard",
   cancelPremium: "Cancel Premium",
   noPreviousPurchase: "No previous purchase found to restore.",

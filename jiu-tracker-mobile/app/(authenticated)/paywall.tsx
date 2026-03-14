@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Platform,
   Alert,
+  Linking,
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -122,24 +123,41 @@ export default function PaywallScreen() {
     }
   };
 
-  const handleCancelPremium = async () => {
-    if (!token) return;
-    try {
-      await SubscriptionService.cancelPremium(token);
-      await refreshUser();
-    }
-    catch (e) {
-      Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
-    } finally {
-      setLoading(null);
-    }
+  const handleCancelPremium = () => {
+    const url =
+      Platform.OS === "ios"
+        ? "https://apps.apple.com/account/subscriptions"
+        : "https://play.google.com/store/account/subscriptions";
+    Linking.openURL(url).catch(() => {
+      Alert.alert(t("error"), t("pleaseTryAgain"));
+    });
   };
 
   if (isPremium) {
+    const expiresAtRaw = user && "subscription_expires_at" in user
+      ? (user as { subscription_expires_at?: string | null }).subscription_expires_at
+      : undefined;
+    const expiresAt = expiresAtRaw
+      ? new Date(expiresAtRaw)
+      : null;
+    const expiresLabel =
+      expiresAt && !Number.isNaN(expiresAt.getTime())
+        ? expiresAt.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : null;
+
     return (
       <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
         <Text style={styles.title}>{t("upgradeToPremium")}</Text>
         <Text style={styles.subtitle}>{t("alreadyHavePremium")}</Text>
+        {expiresLabel && (
+          <Text style={styles.expiresLabel}>
+            {t("premiumUntil")} {expiresLabel}
+          </Text>
+        )}
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.back()}
@@ -217,6 +235,13 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     fontSize: 16,
     color: COLORS.GRAY_TEXT,
+    marginBottom: 24,
+  },
+  expiresLabel: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT_SECONDARY,
     marginBottom: 24,
   },
   sectionLabel: {

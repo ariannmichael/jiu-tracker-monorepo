@@ -26,9 +26,11 @@ export class SubscriptionService {
       receiptLength: receipt.length,
     });
 
+    let expiresAt: Date | null = null;
+
     if (platform === 'apple') {
-      const valid = await this.verifyAppleReceipt(receipt);
-      if (!valid) {
+      const result = await this.verifyAppleReceipt(receipt);
+      if (!result.valid) {
         this.logger.warn({
           event: 'subscription.verify.rejected',
           userId,
@@ -39,9 +41,10 @@ export class SubscriptionService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      expiresAt = result.expiresAt;
     } else if (platform === 'google') {
-      const valid = await this.verifyGooglePurchase(userId, receipt);
-      if (!valid) {
+      const result = await this.verifyGooglePurchase(userId, receipt);
+      if (!result.valid) {
         this.logger.warn({
           event: 'subscription.verify.rejected',
           userId,
@@ -52,6 +55,7 @@ export class SubscriptionService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      expiresAt = result.expiresAt;
     } else {
       throw new HttpException(
         { error: 'Unsupported platform' },
@@ -59,7 +63,7 @@ export class SubscriptionService {
       );
     }
 
-    await this.userService.setPremium(userId, true);
+    await this.userService.setPremium(userId, true, expiresAt);
     this.logger.log({
       event: 'subscription.verify.completed',
       userId,
@@ -68,7 +72,9 @@ export class SubscriptionService {
     return { success: true };
   }
 
-  private async verifyAppleReceipt(receiptData: string): Promise<boolean> {
+  private async verifyAppleReceipt(
+    receiptData: string,
+  ): Promise<{ valid: boolean; expiresAt: Date | null }> {
     const sharedSecret = this.configService.get<string>('APPLE_SHARED_SECRET');
     if (!sharedSecret) {
       throw new HttpException(
@@ -88,7 +94,10 @@ export class SubscriptionService {
       headers: { 'Content-Type': 'application/json' },
       body,
     });
-    let data = (await res.json()) as { status: number };
+    let data = (await res.json()) as {
+      status: number;
+      latest_receipt_info?: Array<{ expires_date_ms?: string }>;
+    };
 
     if (data.status === 21007) {
       this.logger.debug({
@@ -99,16 +108,36 @@ export class SubscriptionService {
         headers: { 'Content-Type': 'application/json' },
         body,
       });
-      data = (await res.json()) as { status: number };
+      data = (await res.json()) as {
+        status: number;
+        latest_receipt_info?: Array<{ expires_date_ms?: string }>;
+      };
     }
 
-    return data.status === 0;
+    if (data.status !== 0) {
+      return { valid: false, expiresAt: null };
+    }
+
+    let expiresAt: Date | null = null;
+    const latestInfo = data.latest_receipt_info;
+    if (latestInfo?.length) {
+      const maxMs = latestInfo.reduce<number>((acc, item) => {
+        const ms = item.expires_date_ms
+          ? parseInt(item.expires_date_ms, 10)
+          : 0;
+        return Number.isNaN(ms) ? acc : Math.max(acc, ms);
+      }, 0);
+      if (maxMs > 0) {
+        expiresAt = new Date(maxMs);
+      }
+    }
+    return { valid: true, expiresAt };
   }
 
   private async verifyGooglePurchase(
     _userId: string,
     purchaseToken: string,
-  ): Promise<boolean> {
+  ): Promise<{ valid: boolean; expiresAt: Date | null }> {
     const packageName = this.configService.get<string>(
       'GOOGLE_PLAY_PACKAGE_NAME',
     );
@@ -151,13 +180,15 @@ export class SubscriptionService {
         userId: _userId,
         status: res.status,
       });
-      return false;
+      return { valid: false, expiresAt: null };
     }
     const data = (await res.json()) as { expiryTimeMillis?: string };
     const expiryMs = data.expiryTimeMillis
       ? parseInt(data.expiryTimeMillis, 10)
       : 0;
-    return expiryMs > Date.now();
+    const valid = expiryMs > Date.now();
+    const expiresAt = expiryMs > 0 ? new Date(expiryMs) : null;
+    return { valid, expiresAt };
   }
 
   private async getGoogleAccessToken(credentials: {
@@ -215,13 +246,5 @@ export class SubscriptionService {
     sign.update(signatureInput);
     const signature = sign.sign(privateKey, 'base64url');
     return `${signatureInput}.${signature}`;
-  }
-
-  async cancelPremium(userId: string): Promise<void> {
-    await this.userService.setPremium(userId, false);
-    this.logger.log({
-      event: 'subscription.cancel.completed',
-      userId,
-    });
   }
 }

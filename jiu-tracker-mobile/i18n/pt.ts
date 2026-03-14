@@ -161,6 +161,7 @@ const pt: Record<TranslationKeys, string> = {
   premiumComingSoonCompetitions: "No futuro, assinantes terão acompanhamento de competições.",
   restorePurchases: "Restaurar compras",
   alreadyHavePremium: "Você já tem acesso premium.",
+  premiumUntil: "Premium até",
   backToDashboard: "Voltar ao Início",
   cancelPremium: "Cancelar Premium",
   noPreviousPurchase: "Nenhuma compra anterior encontrada para restaurar.",

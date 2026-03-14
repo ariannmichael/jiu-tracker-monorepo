@@ -4,6 +4,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Jiu Tracker | Acompanhe sua evolução no Jiu-Jitsu",
+  icons: {
+    icon: "/jiu-tracker-logo.png",
+  },
   description:
     "Registre treinos, acompanhe estatísticas e organize técnicas com um app feito para praticantes de Jiu-Jitsu.",
   verification: {

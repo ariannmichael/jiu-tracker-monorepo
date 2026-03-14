@@ -13,6 +13,8 @@ export interface User {
   belt_stripe?: number;
   /** Whether the user has an active premium subscription (e.g. for analytics). */
   is_premium?: boolean;
+  /** When the current premium period ends (ISO date string). null if not premium or no expiry. */
+  subscription_expires_at?: string | null;
 }
 
 // Request types

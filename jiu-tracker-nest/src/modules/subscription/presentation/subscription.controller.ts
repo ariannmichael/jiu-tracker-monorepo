@@ -26,10 +26,4 @@ export class SubscriptionController {
       dto.receipt,
     );
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('subscription/cancel-premium')
-  async cancelPremium(@Request() req: { user: { id: string } }) {
-    return this.subscriptionService.cancelPremium(req.user.id);
-  }
 }

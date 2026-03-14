@@ -34,4 +34,7 @@ export class User {
 
   @Column({ name: 'is_premium', type: 'boolean', default: false })
   isPremium: boolean;
+
+  @Column({ name: 'subscription_expires_at', type: 'timestamptz', nullable: true })
+  subscriptionExpiresAt: Date | null;
 }
