@@ -160,6 +160,7 @@ const en = {
   restorePurchases: "Restore purchases",
   alreadyHavePremium: "You already have premium access.",
   backToDashboard: "Back to Dashboard",
+  cancelPremium: "Cancel Premium",
   noPreviousPurchase: "No previous purchase found to restore.",
 } as const;
 

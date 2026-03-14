@@ -122,9 +122,22 @@ export default function PaywallScreen() {
     }
   };
 
+  const handleCancelPremium = async () => {
+    if (!token) return;
+    try {
+      await SubscriptionService.cancelPremium(token);
+      await refreshUser();
+    }
+    catch (e) {
+      Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+    } finally {
+      setLoading(null);
+    }
+  };
+
   if (isPremium) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
         <Text style={styles.title}>{t("upgradeToPremium")}</Text>
         <Text style={styles.subtitle}>{t("alreadyHavePremium")}</Text>
         <TouchableOpacity
@@ -134,6 +147,14 @@ export default function PaywallScreen() {
           accessibilityLabel={t("backToDashboard")}
         >
           <Text style={styles.buttonText}>{t("backToDashboard")}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleCancelPremium}
+          accessibilityRole="button"
+          accessibilityLabel={t("cancelPremium")}
+        >
+          <Text style={styles.buttonText}>{t("cancelPremium")}</Text>
         </TouchableOpacity>
       </View>
     );

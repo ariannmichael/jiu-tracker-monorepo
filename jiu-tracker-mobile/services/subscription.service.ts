@@ -30,4 +30,13 @@ export default class SubscriptionService {
     }
     return response.json();
   }
+
+  static async cancelPremium(token: string): Promise<void> {
+    const response = await Api.request('/subscription/cancel-premium', {
+      method: "POST",
+      headers: {
+        ...Api.authHeaders(token),
+      },
+    });
+  }
 }

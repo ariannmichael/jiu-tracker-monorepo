@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { DeleteResult } from 'typeorm/browser';
 
 @Injectable()
 export class UserRepository {
@@ -46,5 +47,9 @@ export class UserRepository {
 
   async findAll(): Promise<User[]> {
     return this.repo.find();
+  }
+
+  async delete(id: string): Promise<void | DeleteResult> {
+    return await this.repo.delete(id);
   }
 }

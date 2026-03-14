@@ -197,8 +197,9 @@ export class SubscriptionService {
       iat: now,
       exp: now + 3600,
     };
-    const encodedHeader = Buffer.from(JSON.stringify(header))
-      .toString('base64url');
+    const encodedHeader = Buffer.from(JSON.stringify(header)).toString(
+      'base64url',
+    );
     const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
       'base64url',
     );
@@ -214,5 +215,13 @@ export class SubscriptionService {
     sign.update(signatureInput);
     const signature = sign.sign(privateKey, 'base64url');
     return `${signatureInput}.${signature}`;
+  }
+
+  async cancelPremium(userId: string): Promise<void> {
+    await this.userService.setPremium(userId, false);
+    this.logger.log({
+      event: 'subscription.cancel.completed',
+      userId,
+    });
   }
 }

@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpException,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { UserService } from '../application/user.service';
@@ -184,6 +185,20 @@ export class UserController {
     try {
       const user = await this.userService.updateUserAvatar(id, dto.avatar);
       return { user };
+    } catch (error) {
+      throw new HttpException(
+        { error: (error as Error).message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('user')
+  async deleteUser(@Param('id') id: string) {
+    try {
+      const success = await this.userService.deleteUser(id);
+      return { success };
     } catch (error) {
       throw new HttpException(
         { error: (error as Error).message },

@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginResponse } from '@jiu-tracker/shared';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -145,5 +146,20 @@ export class UserService {
       premium,
     });
     return updatedUser;
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    const deleteResult: void | DeleteResult =
+      await this.userRepo.delete(userId);
+    const deleted: boolean = Boolean(
+      deleteResult && deleteResult.affected && deleteResult.affected > 0,
+    );
+
+    this.logger.log({
+      event: 'user.deleted',
+      userId,
+      deleted,
+    });
+    return deleted;
   }
 }

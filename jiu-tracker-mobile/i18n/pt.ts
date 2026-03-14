@@ -162,6 +162,7 @@ const pt: Record<TranslationKeys, string> = {
   restorePurchases: "Restaurar compras",
   alreadyHavePremium: "Você já tem acesso premium.",
   backToDashboard: "Voltar ao Início",
+  cancelPremium: "Cancelar Premium",
   noPreviousPurchase: "Nenhuma compra anterior encontrada para restaurar.",
 };
 
