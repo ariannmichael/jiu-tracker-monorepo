@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../infrastructure/user.repository';
@@ -11,6 +11,8 @@ import { LoginResponse } from '@jiu-tracker/shared';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     private readonly userRepo: UserRepository,
     private readonly beltService: BeltService,
@@ -42,6 +44,11 @@ export class UserService {
       stripes: dto.belt_stripe,
     });
 
+    this.logger.log({
+      event: 'user.create.completed',
+      userId: user.id,
+    });
+
     return user;
   }
 
@@ -59,6 +66,11 @@ export class UserService {
 
     const token = this.jwtService.sign({
       sub: user.id,
+    });
+
+    this.logger.log({
+      event: 'user.login.completed',
+      userId: user.id,
     });
 
     return { access_token: token, user };
@@ -99,6 +111,11 @@ export class UserService {
       });
     }
 
+    this.logger.log({
+      event: 'user.update.completed',
+      userId: updatedUser.id,
+    });
+
     return updatedUser;
   }
 
@@ -110,12 +127,23 @@ export class UserService {
     if (avatar !== undefined) {
       user.avatar = avatar;
     }
-    return this.userRepo.update(user);
+    const updatedUser = await this.userRepo.update(user);
+    this.logger.log({
+      event: 'user.avatar.updated',
+      userId: updatedUser.id,
+    });
+    return updatedUser;
   }
 
   async setPremium(userId: string, premium: boolean): Promise<User> {
     const user = await this.userRepo.findById(userId);
     user.isPremium = premium;
-    return this.userRepo.update(user);
+    const updatedUser = await this.userRepo.update(user);
+    this.logger.log({
+      event: 'user.premium.updated',
+      userId,
+      premium,
+    });
+    return updatedUser;
   }
 }

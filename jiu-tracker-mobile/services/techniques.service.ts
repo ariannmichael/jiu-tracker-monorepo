@@ -3,15 +3,19 @@ import Api from './api';
 
 export default class TechniquesService {
   static async getTechniquesList(token: string | null): Promise<TechniquesListResponse> {
-    const response = await fetch(`${Api.BASE_URL}/techniques/list`, {
+    const response = await Api.request('/techniques/list', {
       headers: Api.authHeaders(token),
+    }, {
+      operation: 'techniques.list',
     });
     return response.json();
   }
 
   static async getAllTechniques(token: string | null): Promise<AllTechniquesResponse> {
-    const response = await fetch(`${Api.BASE_URL}/techniques`, {
+    const response = await Api.request('/techniques', {
       headers: Api.authHeaders(token),
+    }, {
+      operation: 'techniques.getAll',
     });
     if (!response.ok) {
       throw new Error(`Failed to fetch techniques: ${response.status}`);

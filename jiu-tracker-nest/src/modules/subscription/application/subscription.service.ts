@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/application/user.service';
 
@@ -7,6 +7,8 @@ const APPLE_SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
 
 @Injectable()
 export class SubscriptionService {
+  private readonly logger = new Logger(SubscriptionService.name);
+
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
@@ -17,9 +19,21 @@ export class SubscriptionService {
     platform: 'apple' | 'google',
     receipt: string,
   ): Promise<{ success: true }> {
+    this.logger.debug({
+      event: 'subscription.verify.requested',
+      userId,
+      platform,
+      receiptLength: receipt.length,
+    });
+
     if (platform === 'apple') {
       const valid = await this.verifyAppleReceipt(receipt);
       if (!valid) {
+        this.logger.warn({
+          event: 'subscription.verify.rejected',
+          userId,
+          platform,
+        });
         throw new HttpException(
           { error: 'Invalid or expired receipt' },
           HttpStatus.BAD_REQUEST,
@@ -28,6 +42,11 @@ export class SubscriptionService {
     } else if (platform === 'google') {
       const valid = await this.verifyGooglePurchase(userId, receipt);
       if (!valid) {
+        this.logger.warn({
+          event: 'subscription.verify.rejected',
+          userId,
+          platform,
+        });
         throw new HttpException(
           { error: 'Invalid or expired purchase' },
           HttpStatus.BAD_REQUEST,
@@ -41,6 +60,11 @@ export class SubscriptionService {
     }
 
     await this.userService.setPremium(userId, true);
+    this.logger.log({
+      event: 'subscription.verify.completed',
+      userId,
+      platform,
+    });
     return { success: true };
   }
 
@@ -67,6 +91,9 @@ export class SubscriptionService {
     let data = (await res.json()) as { status: number };
 
     if (data.status === 21007) {
+      this.logger.debug({
+        event: 'subscription.apple.retrySandbox',
+      });
       res = await fetch(APPLE_SANDBOX_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,6 +146,11 @@ export class SubscriptionService {
     });
 
     if (!res.ok) {
+      this.logger.warn({
+        event: 'subscription.google.verify.failed',
+        userId: _userId,
+        status: res.status,
+      });
       return false;
     }
     const data = (await res.json()) as { expiryTimeMillis?: string };

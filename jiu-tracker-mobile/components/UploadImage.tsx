@@ -13,6 +13,9 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "@/constants";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { createLogger, serializeError } from "@/services/logger";
+
+const uploadImageLogger = createLogger("upload-image");
 
 export interface UploadImageProps {
   /** Current image URI to display (e.g. existing avatar). */
@@ -41,6 +44,7 @@ export default function UploadImage({
   const requestPermissions = async (): Promise<boolean> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
+      uploadImageLogger.warn("Media library permission denied");
       Alert.alert(
         t("permissionRequired"),
         t("permissionPhotoAccess")
@@ -67,7 +71,10 @@ export default function UploadImage({
         setSelectedUri(result.assets[0].uri);
       }
     } catch (err) {
-      console.error("Image picker error:", err);
+      uploadImageLogger.error(
+        { err: serializeError(err) },
+        "Image picker failed",
+      );
       Alert.alert(t("error"), t("couldNotOpenImageLibrary"));
     } finally {
       setIsLoading(false);
@@ -81,6 +88,7 @@ export default function UploadImage({
     }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
+      uploadImageLogger.warn("Camera permission denied");
       Alert.alert(
         t("permissionRequired"),
         t("cameraAccessNeeded")
@@ -100,7 +108,10 @@ export default function UploadImage({
         setSelectedUri(result.assets[0].uri);
       }
     } catch (err) {
-      console.error("Camera error:", err);
+      uploadImageLogger.error(
+        { err: serializeError(err) },
+        "Camera capture failed",
+      );
       Alert.alert(t("error"), t("couldNotOpenCamera"));
     } finally {
       setIsLoading(false);
@@ -112,8 +123,12 @@ export default function UploadImage({
     setIsUploading(true);
     try {
       await onUpload(displayUri);
+      uploadImageLogger.info("Image upload completed");
     } catch (err) {
-      console.error("Upload error:", err);
+      uploadImageLogger.error(
+        { err: serializeError(err) },
+        "Image upload failed",
+      );
       Alert.alert(t("uploadFailed"), (err as Error)?.message ?? t("couldNotUploadImage"));
     } finally {
       setIsUploading(false);

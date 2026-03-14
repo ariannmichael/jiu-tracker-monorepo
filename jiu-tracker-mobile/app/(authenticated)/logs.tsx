@@ -23,7 +23,10 @@ import TrainingService from "@/services/training.service";
 import { CreateTrainingRequest, Technique, TrainingSession } from "@jiu-tracker/shared";
 import LogCard from "@/components/cards/LogCard";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { createLogger, serializeError } from "@/services/logger";
 import type { UpdateTrainingRequest } from "@/services/training.service";
+
+const logsLogger = createLogger("logs-screen");
 
 /** Training session as returned by API with submit/tapped options */
 type TrainingWithOptions = TrainingSession & {
@@ -220,7 +223,10 @@ export default function LogsScreen() {
           fetchTrainings({ refresh: true });
         })
         .catch((error) => {
-          console.error(error);
+          logsLogger.error(
+            { err: serializeError(error), trainingId: editingTraining.id },
+            "Failed to update training log",
+          );
           Alert.alert(t("couldNotUpdateLog"), error instanceof Error ? error.message : t("pleaseTryAgain"));
         });
     } else {
@@ -244,7 +250,10 @@ export default function LogsScreen() {
           fetchTrainings({ refresh: true });
         })
         .catch((error) => {
-          console.error(error);
+          logsLogger.error(
+            { err: serializeError(error), userId: user?.id },
+            "Failed to create training log",
+          );
           Alert.alert(t("couldNotSaveLog"), error instanceof Error ? error.message : t("pleaseTryAgain"));
         });
     }
@@ -724,4 +733,3 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 });
-

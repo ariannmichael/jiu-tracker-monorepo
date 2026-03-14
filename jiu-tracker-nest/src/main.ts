@@ -2,27 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
-import { PinoLogger } from 'nestjs-pino';
+import { Logger, PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-
-/** Adapter so Nest can use PinoLogger (has info, not log) as LoggerService */
-function pinoLoggerAdapter(pino: PinoLogger) {
-  return {
-    log: (message: unknown, ...args: unknown[]) =>
-      pino.info(message as string, ...args),
-    error: (message: unknown, ...args: unknown[]) =>
-      pino.error(message as string, ...args),
-    warn: (message: unknown, ...args: unknown[]) =>
-      pino.warn(message as string, ...args),
-    debug: (message: unknown, ...args: unknown[]) =>
-      pino.debug(message as string, ...args),
-    verbose: (message: unknown, ...args: unknown[]) =>
-      pino.debug(message as string, ...args),
-    fatal: (message: unknown, ...args: unknown[]) =>
-      pino.fatal(message as string, ...args),
-  };
-}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -30,10 +12,12 @@ async function bootstrap() {
   });
   // Allow larger JSON payloads (e.g. avatar as base64) – default is 100kb
   app.useBodyParser('json', { limit: '10mb' });
+  app.useLogger(app.get(Logger));
+  app.flushLogs();
+
   const pinoLogger = await app.resolve(PinoLogger);
-  pinoLogger.setContext(bootstrap.name);
-  app.useLogger(pinoLoggerAdapter(pinoLogger));
-  pinoLogger.info('Starting Jiu Tracker API...');
+  pinoLogger.setContext('Bootstrap');
+  pinoLogger.info('Starting Jiu Tracker API');
 
   // Enable validation pipes (equivalent to Gin's ShouldBindJSON validation)
   app.useGlobalPipes(
@@ -57,7 +41,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3006);
 
   await app.listen(port);
-  pinoLogger.info(`Jiu Tracker API running on port ${port}`);
+  pinoLogger.info({ port }, 'Jiu Tracker API listening');
 }
 
 bootstrap().catch((error) => {

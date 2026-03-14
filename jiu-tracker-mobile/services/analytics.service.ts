@@ -4,9 +4,11 @@ import Api from './api';
 export default class AnalyticsService {
   static async getAnalytics(token: string | null): Promise<AnalyticsResponse | null> {
     if (!token) return null;
-    const response = await fetch(`${Api.BASE_URL}/analytics`, {
+    const response = await Api.request('/analytics', {
       method: 'GET',
       headers: Api.authHeaders(token),
+    }, {
+      operation: 'analytics.get',
     });
     if (!response.ok) {
       if (response.status === 401) return null;
@@ -18,9 +20,11 @@ export default class AnalyticsService {
 
   static async recomputeAnalytics(token: string | null): Promise<AnalyticsResponse | null> {
     if (!token) return null;
-    const response = await fetch(`${Api.BASE_URL}/analytics/recompute`, {
+    const response = await Api.request('/analytics/recompute', {
       method: 'POST',
       headers: Api.authHeaders(token),
+    }, {
+      operation: 'analytics.recompute',
     });
     if (!response.ok) throw new Error(`Recompute failed: ${response.status}`);
     const data: AnalyticsApiResponse = await response.json();

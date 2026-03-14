@@ -16,8 +16,11 @@ import {
   COLORS
 } from '../../constants';
 import SignupService from '@/services/signup.service';
+import { createLogger, serializeError } from '@/services/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const signupLogger = createLogger('signup-screen');
 
 interface SignupData {
   country: string;
@@ -68,7 +71,10 @@ export default function Signup() {
       });
       await login(email, password);
     } catch (error) {
-      console.error(error);
+      signupLogger.error(
+        { err: serializeError(error) },
+        'Failed to complete signup flow',
+      );
     }
   };
 

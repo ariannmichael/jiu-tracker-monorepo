@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { Category } from '@jiu-tracker/shared';
 import { AnalyticRepository } from '../infrastructure/analytic.repository';
@@ -9,6 +9,8 @@ import { TechniqueService } from '../../technique/application/technique.service'
 
 @Injectable()
 export class AnalyticService {
+  private readonly logger = new Logger(AnalyticService.name);
+
   constructor(
     private readonly analyticRepo: AnalyticRepository,
     private readonly trainingService: TrainingService,
@@ -16,6 +18,11 @@ export class AnalyticService {
   ) {}
 
   async recomputeForUser(userId: string): Promise<void> {
+    this.logger.debug({
+      event: 'analytics.recompute.requested',
+      userId,
+    });
+
     const [result, existing] = await Promise.all([
       this.trainingService.getTrainingsByUserId(userId, 100_000, 0),
       this.analyticRepo.findByUserId(userId),
@@ -26,6 +33,13 @@ export class AnalyticService {
       existing?.id ?? null,
     );
     await this.analyticRepo.upsert(row);
+
+    this.logger.log({
+      event: 'analytics.recompute.completed',
+      userId,
+      totalSessions: result.total,
+      reusedAnalyticId: existing?.id ?? null,
+    });
   }
 
   async getByUserId(userId: string): Promise<Analytic | null> {

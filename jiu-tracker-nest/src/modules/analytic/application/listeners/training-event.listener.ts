@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -18,6 +18,8 @@ export interface AnalyticsJobPayload {
 
 @Injectable()
 export class TrainingEventListener {
+  private readonly logger = new Logger(TrainingEventListener.name);
+
   constructor(
     @InjectQueue(ANALYTICS_QUEUE_NAME)
     private readonly analyticsQueue: Queue<AnalyticsJobPayload>,
@@ -56,5 +58,12 @@ export class TrainingEventListener {
         removeOnComplete: { count: 1000 },
       },
     );
+
+    this.logger.debug({
+      event: 'analytics.recompute.enqueued',
+      userId,
+      eventType,
+      jobId: idempotencyKey,
+    });
   }
 }

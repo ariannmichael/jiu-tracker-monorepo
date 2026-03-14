@@ -6,6 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
 import { TerminusModule } from '@nestjs/terminus';
 import { getDatabaseConfig } from './config/database.config';
+import { pinoLoggerConfig } from './common/logging/pino.config';
 import { UserModule } from './modules/user/user.module';
 import { TrainingModule } from './modules/training/training.module';
 import { TechniqueModule } from './modules/technique/technique.module';
@@ -21,19 +22,7 @@ import { MetricsModule } from './metrics.module';
       isGlobal: true,
     }),
     MetricsModule,
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? { target: 'pino-pretty', options: { colorize: true } }
-            : undefined,
-        serializers: {
-          req: (req) => ({ method: req.method, url: req.url }),
-          res: (res) => ({ statusCode: res.statusCode }),
-        },
-      },
-    }),
+    LoggerModule.forRoot(pinoLoggerConfig),
     TerminusModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

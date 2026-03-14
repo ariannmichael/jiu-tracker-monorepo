@@ -14,13 +14,15 @@ export default class SubscriptionService {
     platform: IapPlatform,
     receipt: string
   ): Promise<{ success: true }> {
-    const response = await fetch(`${Api.BASE_URL}/subscription/verify-iap`, {
+    const response = await Api.request('/subscription/verify-iap', {
       method: "POST",
       headers: {
         ...Api.authHeaders(token),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ platform, receipt }),
+    }, {
+      operation: 'subscription.verifyIap',
     });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InsightRepository } from '../infrastructure/insight.repository';
 import { Analytic } from '../domain/analytic.entity';
 import { Insight } from '../domain/insight.entity';
@@ -7,11 +7,14 @@ const STREAK_MILESTONES = [7, 14, 30, 60, 100];
 
 @Injectable()
 export class InsightService {
+  private readonly logger = new Logger(InsightService.name);
+
   constructor(private readonly insightRepo: InsightRepository) {}
 
   async generateInsights(userId: string, analytic: Analytic | null): Promise<void> {
     if (!analytic) return;
 
+    let generatedCount = 0;
     const recentByType = await this.insightRepo.findRecentByType(
       userId,
       'streak_milestone',
@@ -36,6 +39,7 @@ export class InsightService {
           metadata: { milestone, value },
         });
         existingMilestones.add(milestone);
+        generatedCount += 1;
       }
     }
 
@@ -55,7 +59,16 @@ export class InsightService {
           message: `New record: ${Math.floor(analytic.maxMinutesInOneDay / 60)}h+ training in one day!`,
           metadata: { record: 'max_minutes_in_one_day', value: analytic.maxMinutesInOneDay },
         });
+        generatedCount += 1;
       }
+    }
+
+    if (generatedCount > 0) {
+      this.logger.log({
+        event: 'insights.generate.completed',
+        userId,
+        generatedCount,
+      });
     }
   }
 

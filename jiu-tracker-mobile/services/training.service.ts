@@ -14,10 +14,12 @@ export interface UpdateTrainingRequest {
 
 export default class TrainingService {
     static async createTraining(data: CreateTrainingRequest, token: string): Promise<TrainingSession> {
-        const response = await fetch(`${Api.BASE_URL}/training`, {
+        const response = await Api.request('/training', {
             method: 'POST',
             headers: Api.authHeaders(token),
             body: JSON.stringify(data),
+        }, {
+            operation: 'training.create',
         });
         const body = await response.json();
         if (!response.ok) {
@@ -32,10 +34,12 @@ export default class TrainingService {
         data: UpdateTrainingRequest,
         token: string,
     ): Promise<TrainingSession> {
-        const response = await fetch(`${Api.BASE_URL}/training/${id}`, {
+        const response = await Api.request(`/training/${id}`, {
             method: 'PUT',
             headers: Api.authHeaders(token),
             body: JSON.stringify(data),
+        }, {
+            operation: 'training.update',
         });
         const body = await response.json();
         if (!response.ok) {
@@ -52,9 +56,11 @@ export default class TrainingService {
         userId: string,
     ): Promise<{ trainings: TrainingSession[]; total: number }> {
         const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
-        const response = await fetch(`${Api.BASE_URL}/trainings/user/${userId}?${params}`, {
+        const response = await Api.request(`/trainings/user/${userId}?${params}`, {
             method: 'GET',
             headers: Api.authHeaders(token),
+        }, {
+            operation: 'training.listByUser',
         });
         const data: TrainingSessionsResponse & { total?: number } = await response.json();
         return {

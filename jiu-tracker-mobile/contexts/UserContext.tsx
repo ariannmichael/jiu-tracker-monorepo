@@ -1,5 +1,6 @@
 import Api from '@/services/api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createLogger, serializeError } from '@/services/logger';
 import { useAuth } from './AuthContext';
 
 export interface UserData {
@@ -41,6 +42,7 @@ const defaultUserData: UserData = {
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+const userLogger = createLogger('user-context');
 
 export function UserContextProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<UserData>(defaultUserData);
@@ -70,10 +72,12 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
         throw new Error('No user found');
       }
 
-      const response = await fetch(`${Api.BASE_URL}/user/${user.id}`, {
+      const response = await Api.request(`/user/${user.id}`, {
         headers: Api.authHeaders(token),
         method: 'PUT',
         body: JSON.stringify(updateData),
+      }, {
+        operation: 'user.updatePartial',
       });
       const data = await response.json();
       const u = data.user;
@@ -85,9 +89,16 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
           belt_stripe: u.belt_stripe ?? prev.belt_stripe,
           belt_color: u.belt_color ?? prev.belt_color,
         }));
+        userLogger.info(
+          { userId: user.id },
+          'User profile data updated',
+        );
       }
     } catch (error) {
-      console.error('Error updating user data:', error);
+      userLogger.error(
+        { err: serializeError(error), userId: user?.id },
+        'Failed to update user profile data',
+      );
     }
   };
 
@@ -95,10 +106,12 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
     try {
       if (!token) throw new Error('No token found');
       if (!user) throw new Error('No user found');
-      const response = await fetch(`${Api.BASE_URL}/user/${user.id}`, {
+      const response = await Api.request(`/user/${user.id}`, {
         headers: Api.authHeaders(token),
         method: 'PUT',
         body: JSON.stringify(dto),
+      }, {
+        operation: 'user.updateFull',
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -121,8 +134,15 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
           belt_stripe: dto.belt_stripe,
         }));
       }
+      userLogger.info(
+        { userId: user.id },
+        'User profile updated successfully',
+      );
     } catch (error) {
-      console.error('Error updating user:', error);
+      userLogger.error(
+        { err: serializeError(error), userId: user?.id },
+        'Failed to update user profile',
+      );
       throw error;
     }
   };
@@ -132,10 +152,12 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
       if (!token) throw new Error('No token found');
       if (!user) throw new Error('No user found');
 
-      const response = await fetch(`${Api.BASE_URL}/user/${user.id}/avatar`, {
+      const response = await Api.request(`/user/${user.id}/avatar`, {
         headers: Api.authHeaders(token),
         method: 'PATCH',
         body: JSON.stringify({ avatar: avatarUri }),
+      }, {
+        operation: 'user.updateAvatar',
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -146,8 +168,15 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
       if (u?.avatar != null) {
         setUserData((prev) => ({ ...prev, profileImageUri: u.avatar }));
       }
+      userLogger.info(
+        { userId: user.id },
+        'User avatar updated successfully',
+      );
     } catch (error) {
-      console.error('Error updating avatar:', error);
+      userLogger.error(
+        { err: serializeError(error), userId: user?.id },
+        'Failed to update user avatar',
+      );
       throw error;
     }
   };
@@ -156,7 +185,7 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
     try {
       if (!token) throw new Error('No token found');
       if (!user) throw new Error('No user found');
-      const response = await fetch(`${Api.BASE_URL}/user/${user.id}/belt`, {
+      const response = await Api.request(`/user/${user.id}/belt`, {
         headers: Api.authHeaders(token),
         method: 'PUT',
         body: JSON.stringify({
@@ -164,6 +193,8 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
           color: dto.belt_color,
           stripes: dto.belt_stripe,
         }),
+      }, {
+        operation: 'user.updateBelt',
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -173,8 +204,15 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
       if (updatedUser) {
         setUserData((prev) => ({ ...prev, belt_color: updatedUser.belt_color, belt_stripe: updatedUser.belt_stripe }));
       }
+      userLogger.info(
+        { userId: user.id, beltColor: dto.belt_color, beltStripe: dto.belt_stripe },
+        'User belt updated successfully',
+      );
     } catch (error) {
-      console.error('Error updating belt:', error);
+      userLogger.error(
+        { err: serializeError(error), userId: user?.id },
+        'Failed to update user belt',
+      );
       throw error;
     }
   };
