@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 18.4.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "image": "sdk-52"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "image": "sdk-52"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "image": "sdk-52"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
