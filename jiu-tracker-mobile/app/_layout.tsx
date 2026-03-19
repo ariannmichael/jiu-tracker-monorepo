@@ -1,3 +1,4 @@
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -33,11 +34,13 @@ export default function RootLayout() {
       <AuthProvider>
         <UserContextProvider>
           <AnalyticsContextProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-              }}
-            />
+            <SafeAreaProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                }}
+              />
+            </SafeAreaProvider>
           </AnalyticsContextProvider>
         </UserContextProvider>
       </AuthProvider>

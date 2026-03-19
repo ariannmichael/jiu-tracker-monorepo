@@ -11,8 +11,6 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as InAppPurchases from "expo-in-app-purchases";
-import type { IAPQueryResponse, InAppPurchase } from "expo-in-app-purchases";
 import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -45,71 +43,86 @@ export default function PaywallScreen() {
     }
   };
 
-  const getReceiptFromPurchase = (
-    purchase: { transactionReceipt?: string; purchaseToken?: string },
-    platform: "apple" | "google"
-  ): string | null => {
-    if (platform === "apple") {
-      return purchase.transactionReceipt ?? null;
-    }
-    return purchase.purchaseToken ?? null;
-  };
+  const handlePurchase = async () => {
+    if (!token || Platform.OS === "ios") return;
 
-  const handlePurchase = () => {
-    if (!token) return;
+    const {
+      initConnection,
+      purchaseUpdatedListener,
+      purchaseErrorListener,
+      requestPurchase,
+      finishTransaction,
+    } = await import("expo-iap");
+
     setLoading("purchase");
-    const platform: "apple" | "google" =
-      Platform.OS === "ios" ? "apple" : "google";
+    const platform = "google";
     const productId = SubscriptionService.getPremiumProductId();
 
-    const listener = async (result: IAPQueryResponse<InAppPurchase>) => {
-      const { responseCode, results } = result;
-      setLoading(null);
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results?.[0]) {
-        const purchase = results[0];
-        const receipt = getReceiptFromPurchase(purchase, platform);
-        if (receipt && token) {
-          try {
-            await handleVerifyReceipt(platform, receipt);
-            await InAppPurchases.finishTransactionAsync(purchase, false);
-          } catch (e) {
-            Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
-          }
-          return;
-        }
-      }
-      if (responseCode !== InAppPurchases.IAPResponseCode.USER_CANCELED) {
-        Alert.alert(t("error"), t("pleaseTryAgain"));
-      }
+    let updateSub: { remove: () => void } | null = null;
+    let errorSub: { remove: () => void } | null = null;
+
+    const cleanup = () => {
+      updateSub?.remove();
+      errorSub?.remove();
     };
 
-    InAppPurchases.setPurchaseListener(listener);
-    InAppPurchases.connectAsync()
-      .then(() => InAppPurchases.purchaseItemAsync(productId))
-      .catch((e) => {
-        setLoading(null);
-        Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
-      });
+    updateSub = purchaseUpdatedListener(async (purchase: any) => {
+      cleanup();
+      setLoading(null);
+      const receipt = purchase.purchaseTokenAndroid ?? purchase.transactionReceipt;
+      if (receipt && token) {
+        try {
+          await handleVerifyReceipt(platform, receipt);
+          await finishTransaction({ purchase, isConsumable: false });
+        } catch (e) {
+          Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+        }
+      }
+    });
+
+    errorSub = purchaseErrorListener((error: { code?: string; message?: string }) => {
+      cleanup();
+      setLoading(null);
+      if (error.code !== "E_USER_CANCELLED") {
+        Alert.alert(t("error"), error.message ?? t("pleaseTryAgain"));
+      }
+    });
+
+    try {
+      await initConnection();
+      await requestPurchase({ request: { skus: [productId] }, type: "inapp" });
+    } catch (e) {
+      cleanup();
+      setLoading(null);
+      Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+    }
   };
 
   const handleRestore = async () => {
-    if (!token) return;
-    setLoading("restore");
-    try {
-      const platform: "apple" | "google" =
-        Platform.OS === "ios" ? "apple" : "google";
-      const productId = SubscriptionService.getPremiumProductId();
-      await InAppPurchases.connectAsync();
-      const { responseCode, results } = await InAppPurchases.getPurchaseHistoryAsync();
-      await InAppPurchases.disconnectAsync();
+    if (!token || Platform.OS === "ios") return;
 
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results?.length) {
+    const {
+      initConnection,
+      endConnection,
+      getPurchaseHistory,
+    } = await import("expo-iap");
+
+    setLoading("restore");
+    const platform = "google";
+    const productId = SubscriptionService.getPremiumProductId();
+
+    try {
+      await initConnection();
+      const history = await getPurchaseHistory();
+      await endConnection();
+
+      if (history?.length) {
         const premiumPurchase =
-          results.find((p: { productId: string }) => p.productId === productId) ?? results[0];
-        const receipt = getReceiptFromPurchase(
-          premiumPurchase as { transactionReceipt?: string; purchaseToken?: string },
-          platform
-        );
+          (history as any[]).find((p) => p.id === productId || p.ids?.includes(productId)) ??
+          history[0];
+        const receipt =
+          (premiumPurchase as any).purchaseTokenAndroid ??
+          (premiumPurchase as any).transactionReceipt;
         if (receipt) {
           await handleVerifyReceipt(platform, receipt);
           return;

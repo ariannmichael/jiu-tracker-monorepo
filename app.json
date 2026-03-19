@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "a42b8324-2050-46b2-83eb-86249ab14ed2"
+      }
+    },
+    "android": {
+      "package": "com.ariannmichael.jiutrackermonorepo"
+    }
+  }
+}

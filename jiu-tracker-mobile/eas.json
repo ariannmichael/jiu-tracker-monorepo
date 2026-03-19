@@ -14,7 +14,8 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "image": "sdk-52"
+        "image": "sdk-52",
+        "buildType": "apk"
       }
     },
     "production": {

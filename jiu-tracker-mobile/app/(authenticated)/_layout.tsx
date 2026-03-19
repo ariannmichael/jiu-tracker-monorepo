@@ -1,12 +1,13 @@
+
 import { Stack } from "expo-router";
-import { View, StyleSheet } from "react-native";
+import { StyleSheet, SafeAreaView } from "react-native";
 import BottomNavigation from "../../components/navigation/BottomNavigation";
 import { COLORS } from "../../constants";
 import HeaderComponent from "@/components/headers/Header";
 
 export default function AuthenticatedLayout() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack
         screenOptions={{
           headerShown: true, // We'll use custom header component instead
@@ -14,7 +15,7 @@ export default function AuthenticatedLayout() {
         }}
       />
       <BottomNavigation />
-    </View>
+    </SafeAreaView>
   );
 }
 
