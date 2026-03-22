@@ -209,9 +209,14 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Delete('user')
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(
+    @Req()
+    req: Request & {
+      user: { id: string };
+    },
+  ) {
     try {
-      const success = await this.userService.deleteUser(id);
+      const success = await this.userService.deleteUser(req.user.id);
       return { success };
     } catch (error) {
       throw new HttpException(

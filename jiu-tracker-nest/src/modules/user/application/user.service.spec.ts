@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcrypt';
+import { DataSource } from 'typeorm';
 import { UserService } from './user.service';
 import { UserRepository } from '../infrastructure/user.repository';
 import { BeltService } from '../../belt/application/belt.service';
@@ -22,8 +23,11 @@ describe('UserService', () => {
     update: jest.Mock;
     findAll: jest.Mock;
   }>;
-  let mockBeltService: jest.Mocked<Pick<BeltService, 'createBeltProgress'>>;
+  let mockBeltService: jest.Mocked<
+    Pick<BeltService, 'createBeltProgress' | 'getLatestBeltForUser'>
+  >;
   let mockJwtService: jest.Mocked<Pick<JwtService, 'sign'>>;
+  let mockDataSource: jest.Mocked<Pick<DataSource, 'transaction'>>;
 
   const hashedPassword = 'hashed-password';
 
@@ -40,14 +44,26 @@ describe('UserService', () => {
     };
     mockBeltService = {
       createBeltProgress: jest.fn(),
+      getLatestBeltForUser: jest.fn().mockResolvedValue({
+        belt_color: 'Blue Belt',
+        belt_stripe: 0,
+      }),
     };
     mockJwtService = {
       sign: jest.fn().mockReturnValue('jwt-token'),
+    };
+    mockDataSource = {
+      transaction: jest.fn(async (cb: (m: unknown) => Promise<void>) => {
+        await cb({
+          delete: jest.fn().mockResolvedValue({ affected: 1 }),
+        });
+      }),
     };
     service = new UserService(
       mockUserRepo as unknown as UserRepository,
       mockBeltService as unknown as BeltService,
       mockJwtService as unknown as JwtService,
+      mockDataSource as unknown as DataSource,
     );
   });
 
@@ -179,12 +195,15 @@ describe('UserService', () => {
         avatar: '',
         createdAt: new Date(),
         updatedAt: new Date(),
+        isPremium: false,
+        subscriptionExpiresAt: null,
       };
       mockUserRepo.findByEmail.mockResolvedValue(user);
+      mockUserRepo.findById.mockResolvedValue(user);
 
       const token = await service.login(dto);
 
-      expect(token).toBe('jwt-token');
+      expect(token.access_token).toBe('jwt-token');
       expect(mockJwtService.sign).toHaveBeenCalledWith({ sub: user.id });
     });
 

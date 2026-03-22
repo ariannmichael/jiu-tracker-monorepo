@@ -9,10 +9,20 @@ import { UserService } from './application/user.service';
 import { UserController } from './presentation/user.controller';
 import { JwtStrategy } from '../../common/strategies/jwt.strategy';
 import { BeltModule } from '../belt/belt.module';
+import { Insight } from '../analytic/domain/insight.entity';
+import { Analytic } from '../analytic/domain/analytic.entity';
+import { TrainingSession } from '../training/domain/training-session.entity';
+import { BeltProgress } from '../belt/domain/belt-progress.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([
+      User,
+      Insight,
+      Analytic,
+      TrainingSession,
+      BeltProgress,
+    ]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

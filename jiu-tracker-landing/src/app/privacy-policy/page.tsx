@@ -100,7 +100,8 @@ export default function PrivacyPolicy() {
           </ul>
           <p>
             Para exercer qualquer um desses direitos, entre em contato pelo
-            e-mail abaixo.
+            e-mail abaixo. Para exclusão de conta e dados, veja também a página{" "}
+            <Link href="/account-deletion">Exclusão de conta e dados</Link>.
           </p>
 
           <h2>6. Retenção de dados</h2>
@@ -172,6 +173,7 @@ export default function PrivacyPolicy() {
         <div className="footer-links">
           <a href="mailto:ariannmichael@gmail.com">Contato</a>
           <Link href="/">Inicio</Link>
+          <Link href="/account-deletion">Exclusão de conta</Link>
           <Link href="/#recursos">Recursos</Link>
         </div>
       </footer>

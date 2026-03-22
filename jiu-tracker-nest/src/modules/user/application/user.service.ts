@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { DataSource } from 'typeorm';
 import { UserRepository } from '../infrastructure/user.repository';
 import { BeltService } from '../../belt/application/belt.service';
 import { User } from '../domain/user.entity';
@@ -8,7 +10,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginResponse } from '@jiu-tracker/shared';
-import { DeleteResult } from 'typeorm';
+import { Insight } from '../../analytic/domain/insight.entity';
+import { Analytic } from '../../analytic/domain/analytic.entity';
+import { TrainingSession } from '../../training/domain/training-session.entity';
+import { BeltProgress } from '../../belt/domain/belt-progress.entity';
 
 @Injectable()
 export class UserService {
@@ -18,6 +23,8 @@ export class UserService {
     private readonly userRepo: UserRepository,
     private readonly beltService: BeltService,
     private readonly jwtService: JwtService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<User> {
@@ -166,17 +173,25 @@ export class UserService {
   }
 
   async deleteUser(userId: string): Promise<boolean> {
-    const deleteResult: void | DeleteResult =
-      await this.userRepo.delete(userId);
-    const deleted: boolean = Boolean(
-      deleteResult && deleteResult.affected && deleteResult.affected > 0,
-    );
+    try {
+      await this.userRepo.findById(userId);
+    } catch {
+      return false;
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.delete(Insight, { userId });
+      await manager.delete(Analytic, { userId });
+      await manager.delete(TrainingSession, { userId });
+      await manager.delete(BeltProgress, { userId });
+      await manager.delete(User, { id: userId });
+    });
 
     this.logger.log({
       event: 'user.deleted',
       userId,
-      deleted,
+      deleted: true,
     });
-    return deleted;
+    return true;
   }
 }
