@@ -33,7 +33,8 @@
     "dev": "npm-run-all --parallel backend:dev mobile:web",
     "dev:backend": "npm run backend:dev",
     "dev:mobile": "npm run mobile:start",
-    "dev:landing": "npm run landing:dev"
+    "dev:landing": "npm run landing:dev",
+    "seed": "npm run seed -w jiu-tracker-nest"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"

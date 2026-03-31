@@ -7,6 +7,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
 import { Technique } from './modules/technique/domain/technique.entity';
 import { techniqueFixtures } from './modules/technique/infrastructure/technique.fixtures';
+import { secondaryTechniqueFixtures } from './modules/technique/infrastructure/technique.fixtures.secondary';
 
 @Module({
   imports: [
@@ -25,12 +26,14 @@ async function seed() {
   const app = await NestFactory.createApplicationContext(SeedModule);
   const repo = app.get<Repository<Technique>>(getRepositoryToken(Technique));
 
-  console.log(`Seeding ${techniqueFixtures.length} techniques...`);
+  console.log(
+    `Seeding ${techniqueFixtures.length + secondaryTechniqueFixtures.length} techniques...`,
+  );
 
   let created = 0;
   let skipped = 0;
 
-  for (const fixture of techniqueFixtures) {
+  for (const fixture of [...techniqueFixtures, ...secondaryTechniqueFixtures]) {
     const existing = await repo.findOne({ where: { id: fixture.id } });
     if (existing) {
       skipped++;
