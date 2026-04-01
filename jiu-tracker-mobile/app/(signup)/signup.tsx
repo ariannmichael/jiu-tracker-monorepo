@@ -7,11 +7,6 @@ import {
   BELT_RANK_VALUES,
   BELT_COLORS,
   BELT_MAX_STRIPES,
-  COUNTRIES,
-  MONTHS,
-  MONTH_NAMES,
-  DAYS,
-  YEARS,
   FONTS,
   COLORS
 } from '../../constants';
@@ -20,35 +15,42 @@ import { createLogger, serializeError } from '@/services/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const RANK_LABELS: Record<BeltRank, string> = {
+  'White Belt': 'Faixa Branca',
+  'Blue Belt': 'Faixa Azul',
+  'Purple Belt': 'Faixa Roxa',
+  'Brown Belt': 'Faixa Marrom',
+  'Black Belt': 'Faixa Preta',
+}
+
 const signupLogger = createLogger('signup-screen');
 
 interface SignupData {
-  country: string;
   rank: BeltRank;
   stripes: number;
-  birthDate: { day: string; month: string; year: string };
   username: string;
 }
 
 export default function Signup() {
   const [currentStep, setCurrentStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({
-    country: 'Brazil',
     rank: 'White Belt' as BeltRank,
     stripes: 0,
-    birthDate: { day: '01', month: 'Jan', year: '2000' },
     username: ''
   });
 
-  const [showCountryModal, setShowCountryModal] = useState(false);
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [selectedDateField, setSelectedDateField] = useState<'day' | 'month' | 'year'>('day');
-
   const { name, email, password } = useLocalSearchParams<{ name: string; email: string; password: string }>();
   const { login } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
-  const totalSteps = 4;
+  const totalSteps = 2;
+
+  const getRankLabel = (rank: BeltRank) => {
+    if (language === 'pt') {
+      return RANK_LABELS[rank] ?? rank;
+    }
+    return RANK_LABELS[rank];
+  }
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -92,13 +94,6 @@ export default function Signup() {
     setSignupData(prev => ({ ...prev, [field]: value }));
   };
 
-  const updateBirthDate = (field: keyof SignupData['birthDate'], value: string) => {
-    setSignupData(prev => ({
-      ...prev,
-      birthDate: { ...prev.birthDate, [field]: value }
-    }));
-  };
-
   const getBeltColor = (rank: BeltRank) => {
     return BELT_COLORS[rank];
   };
@@ -119,31 +114,13 @@ export default function Signup() {
     );
   };
 
-  const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>{t("whereWereYouBorn")}</Text>
-
-      <TouchableOpacity
-        style={styles.countrySelector}
-        onPress={() => setShowCountryModal(true)}
-      >
-        <Text style={styles.countryText}>{signupData.country}</Text>
-        <Text style={styles.dropdownArrow}>▼</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>{signupData.country.toUpperCase()}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   const changeBeltRank = (newRank: BeltRank) => {
     setSignupData(prev => ({ ...prev, rank: newRank, stripes: 0 }));
   };
 
   const maxStripes = BELT_MAX_STRIPES[signupData.rank];
 
-  const renderStep2 = () => (
+  const renderStep1 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>{t("whatIsYourRank")}</Text>
 
@@ -225,58 +202,13 @@ export default function Signup() {
 
       <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
         <Text style={styles.submitButtonText}>
-          {t("imA")} {signupData.rank.toUpperCase()}{signupData.stripes > 0 ? ` ${signupData.stripes} ${signupData.stripes > 1 ? t("stripesPlural") : t("stripe")}` : ''}
+          {t("imA")} {getRankLabel(signupData.rank).toUpperCase()}{signupData.stripes > 0 ? ` ${signupData.stripes} ${signupData.stripes > 1 ? t("stripesPlural") : t("stripe")}` : ''}
         </Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderStep3 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>{t("whenWereYouBorn")}</Text>
-
-      <View style={styles.dateContainer}>
-        <TouchableOpacity
-          style={styles.dateSelector}
-          onPress={() => {
-            setSelectedDateField('day');
-            setShowDateModal(true);
-          }}
-        >
-          <Text style={styles.dateText}>{signupData.birthDate.day}</Text>
-          <Text style={styles.dropdownArrow}>▼</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.dateSelector}
-          onPress={() => {
-            setSelectedDateField('month');
-            setShowDateModal(true);
-          }}
-        >
-          <Text style={styles.dateText}>{signupData.birthDate.month}</Text>
-          <Text style={styles.dropdownArrow}>▼</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.dateSelector}
-          onPress={() => {
-            setSelectedDateField('year');
-            setShowDateModal(true);
-          }}
-        >
-          <Text style={styles.dateText}>{signupData.birthDate.year}</Text>
-          <Text style={styles.dropdownArrow}>▼</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleNext}>
-        <Text style={styles.submitButtonText}>{t("im")} {new Date().getFullYear() - parseInt(signupData.birthDate.year)}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderStep4 = () => (
+  const renderStep2 = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>{t("chooseUsername")}</Text>
 
@@ -302,93 +234,8 @@ export default function Signup() {
     switch (currentStep) {
       case 1: return renderStep1();
       case 2: return renderStep2();
-      case 3: return renderStep3();
-      case 4: return renderStep4();
       default: return renderStep1();
     }
-  };
-
-  const renderCountryModal = () => (
-    <Modal
-      visible={showCountryModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowCountryModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>{t("selectCountry")}</Text>
-          <FlatList
-            data={COUNTRIES}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.modalItem}
-                onPress={() => {
-                  updateSignupData('country', item);
-                  setShowCountryModal(false);
-                }}
-              >
-                <Text style={styles.modalItemText}>{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setShowCountryModal(false)}
-          >
-            <Text style={styles.modalCloseText}>{t("cancel")}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-
-  const renderDateModal = () => {
-    const getDateData = (): string[] => {
-      switch (selectedDateField) {
-        case 'day': return DAYS;
-        case 'month': return MONTH_NAMES;
-        case 'year': return YEARS;
-        default: return DAYS;
-      }
-    };
-
-    return (
-      <Modal
-        visible={showDateModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowDateModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t("select")} {selectedDateField.charAt(0).toUpperCase() + selectedDateField.slice(1)}</Text>
-            <FlatList
-              data={getDateData()}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => {
-                    updateBirthDate(selectedDateField, item);
-                    setShowDateModal(false);
-                  }}
-                >
-                  <Text style={styles.modalItemText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-            <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setShowDateModal(false)}
-            >
-              <Text style={styles.modalCloseText}>{t("cancel")}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
   };
 
   return (
@@ -420,9 +267,6 @@ export default function Signup() {
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t("footer")}</Text>
       </View>
-
-      {renderCountryModal()}
-      {renderDateModal()}
     </View>
   );
 }
@@ -547,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   stripe: {
-    width: 2,
+    width: 4,
     height: 12,
     backgroundColor: COLORS.WHITE,
     marginHorizontal: 1,
