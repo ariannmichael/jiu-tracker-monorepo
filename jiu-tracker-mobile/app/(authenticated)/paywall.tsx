@@ -15,6 +15,31 @@ import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SubscriptionService from "@/services/subscription.service";
+import {
+  endConnection,
+  finishTransaction,
+  getPurchaseHistory,
+  getReceiptIos,
+  getSubscriptions,
+  initConnection,
+  purchaseErrorListener,
+  purchaseUpdatedListener,
+  requestPurchase,
+  sync,
+  validateReceiptIos,
+  type Purchase,
+} from "expo-iap";
+
+function normalizePurchaseResult(
+  result:
+    | Purchase
+    | Purchase[]
+    | void
+    | null
+): Purchase | null {
+  if (result == null) return null;
+  return Array.isArray(result) ? result[0] ?? null : result;
+}
 
 export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
@@ -27,35 +52,31 @@ export default function PaywallScreen() {
   const handleVerifyReceipt = async (
     platform: "apple" | "google",
     receipt: string
-  ) => {
-    if (!token) return;
+  ): Promise<boolean> => {
+    if (!token) return false;
     try {
       await SubscriptionService.verifyIap(token, platform, receipt);
       await refreshUser();
       router.back();
+      return true;
     } catch (e) {
       Alert.alert(
         t("error"),
         (e as Error).message ?? t("pleaseTryAgain")
       );
+      return false;
     } finally {
       setLoading(null);
     }
   };
 
   const handlePurchase = async () => {
-    if (!token || Platform.OS === "ios") return;
-
-    const {
-      initConnection,
-      purchaseUpdatedListener,
-      purchaseErrorListener,
-      requestPurchase,
-      finishTransaction,
-    } = await import("expo-iap");
+    if (!token) {
+      Alert.alert(t("error"), t("pleaseTryAgain"));
+      return;
+    }
 
     setLoading("purchase");
-    const platform = "google";
     const productId = SubscriptionService.getPremiumProductId();
 
     let updateSub: { remove: () => void } | null = null;
@@ -65,20 +86,6 @@ export default function PaywallScreen() {
       updateSub?.remove();
       errorSub?.remove();
     };
-
-    updateSub = purchaseUpdatedListener(async (purchase: any) => {
-      cleanup();
-      setLoading(null);
-      const receipt = purchase.purchaseTokenAndroid ?? purchase.transactionReceipt;
-      if (receipt && token) {
-        try {
-          await handleVerifyReceipt(platform, receipt);
-          await finishTransaction({ purchase, isConsumable: false });
-        } catch (e) {
-          Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
-        }
-      }
-    });
 
     errorSub = purchaseErrorListener((error: { code?: string; message?: string }) => {
       cleanup();
@@ -90,6 +97,80 @@ export default function PaywallScreen() {
 
     try {
       await initConnection();
+
+      if (Platform.OS === "ios") {
+        try {
+          await getSubscriptions([productId]);
+        } catch {
+          // Product metadata optional; purchase may still work
+        }
+
+        const result = await requestPurchase({
+          request: { sku: productId },
+          type: "subs",
+        });
+        cleanup();
+        const purchase = normalizePurchaseResult(result);
+        if (!purchase) {
+          setLoading(null);
+          await endConnection();
+          return;
+        }
+
+        await sync();
+        let receipt: string;
+        try {
+          receipt = await getReceiptIos();
+        } catch (receiptErr) {
+          setLoading(null);
+          await endConnection();
+          Alert.alert(
+            t("error"),
+            (receiptErr as Error).message ?? t("pleaseTryAgain")
+          );
+          return;
+        }
+
+        if (!receipt?.length) {
+          setLoading(null);
+          await endConnection();
+          Alert.alert(t("error"), t("pleaseTryAgain"));
+          return;
+        }
+
+        try {
+          const verified = await handleVerifyReceipt("apple", receipt);
+          if (verified) {
+            await finishTransaction({ purchase, isConsumable: false });
+          }
+        } catch (e) {
+          Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+        } finally {
+          await endConnection();
+        }
+        return;
+      }
+
+      const platform = "google";
+      updateSub = purchaseUpdatedListener(async (purchase: Purchase) => {
+        cleanup();
+        setLoading(null);
+        const receipt =
+          "purchaseTokenAndroid" in purchase && purchase.purchaseTokenAndroid
+            ? purchase.purchaseTokenAndroid
+            : purchase.transactionReceipt;
+        if (receipt && token) {
+          try {
+            const verified = await handleVerifyReceipt(platform, receipt);
+            if (verified) {
+              await finishTransaction({ purchase, isConsumable: false });
+            }
+          } catch (e) {
+            Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+          }
+        }
+      });
+
       await requestPurchase({ request: { skus: [productId] }, type: "inapp" });
     } catch (e) {
       cleanup();
@@ -99,30 +180,47 @@ export default function PaywallScreen() {
   };
 
   const handleRestore = async () => {
-    if (!token || Platform.OS === "ios") return;
-
-    const {
-      initConnection,
-      endConnection,
-      getPurchaseHistory,
-    } = await import("expo-iap");
+    if (!token) {
+      Alert.alert(t("error"), t("pleaseTryAgain"));
+      return;
+    }
 
     setLoading("restore");
-    const platform = "google";
     const productId = SubscriptionService.getPremiumProductId();
 
     try {
       await initConnection();
+
+      if (Platform.OS === "ios") {
+        await sync();
+        let receipt: string | undefined;
+        try {
+          receipt = await getReceiptIos();
+        } catch {
+          const validated = await validateReceiptIos(productId);
+          receipt = validated.receiptData || undefined;
+        }
+        await endConnection();
+
+        if (receipt?.length) {
+          await handleVerifyReceipt("apple", receipt);
+          return;
+        }
+        Alert.alert(t("error"), t("noPreviousPurchase"));
+        return;
+      }
+
+      const platform = "google";
       const history = await getPurchaseHistory();
       await endConnection();
 
       if (history?.length) {
         const premiumPurchase =
-          (history as any[]).find((p) => p.id === productId || p.ids?.includes(productId)) ??
-          history[0];
+          history.find((p) => p.id === productId) ?? history[0];
         const receipt =
-          (premiumPurchase as any).purchaseTokenAndroid ??
-          (premiumPurchase as any).transactionReceipt;
+          "purchaseTokenAndroid" in premiumPurchase && premiumPurchase.purchaseTokenAndroid
+            ? premiumPurchase.purchaseTokenAndroid
+            : premiumPurchase.transactionReceipt;
         if (receipt) {
           await handleVerifyReceipt(platform, receipt);
           return;
