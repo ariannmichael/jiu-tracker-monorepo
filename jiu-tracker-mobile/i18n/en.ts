@@ -165,6 +165,8 @@ const en = {
   noPreviousPurchase: "No previous purchase found to restore.",
   iapProductUnavailable:
     "This subscription is not available from the store. In App Store Connect (or Play Console), create a subscription whose Product ID exactly matches EXPO_PUBLIC_PREMIUM_PRODUCT_ID for this app bundle, then rebuild.",
+  iapMobileOnly: "Subscriptions are available in the iOS and Android app, not in the browser.",
+  iapProductIdUsedByApp: "This build requests Product ID (must match App Store Connect exactly):",
 } as const;
 
 export type TranslationKeys = keyof typeof en;

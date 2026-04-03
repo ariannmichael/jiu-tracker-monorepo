@@ -15,28 +15,17 @@ import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SubscriptionService from "@/services/subscription.service";
-import {
-  endConnection,
-  finishTransaction,
-  getPurchaseHistory,
-  getReceiptIos,
-  getSubscriptions,
-  initConnection,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  requestPurchase,
-  sync,
-  validateReceiptIos,
-  type Purchase,
-} from "expo-iap";
+
+/** Mirrors expo-iap Purchase fields we use — avoid importing expo-iap at module load (breaks web). */
+type IapPurchase = {
+  id: string;
+  transactionReceipt: string;
+  purchaseTokenAndroid?: string;
+};
 
 function normalizePurchaseResult(
-  result:
-    | Purchase
-    | Purchase[]
-    | void
-    | null
-): Purchase | null {
+  result: IapPurchase | IapPurchase[] | void | null
+): IapPurchase | null {
   if (result == null) return null;
   return Array.isArray(result) ? result[0] ?? null : result;
 }
@@ -48,6 +37,7 @@ export default function PaywallScreen() {
   const [loading, setLoading] = useState<"purchase" | "restore" | null>(null);
 
   const isPremium = user?.is_premium ?? false;
+  const isWeb = Platform.OS === "web";
 
   const handleVerifyReceipt = async (
     platform: "apple" | "google",
@@ -75,6 +65,22 @@ export default function PaywallScreen() {
       Alert.alert(t("error"), t("pleaseTryAgain"));
       return;
     }
+    if (Platform.OS === "web") {
+      Alert.alert(t("error"), t("iapMobileOnly"));
+      return;
+    }
+
+    const {
+      endConnection,
+      finishTransaction,
+      getReceiptIos,
+      getSubscriptions,
+      initConnection,
+      purchaseErrorListener,
+      purchaseUpdatedListener,
+      requestPurchase,
+      sync,
+    } = await import("expo-iap");
 
     setLoading("purchase");
     const productId = SubscriptionService.getPremiumProductId();
@@ -87,6 +93,13 @@ export default function PaywallScreen() {
       errorSub?.remove();
     };
 
+    const alertInvalidProductId = (detail?: string) => {
+      Alert.alert(
+        t("error"),
+        `${t("iapProductUnavailable")}\n\n${t("iapProductIdUsedByApp")}\n${productId}${detail ? `\n\n${detail}` : ""}`,
+      );
+    };
+
     errorSub = purchaseErrorListener((error: { code?: string; message?: string }) => {
       cleanup();
       setLoading(null);
@@ -94,7 +107,7 @@ export default function PaywallScreen() {
         return;
       }
       if (error.code === "E_ITEM_UNAVAILABLE") {
-        Alert.alert(t("error"), t("iapProductUnavailable"));
+        alertInvalidProductId();
         return;
       }
       Alert.alert(t("error"), error.message ?? t("pleaseTryAgain"));
@@ -157,7 +170,7 @@ export default function PaywallScreen() {
       }
 
       const platform = "google";
-      updateSub = purchaseUpdatedListener(async (purchase: Purchase) => {
+      updateSub = purchaseUpdatedListener(async (purchase: IapPurchase) => {
         cleanup();
         setLoading(null);
         const receipt =
@@ -180,7 +193,15 @@ export default function PaywallScreen() {
     } catch (e) {
       cleanup();
       setLoading(null);
-      Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
+      const msg = (e as Error).message ?? "";
+      if (
+        /invalid product id/i.test(msg) ||
+        msg.includes("E_ITEM_UNAVAILABLE")
+      ) {
+        alertInvalidProductId(msg);
+      } else {
+        Alert.alert(t("error"), msg || t("pleaseTryAgain"));
+      }
     }
   };
 
@@ -189,6 +210,19 @@ export default function PaywallScreen() {
       Alert.alert(t("error"), t("pleaseTryAgain"));
       return;
     }
+    if (Platform.OS === "web") {
+      Alert.alert(t("error"), t("iapMobileOnly"));
+      return;
+    }
+
+    const {
+      endConnection,
+      getPurchaseHistory,
+      getReceiptIos,
+      initConnection,
+      sync,
+      validateReceiptIos,
+    } = await import("expo-iap");
 
     setLoading("restore");
     const productId = SubscriptionService.getPremiumProductId();
@@ -221,7 +255,7 @@ export default function PaywallScreen() {
 
       if (history?.length) {
         const premiumPurchase =
-          history.find((p) => p.id === productId) ?? history[0];
+          history.find((p: IapPurchase) => p.id === productId) ?? history[0];
         const receipt =
           "purchaseTokenAndroid" in premiumPurchase && premiumPurchase.purchaseTokenAndroid
             ? premiumPurchase.purchaseTokenAndroid
@@ -304,10 +338,11 @@ export default function PaywallScreen() {
       <Text style={styles.benefitItem}>• {t("premiumBenefit4")}</Text>
       <Text style={styles.comingSoon}>{t("premiumComingSoonCompetitions")}</Text>
 
+
       <TouchableOpacity
         style={[styles.button, styles.primaryButton]}
         onPress={handlePurchase}
-        disabled={loading !== null}
+        disabled={loading !== null || isWeb}
       >
         {loading === "purchase" ? (
           <ActivityIndicator color={COLORS.WHITE} />
@@ -321,7 +356,7 @@ export default function PaywallScreen() {
       <TouchableOpacity
         style={styles.button}
         onPress={handleRestore}
-        disabled={loading !== null}
+        disabled={loading !== null || isWeb}
       >
         {loading === "restore" ? (
           <ActivityIndicator color={COLORS.WHITE} />
@@ -385,6 +420,14 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 16,
     marginBottom: 32,
+    lineHeight: 20,
+  },
+  webOnlyHint: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.ACCENT_ORANGE,
+    marginBottom: 20,
     lineHeight: 20,
   },
   button: {

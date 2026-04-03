@@ -37,7 +37,7 @@ function toPath(url: string): string {
 }
 
 export default class Api {
-  static BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3006/api';
+  static BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'JiuTrackerPremium';
 
   static url(path: string): string {
     if (/^https?:\/\//.test(path)) {
