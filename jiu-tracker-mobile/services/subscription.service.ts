@@ -1,6 +1,8 @@
 import Api from "./api";
 
-const PREMIUM_PRODUCT_ID = "premium_analytics";
+/** Must match the auto-renewable subscription Product ID in App Store Connect & Play Console. */
+const PREMIUM_PRODUCT_ID =
+  process.env.EXPO_PUBLIC_PREMIUM_PRODUCT_ID ?? "premium_analytics";
 
 export type IapPlatform = "apple" | "google";
 

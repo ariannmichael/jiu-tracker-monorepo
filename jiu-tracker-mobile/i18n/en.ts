@@ -163,6 +163,8 @@ const en = {
   backToDashboard: "Back to Dashboard",
   cancelPremium: "Cancel Premium",
   noPreviousPurchase: "No previous purchase found to restore.",
+  iapProductUnavailable:
+    "This subscription is not available from the store. In App Store Connect (or Play Console), create a subscription whose Product ID exactly matches EXPO_PUBLIC_PREMIUM_PRODUCT_ID for this app bundle, then rebuild.",
 } as const;
 
 export type TranslationKeys = keyof typeof en;

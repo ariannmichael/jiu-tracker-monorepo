@@ -90,9 +90,14 @@ export default function PaywallScreen() {
     errorSub = purchaseErrorListener((error: { code?: string; message?: string }) => {
       cleanup();
       setLoading(null);
-      if (error.code !== "E_USER_CANCELLED") {
-        Alert.alert(t("error"), error.message ?? t("pleaseTryAgain"));
+      if (error.code === "E_USER_CANCELLED") {
+        return;
       }
+      if (error.code === "E_ITEM_UNAVAILABLE") {
+        Alert.alert(t("error"), t("iapProductUnavailable"));
+        return;
+      }
+      Alert.alert(t("error"), error.message ?? t("pleaseTryAgain"));
     });
 
     try {
@@ -102,7 +107,7 @@ export default function PaywallScreen() {
         try {
           await getSubscriptions([productId]);
         } catch {
-          // Product metadata optional; purchase may still work
+          // Missing/invalid products still fail at purchase with E_ITEM_UNAVAILABLE
         }
 
         const result = await requestPurchase({

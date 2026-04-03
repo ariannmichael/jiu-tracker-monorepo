@@ -165,6 +165,8 @@ const pt: Record<TranslationKeys, string> = {
   backToDashboard: "Voltar ao Início",
   cancelPremium: "Cancelar Premium",
   noPreviousPurchase: "Nenhuma compra anterior encontrada para restaurar.",
+  iapProductUnavailable:
+    "Esta assinatura não está disponível na loja. No App Store Connect (ou Play Console), crie uma assinatura cujo ID do produto seja exatamente o mesmo que EXPO_PUBLIC_PREMIUM_PRODUCT_ID para este app, depois gere o build de novo.",
 };
 
 export default pt;
