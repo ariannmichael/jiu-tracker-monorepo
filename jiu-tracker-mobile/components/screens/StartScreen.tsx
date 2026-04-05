@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     width: '100%',
+    minWidth: 280,
     marginBottom: 30,
   },
   input: {

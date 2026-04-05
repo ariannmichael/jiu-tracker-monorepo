@@ -9,6 +9,9 @@
       "distribution": "internal",
       "android": {
         "image": "sdk-52"
+      },
+      "env": {
+        "EXPO_PUBLIC_PREMIUM_PRODUCT_ID": "JiuTrackerPremium"
       }
     },
     "preview": {
@@ -16,12 +19,18 @@
       "android": {
         "image": "sdk-52",
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_PREMIUM_PRODUCT_ID": "JiuTrackerPremium"
       }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "image": "sdk-52"
+      },
+      "env": {
+        "EXPO_PUBLIC_PREMIUM_PRODUCT_ID": "JiuTrackerPremium"
       }
     }
   },

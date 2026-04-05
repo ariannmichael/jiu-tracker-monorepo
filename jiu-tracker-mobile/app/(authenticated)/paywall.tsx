@@ -15,6 +15,7 @@ import { COLORS, FONTS, RADIUS } from "../../constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SubscriptionService from "@/services/subscription.service";
+import { Purchase } from "expo-iap";
 
 /** Mirrors expo-iap Purchase fields we use — avoid importing expo-iap at module load (breaks web). */
 type IapPurchase = {
@@ -114,6 +115,7 @@ export default function PaywallScreen() {
     });
 
     try {
+      await endConnection();
       await initConnection();
 
       if (Platform.OS === "ios") {
@@ -159,7 +161,7 @@ export default function PaywallScreen() {
         try {
           const verified = await handleVerifyReceipt("apple", receipt);
           if (verified) {
-            await finishTransaction({ purchase, isConsumable: false });
+            await finishTransaction({ purchase: purchase as Purchase, isConsumable: false });
           }
         } catch (e) {
           Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
@@ -181,7 +183,7 @@ export default function PaywallScreen() {
           try {
             const verified = await handleVerifyReceipt(platform, receipt);
             if (verified) {
-              await finishTransaction({ purchase, isConsumable: false });
+              await finishTransaction({ purchase: purchase as Purchase, isConsumable: false });
             }
           } catch (e) {
             Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
