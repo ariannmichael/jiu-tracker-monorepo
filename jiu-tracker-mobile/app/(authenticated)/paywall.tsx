@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SubscriptionProduct } from "expo-iap";
 import { COLORS, FONTS, RADIUS } from "../../constants";
+import { SUBSCRIPTION_PRICES_BY_COUNTRY } from "@/constants/subscriptionPricesByCountry";
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@/constants/legalUrls";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -42,7 +43,7 @@ function normalizePurchaseResult(
 export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const { token, user, refreshUser } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState<"purchase" | "restore" | null>(null);
   const [storeSubscription, setStoreSubscription] =
     useState<SubscriptionProduct | null>(null);
@@ -490,6 +491,26 @@ export default function PaywallScreen() {
         </Text>
       )}
 
+      <View style={styles.countryPricesSection}>
+        <Text style={styles.countryPricesTitle}>
+          {t("subscriptionPricesByCountryTitle")}
+        </Text>
+        <Text style={styles.countryPricesDisclaimer}>
+          {t("subscriptionPricesByCountryDisclaimer")}
+        </Text>
+        {SUBSCRIPTION_PRICES_BY_COUNTRY.map((row) => (
+          <View
+            key={`${row.countryEn}-${row.price}`}
+            style={styles.countryPriceRow}
+          >
+            <Text style={styles.countryPriceCountry} numberOfLines={2}>
+              {language === "pt" ? row.countryPt : row.countryEn}
+            </Text>
+            <Text style={styles.countryPriceAmount}>{row.price}</Text>
+          </View>
+        ))}
+      </View>
+
       <Text style={styles.sectionLabel}>{t("subscriptionDuringPeriodHeading")}</Text>
       <Text style={styles.sectionLabelMuted}>{t("premiumWhatYouGet")}</Text>
       <Text style={styles.benefitItem}>• {t("premiumBenefit1")}</Text>
@@ -602,6 +623,52 @@ const styles = StyleSheet.create({
     color: COLORS.GRAY_TEXT,
     marginBottom: 16,
     lineHeight: 20,
+  },
+  countryPricesSection: {
+    backgroundColor: COLORS.CARD,
+    borderRadius: RADIUS.LG,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+    padding: 16,
+    marginBottom: 20,
+  },
+  countryPricesTitle: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "600",
+    fontSize: 16,
+    color: COLORS.WHITE,
+    marginBottom: 8,
+  },
+  countryPricesDisclaimer: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 12,
+    color: COLORS.GRAY_TEXT_SECONDARY,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  countryPriceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER,
+  },
+  countryPriceCountry: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT,
+    flex: 1,
+  },
+  countryPriceAmount: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "500",
+    fontSize: 14,
+    color: COLORS.WHITE,
+    flexShrink: 0,
   },
   sectionLabel: {
     fontFamily: FONTS.EXO2_MEDIUM,

@@ -193,6 +193,9 @@ const pt: Record<TranslationKeys, string> = {
   subscriptionPeriodThreeMonths: "A cada 3 meses",
   subscriptionPeriodYear: "Anual",
   subscriptionPeriodSeeStore: "Veja na loja no momento da compra o período e o preço atuais.",
+  subscriptionPricesByCountryTitle: "Preços por país",
+  subscriptionPricesByCountryDisclaimer:
+    "Preços de referência por assinatura mensal; podem aplicar-se impostos e conversão cambial. O valor exato aparece na loja no momento da compra.",
   subscriptionAutoRenewNote:
     "A assinatura renova automaticamente, salvo se cancelar com pelo menos 24 horas de antecedência ao fim do período. Gerencie ou cancele nas definições da sua conta Apple ID ou Google Play.",
 };

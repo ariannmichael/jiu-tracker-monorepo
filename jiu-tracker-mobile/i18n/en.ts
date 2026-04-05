@@ -189,6 +189,9 @@ const en = {
   subscriptionPeriodThreeMonths: "Every 3 months",
   subscriptionPeriodYear: "Yearly",
   subscriptionPeriodSeeStore: "See the store at purchase for current billing period and price.",
+  subscriptionPricesByCountryTitle: "Prices by country",
+  subscriptionPricesByCountryDisclaimer:
+    "Reference prices per monthly subscription; tax and currency conversion may apply. Your store account shows the exact amount at purchase.",
   subscriptionAutoRenewNote:
     "Subscription renews automatically unless you cancel at least 24 hours before the end of the current period. Manage or cancel in your Apple ID or Google Play account settings.",
 } as const;
