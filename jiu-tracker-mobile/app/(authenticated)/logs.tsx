@@ -5,21 +5,18 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
   Platform,
   Alert,
   RefreshControl,
 } from "react-native";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "../../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 import TechniquesService from "@/services/techniques.service";
-import TechniquesSelect from "@/components/selects/TechniquesSelect";
 import TrainingService from "@/services/training.service";
+import AddLogModal from "@/components/modals/AddLogModal";
 import { CreateTrainingRequest, Technique, TrainingSession } from "@jiu-tracker/shared";
 import LogCard from "@/components/cards/LogCard";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -173,31 +170,6 @@ export default function LogsScreen() {
     }
   };
 
-  const dateLocale = language === "pt" ? "pt-BR" : "en-US";
-
-  const formatDate = (d: Date) => {
-    return d.toLocaleDateString(dateLocale, {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (d: Date) => {
-    return d.toLocaleTimeString(dateLocale, {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: language !== "pt",
-    });
-  };
-
-  const formatTimeForInput = (d: Date) => {
-    const h = d.getHours();
-    const m = d.getMinutes();
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  };
-
   const handleSubmit = () => {
     const durationMinutes = classTime ? classTime.getHours() * 60 + classTime.getMinutes() : 0;
     const submitIds = submitUsingOptions.map((option) => option.id);
@@ -258,231 +230,6 @@ export default function LogsScreen() {
         });
     }
   };
-
-  const renderAddLogModal = () => (
-    <Modal
-      visible={showAddModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={closeLogModal}
-    >
-      <KeyboardAvoidingView
-        style={styles.modalOverlay}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <View style={styles.modalContent}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={closeLogModal}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={t("cancel")}
-          >
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>{editingTraining ? t("editLog") : t("newLog")}</Text>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("date")}</Text>
-            {Platform.OS === "web" ? (
-              <View style={styles.datePickerContainer}>
-                <input
-                  type="date"
-                  value={date.toISOString().split("T")[0]}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const newDate = new Date(e.target.value + "T00:00:00");
-                    if (!isNaN(newDate.getTime())) {
-                      setDate(newDate);
-                    }
-                  }}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    fontFamily: FONTS.EXO2_LIGHT,
-    fontWeight: '300',
-                    fontSize: 16,
-                    color: COLORS.WHITE,
-                    width: "100%",
-                    colorScheme: "dark",
-                  }}
-                />
-              </View>
-            ) : Platform.OS === "ios" ? (
-              <View style={styles.datePickerContainer}>
-                <DateTimePicker
-                  value={date}
-                  mode="date"
-                  display="compact"
-                  onChange={handleDateChange}
-                  themeVariant="dark"
-                  accentColor={COLORS.BUTTON}
-                />
-              </View>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.fieldInput}
-                  onPress={() => setShowDatePicker(true)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.dateText}>{formatDate(date)}</Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                  />
-                )}
-              </>
-            )}
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("duration")}</Text>
-            {Platform.OS === "web" ? (
-              <View style={styles.datePickerContainer}>
-                <input
-                  type="time"
-                  value={classTime ? formatTimeForInput(classTime) : ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const [hours, minutes] = (e.target.value || "00:00").split(":").map(Number);
-                    const d = new Date();
-                    d.setHours(hours, minutes, 0, 0);
-                    setClassTime(d);
-                  }}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    fontFamily: FONTS.EXO2_LIGHT,
-    fontWeight: '300',
-                    fontSize: 16,
-                    color: COLORS.WHITE,
-                    width: "100%",
-                    colorScheme: "dark",
-                  }}
-                />
-              </View>
-            ) : Platform.OS === "ios" ? (
-              <View style={styles.datePickerContainer}>
-                <DateTimePicker
-                  value={classTime ?? new Date()}
-                  mode="time"
-                  display="compact"
-                  onChange={handleTimeChange}
-                  themeVariant="dark"
-                  accentColor={COLORS.BUTTON}
-                />
-              </View>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.fieldInput}
-                  onPress={() => setShowTimePicker(true)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.dateText, !classTime && { color: COLORS.GRAY_TEXT }]}>
-                    {classTime ? formatTime(classTime) : t("selectTime")}
-                  </Text>
-                </TouchableOpacity>
-                {showTimePicker && (
-                  <DateTimePicker
-                    value={classTime ?? new Date()}
-                    mode="time"
-                    display="default"
-                    onChange={handleTimeChange}
-                  />
-                )}
-              </>
-            )}
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("openMatLabel")}</Text>
-            <View style={styles.boxSelectRow}>
-              <TouchableOpacity
-                style={[styles.boxSelectOption, rollingOpenMat && styles.boxSelectOptionSelected]}
-                onPress={() => setRollingOpenMat(true)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.boxSelectOptionText}>{t("yes")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.boxSelectOption, !rollingOpenMat && styles.boxSelectOptionSelected]}
-                onPress={() => setRollingOpenMat(false)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.boxSelectOptionText}>{t("no")}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("giNogi")}</Text>
-            <View style={styles.boxSelectRow}>
-              <TouchableOpacity
-                style={[styles.boxSelectOption, isGi && styles.boxSelectOptionSelected]}
-                onPress={() => setIsGi(true)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.boxSelectOptionText}>{t("gi")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.boxSelectOption, !isGi && styles.boxSelectOptionSelected]}
-                onPress={() => setIsGi(false)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.boxSelectOptionText}>{t("nogi")}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("submitUsing")}</Text>
-            <TechniquesSelect
-              options={techniques}
-              selected={submitUsingOptions.map((option) => option.id)}
-              onSelectionChange={(selected) => setSubmitUsingOptions(selected.map((id) => techniques.find((tech) => tech.id === id)!))}
-              placeholder={t("selectTechniques")}
-              chipVariant="submit"
-            />
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("wasTappedBy")}</Text>
-            <TechniquesSelect
-              options={techniques}
-              selected={tappedByOptions.map((option) => option.id)}
-              onSelectionChange={(selected) => setTappedByOptions(selected.map((id) => techniques.find((tech) => tech.id === id)!))}
-              placeholder={t("selectTechniques")}
-              chipVariant="tapped"
-            />
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>{t("notes")}</Text>
-            <TextInput
-              style={styles.fieldInput}
-              value={notes}
-              onChangeText={setNotes}
-              placeholderTextColor={COLORS.GRAY_TEXT}
-              placeholder={t("enterNotesHere")}
-              multiline={true}
-              numberOfLines={5}
-              textAlignVertical="top"
-            />
-          </View>
-
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>{t("submit")}</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-  );
 
   const renderLogItem = useCallback(
     ({ item: training }: { item: TrainingWithOptions }) => (
@@ -551,7 +298,33 @@ export default function LogsScreen() {
           />
         }
       />
-      {renderAddLogModal()}
+      <AddLogModal
+        visible={showAddModal}
+        onClose={closeLogModal}
+        editingTraining={editingTraining}
+        date={date}
+        setDate={setDate}
+        showDatePicker={showDatePicker}
+        setShowDatePicker={setShowDatePicker}
+        classTime={classTime}
+        setClassTime={setClassTime}
+        showTimePicker={showTimePicker}
+        setShowTimePicker={setShowTimePicker}
+        rollingOpenMat={rollingOpenMat}
+        setRollingOpenMat={setRollingOpenMat}
+        isGi={isGi}
+        setIsGi={setIsGi}
+        notes={notes}
+        setNotes={setNotes}
+        techniques={techniques}
+        submitUsingOptions={submitUsingOptions}
+        setSubmitUsingOptions={setSubmitUsingOptions}
+        tappedByOptions={tappedByOptions}
+        setTappedByOptions={setTappedByOptions}
+        onDateChange={handleDateChange}
+        onTimeChange={handleTimeChange}
+        onSubmit={handleSubmit}
+      />
     </View>
   );
 }
@@ -619,117 +392,5 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     textAlign: 'center',
     letterSpacing: 1,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: COLORS.CARD,
-    borderRadius: 16,
-    padding: 24,
-    width: '85%',
-    maxHeight: '100%',
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    zIndex: 1,
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    fontFamily: FONTS.EXO2_BOLD,
-    fontWeight: '700',
-    fontSize: 20,
-    color: COLORS.WHITE,
-  },
-  modalTitle: {
-    fontFamily: FONTS.EXO2_BOLD,
-    fontWeight: '700',
-    fontSize: 28,
-    color: COLORS.WHITE,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  fieldGroup: {
-    marginBottom: 16,
-  },
-  fieldLabel: {
-    fontFamily: FONTS.EXO2_BOLD,
-    fontWeight: '700',
-    fontSize: 13,
-    color: COLORS.WHITE,
-    letterSpacing: 1.5,
-    marginBottom: 8,
-  },
-  fieldInput: {
-    backgroundColor: COLORS.GRAY_MEDIUM,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontFamily: FONTS.EXO2_LIGHT,
-    fontWeight: '300',
-    fontSize: 16,
-    color: COLORS.WHITE,
-  },
-  datePickerContainer: {
-    backgroundColor: COLORS.GRAY_MEDIUM,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    alignItems: "flex-start",
-  },
-  dateText: {
-    fontFamily: FONTS.EXO2_LIGHT,
-    fontWeight: '300',
-    fontSize: 16,
-    color: COLORS.WHITE,
-  },
-  boxSelectRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  boxSelectOption: {
-    flex: 1,
-    backgroundColor: COLORS.GRAY_MEDIUM,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  boxSelectOptionSelected: {
-    backgroundColor: COLORS.BUTTON,
-    borderColor: COLORS.BUTTON,
-  },
-  boxSelectOptionText: {
-    fontFamily: FONTS.EXO2_LIGHT,
-    fontWeight: '300',
-    fontSize: 16,
-    color: COLORS.WHITE,
-  },
-  submitButton: {
-    marginTop: 12,
-    backgroundColor: COLORS.BUTTON,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    fontFamily: FONTS.EXO2_BOLD,
-    fontWeight: '700',
-    fontSize: 16,
-    color: COLORS.WHITE,
-    letterSpacing: 2,
   },
 });

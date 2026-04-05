@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   Pressable,
+  Modal,
 } from "react-native";
 import { TechniqueListItem } from "@jiu-tracker/shared";
 import { COLORS, FONTS } from "@/constants";
@@ -45,6 +46,11 @@ export default function TechniquesSelect({
     );
   }, [options, search]);
 
+  const closePicker = useCallback(() => {
+    setOpen(false);
+    setSearch("");
+  }, []);
+
   const toggle = (id: string) => {
     if (selected.includes(id)) {
       onSelectionChange(selected.filter((s) => s !== id));
@@ -66,10 +72,7 @@ export default function TechniquesSelect({
 
   return (
     <View style={styles.wrapper}>
-      <Pressable
-        style={styles.box}
-        onPress={() => setOpen((o) => !o)}
-      >
+      <Pressable style={styles.box} onPress={() => setOpen(true)}>
         <View style={styles.boxInner}>
           {selectedDisplayNames.length > 0 ? (
             <View style={styles.chips}>
@@ -92,44 +95,67 @@ export default function TechniquesSelect({
             <Text style={styles.placeholder}>{placeholder}</Text>
           )}
         </View>
-        <Text style={styles.chevron}>{open ? "▲" : "▼"}</Text>
+        <Text style={styles.chevron}>▼</Text>
       </Pressable>
 
-      {open && (
-        <View style={styles.dropdown}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t("searchTechniques")}
-            placeholderTextColor={COLORS.GRAY_TEXT}
-            value={search}
-            onChangeText={setSearch}
-          />
-          <ScrollView
-            style={styles.list}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled
-          >
-            {filteredOptions?.length === 0 ? (
-              <Text style={styles.emptyText}>{t("noTechniquesFound")}</Text>
-            ) : (
-              filteredOptions?.map((opt) => {
-                const isSelected = selected.includes(opt.id);
-                return (
-                  <TouchableOpacity
-                    key={opt.id}
-                    style={[styles.option, isSelected && styles.optionSelected]}
-                    onPress={() => toggle(opt.id)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.optionText}>{getDisplayName(opt)}</Text>
-                    {isSelected && <Text style={styles.check}>✓</Text>}
-                  </TouchableOpacity>
-                );
-              })
-            )}
-          </ScrollView>
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={closePicker}
+        statusBarTranslucent
+      >
+        <View style={styles.modalRoot}>
+          <Pressable style={styles.modalBackdrop} onPress={closePicker} accessibilityRole="button" />
+          <View style={styles.modalPanel}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle} numberOfLines={1}>
+                {placeholder}
+              </Text>
+              <TouchableOpacity
+                onPress={closePicker}
+                style={styles.modalCloseHit}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("cancel")}
+              >
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t("searchTechniques")}
+              placeholderTextColor={COLORS.GRAY_TEXT}
+              value={search}
+              onChangeText={setSearch}
+            />
+            <ScrollView
+              style={styles.list}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+            >
+              {filteredOptions?.length === 0 ? (
+                <Text style={styles.emptyText}>{t("noTechniquesFound")}</Text>
+              ) : (
+                filteredOptions?.map((opt) => {
+                  const isSelected = selected.includes(opt.id);
+                  return (
+                    <TouchableOpacity
+                      key={opt.id}
+                      style={[styles.option, isSelected && styles.optionSelected]}
+                      onPress={() => toggle(opt.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.optionText}>{getDisplayName(opt)}</Text>
+                      {isSelected && <Text style={styles.check}>✓</Text>}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </ScrollView>
+          </View>
         </View>
-      )}
+      </Modal>
     </View>
   );
 }
@@ -195,14 +221,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.WHITE,
   },
-  dropdown: {
-    marginTop: 8,
+  modalRoot: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+  },
+  modalPanel: {
+    width: "100%",
+    maxWidth: 400,
+    maxHeight: "75%",
     backgroundColor: COLORS.CARD,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.BORDER,
-    maxHeight: 220,
     overflow: "hidden",
+    zIndex: 1,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  modalTitle: {
+    flex: 1,
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: "700",
+    fontSize: 17,
+    color: COLORS.WHITE,
+  },
+  modalCloseHit: {
+    padding: 4,
+  },
+  modalClose: {
+    fontFamily: FONTS.EXO2_BOLD,
+    fontWeight: "700",
+    fontSize: 20,
+    color: COLORS.WHITE,
   },
   searchInput: {
     fontFamily: FONTS.EXO2_LIGHT,
@@ -211,14 +274,16 @@ const styles = StyleSheet.create({
     color: COLORS.WHITE,
     backgroundColor: COLORS.GRAY_MEDIUM,
     borderRadius: 8,
-    margin: 10,
+    marginHorizontal: 12,
+    marginBottom: 8,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
   list: {
-    maxHeight: 180,
+    flexGrow: 0,
+    maxHeight: 320,
     paddingHorizontal: 10,
-    paddingBottom: 10,
+    paddingBottom: 14,
   },
   option: {
     flexDirection: "row",
