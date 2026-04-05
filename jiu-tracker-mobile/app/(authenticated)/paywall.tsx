@@ -498,17 +498,6 @@ export default function PaywallScreen() {
         <Text style={styles.countryPricesDisclaimer}>
           {t("subscriptionPricesByCountryDisclaimer")}
         </Text>
-        {SUBSCRIPTION_PRICES_BY_COUNTRY.map((row) => (
-          <View
-            key={`${row.countryEn}-${row.price}`}
-            style={styles.countryPriceRow}
-          >
-            <Text style={styles.countryPriceCountry} numberOfLines={2}>
-              {language === "pt" ? row.countryPt : row.countryEn}
-            </Text>
-            <Text style={styles.countryPriceAmount}>{row.price}</Text>
-          </View>
-        ))}
       </View>
 
       <Text style={styles.sectionLabel}>{t("subscriptionDuringPeriodHeading")}</Text>
