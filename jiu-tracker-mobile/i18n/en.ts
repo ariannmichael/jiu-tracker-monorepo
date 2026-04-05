@@ -101,6 +101,12 @@ const en = {
   updateAvatar: "Update Avatar",
   updateUser: "Update User",
   updateBelt: "Update Belt",
+  deleteAccount: "Delete account",
+  deleteAccountConfirmTitle: "Delete your account?",
+  deleteAccountConfirmMessage:
+    "This permanently removes your profile, training logs, and other data from Jiu Tracker. Active subscriptions are managed by Apple or Google—cancel them in your store account if you no longer want to be charged. This cannot be undone.",
+  deleteAccountLearnMore: "Learn more",
+  deleteAccountFailed: "Could not delete account. Please try again.",
   logout: "Logout",
   username: "Username",
   newPasswordMin6: "New password (min 6 characters)",

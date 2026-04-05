@@ -11,6 +11,7 @@ jest.mock('@/contexts/UserContext', () => ({
 jest.mock('@/contexts/AuthContext', () => ({
   useAuth: jest.fn(() => ({
     logout: jest.fn(),
+    deleteAccount: jest.fn(),
     user: { id: '1', username: 'test', name: 'Test', email: 'test@test.com', avatar: '' },
   })),
 }));
@@ -38,6 +39,7 @@ describe('Header', () => {
       updateUserData: jest.fn(),
       updateUserFull: jest.fn(),
       updateAvatar: jest.fn(),
+      updateBelt: jest.fn(),
     });
   });
 
@@ -58,6 +60,7 @@ describe('Header', () => {
       updateUserData: jest.fn(),
       updateUserFull: jest.fn(),
       updateAvatar: jest.fn(),
+      updateBelt: jest.fn(),
     });
     render(<Header />);
     expect(screen.getByText('IMAGE USER')).toBeTruthy();

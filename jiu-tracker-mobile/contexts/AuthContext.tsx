@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import Api from '@/services/api';
+import AccountService from '@/services/account.service';
 import { createLogger, serializeError } from '@/services/logger';
 import { User } from '@jiu-tracker/shared';
 
@@ -16,6 +17,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   refreshUser: () => Promise<User | null>;
 }
 
@@ -160,6 +162,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace('/');
   };
 
+  const deleteAccount = async () => {
+    const t = token ?? (await getToken());
+    if (!t) {
+      throw new Error('Not signed in');
+    }
+    await AccountService.deleteAccount(t);
+    await removeToken();
+    setToken(null);
+    setIsAuthenticated(false);
+    setUser(null);
+    authLogger.info('User account deleted');
+    router.replace('/');
+  };
+
   const refreshUser = async (): Promise<User | null> => {
     const t = token ?? (await getToken());
     if (!t) return null;
@@ -188,7 +204,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        token,
+        isLoading,
+        login,
+        logout,
+        deleteAccount,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

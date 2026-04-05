@@ -19,6 +19,8 @@ describe('StartScreen', () => {
     mockUseAuth.mockReturnValue({
       login: jest.fn(),
       logout: jest.fn(),
+      deleteAccount: jest.fn(),
+      refreshUser: jest.fn(),
       isAuthenticated: false,
       user: null,
       token: null,

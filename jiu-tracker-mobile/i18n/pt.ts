@@ -103,6 +103,12 @@ const pt: Record<TranslationKeys, string> = {
   updateAvatar: "Atualizar Avatar",
   updateUser: "Atualizar Usuário",
   updateBelt: "Atualizar Faixa",
+  deleteAccount: "Excluir conta",
+  deleteAccountConfirmTitle: "Excluir sua conta?",
+  deleteAccountConfirmMessage:
+    "Isso remove permanentemente seu perfil, treinos e outros dados do Jiu Tracker. Assinaturas ativas são gerenciadas pela Apple ou Google—cancele na loja se não quiser mais cobranças. Esta ação não pode ser desfeita.",
+  deleteAccountLearnMore: "Saiba mais",
+  deleteAccountFailed: "Não foi possível excluir a conta. Tente novamente.",
   logout: "Sair",
   username: "Usuário",
   newPasswordMin6: "Nova senha (mín. 6 caracteres)",

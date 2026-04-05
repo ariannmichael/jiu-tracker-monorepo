@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Text, View, StyleSheet, Image, Pressable, Modal } from "react-native";
+import { Text, View, StyleSheet, Image, Pressable, Modal, Alert, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { COLORS, FONTS, BELT_COLORS } from "../../constants";
@@ -13,6 +13,9 @@ import UpdateAvatarModal from "@/components/modals/UpdateAvatarModal";
 import UpdateUserModal from "@/components/modals/UpdateUserModal";
 import UpdateBeltModal from "@/components/modals/UpdateBeltModal";
 
+const ACCOUNT_DELETION_INFO_URL =
+  process.env.EXPO_PUBLIC_ACCOUNT_DELETION_INFO_URL ?? "https://jiu-tracker.com/account-deletion";
+
 const LANG_OPTIONS: { value: Language; flag: string; label: string }[] = [
   { value: "en", flag: "🇺🇸", label: "English" },
   { value: "pt", flag: "🇧🇷", label: "Português" },
@@ -20,8 +23,8 @@ const LANG_OPTIONS: { value: Language; flag: string; label: string }[] = [
 
 const HeaderComponent: React.FC = () => {
   const { userData, updateAvatar, updateUserFull, updateBelt } = useUser();
-  const { logout, user } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { logout, deleteAccount, user } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [langDropdownVisible, setLangDropdownVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
@@ -43,6 +46,32 @@ const HeaderComponent: React.FC = () => {
   const handleLogout = () => {
     setDropdownVisible(false);
     logout();
+  };
+
+  const handleDeleteAccount = () => {
+    setDropdownVisible(false);
+    Alert.alert(t("deleteAccountConfirmTitle"), t("deleteAccountConfirmMessage"), [
+      { text: t("cancel"), style: "cancel" },
+      {
+        text: t("deleteAccountLearnMore"),
+        onPress: () => {
+          void Linking.openURL(ACCOUNT_DELETION_INFO_URL);
+        },
+      },
+      {
+        text: t("deleteAccount"),
+        style: "destructive",
+        onPress: () => {
+          void (async () => {
+            try {
+              await deleteAccount();
+            } catch {
+              Alert.alert(t("error"), t("deleteAccountFailed"));
+            }
+          })();
+        },
+      },
+    ]);
   };
 
   const handleViewSubscription = () => {
@@ -179,6 +208,7 @@ const HeaderComponent: React.FC = () => {
         onUpdateUser={handleUpdateUser}
         onViewSubscription={handleViewSubscription}
         onUpdateBelt={handleUpdateBelt}
+        onDeleteAccount={handleDeleteAccount}
         onLogout={handleLogout}
       />
 

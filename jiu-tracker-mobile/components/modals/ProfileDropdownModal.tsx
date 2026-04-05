@@ -13,6 +13,7 @@ interface ProfileDropdownModalProps {
   onUpdateUser: () => void;
   onViewSubscription: () => void;
   onUpdateBelt: () => void;
+  onDeleteAccount: () => void;
   onLogout: () => void;
 }
 
@@ -23,6 +24,7 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
   onUpdateUser,
   onViewSubscription,
   onUpdateBelt,
+  onDeleteAccount,
   onLogout,
 }) => {
   const { t } = useLanguage();
@@ -51,6 +53,10 @@ const ProfileDropdownModal: React.FC<ProfileDropdownModalProps> = ({
             <Pressable style={styles.item} onPress={onUpdateBelt}>
               <Ionicons name="ribbon-outline" size={22} color={COLORS.WHITE} />
               <Text style={styles.itemText}>{t("updateBelt")}</Text>
+            </Pressable>
+            <Pressable style={styles.item} onPress={onDeleteAccount}>
+              <Ionicons name="trash-outline" size={22} color="#EF4444" />
+              <Text style={styles.itemTextDestructive}>{t("deleteAccount")}</Text>
             </Pressable>
             <Pressable style={styles.item} onPress={onLogout}>
               <Ionicons name="log-out-outline" size={22} color={COLORS.WHITE} />
@@ -94,6 +100,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 15,
     color: COLORS.WHITE,
+  },
+  itemTextDestructive: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: '500',
+    fontSize: 15,
+    color: '#EF4444',
   },
 });
 
