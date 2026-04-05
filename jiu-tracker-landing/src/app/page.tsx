@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type ProofCard = {
   eyebrow: string;
@@ -338,6 +339,9 @@ export default function Home() {
           <a href="mailto:contato@jiutracker.app">Contato</a>
           <a href="#download">Download</a>
           <a href="#recursos">Recursos</a>
+          <Link href="/privacy">Privacidade</Link>
+          <Link href="/terms">Termos de uso</Link>
+          <Link href="/account-deletion">Exclusão de conta</Link>
         </div>
       </footer>
     </main>

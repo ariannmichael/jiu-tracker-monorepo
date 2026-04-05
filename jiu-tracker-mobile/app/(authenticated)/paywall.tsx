@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,14 +8,22 @@ import {
   Platform,
   Alert,
   Linking,
+  ScrollView,
+  Pressable,
 } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { SubscriptionProduct } from "expo-iap";
 import { COLORS, FONTS, RADIUS } from "../../constants";
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@/constants/legalUrls";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SubscriptionService from "@/services/subscription.service";
 import { Purchase } from "expo-iap";
+import {
+  subscriptionDisplayTitle,
+  subscriptionPeriodLabel,
+} from "@/utils/subscriptionDisplay";
 
 /** Mirrors expo-iap Purchase fields we use — avoid importing expo-iap at module load (breaks web). */
 type IapPurchase = {
@@ -36,9 +44,59 @@ export default function PaywallScreen() {
   const { token, user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const [loading, setLoading] = useState<"purchase" | "restore" | null>(null);
+  const [storeSubscription, setStoreSubscription] =
+    useState<SubscriptionProduct | null>(null);
+  const [storeSubscriptionLoading, setStoreSubscriptionLoading] = useState(
+    () => Platform.OS !== "web"
+  );
 
   const isPremium = user?.is_premium ?? false;
   const isWeb = Platform.OS === "web";
+
+  const openLegalUrl = async (url: string) => {
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert(t("error"), t("pleaseTryAgain"));
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { initConnection, getSubscriptions, endConnection } =
+          await import("expo-iap");
+        await initConnection();
+        const productId = SubscriptionService.getPremiumProductId();
+        const subs = await getSubscriptions([productId]);
+        if (!cancelled && subs?.length) {
+          const match = subs.find((s) => s.id === productId) ?? subs[0];
+          setStoreSubscription(match);
+        }
+        await endConnection();
+      } catch {
+        try {
+          const { endConnection } = await import("expo-iap");
+          await endConnection();
+        } catch {
+          /* ignore */
+        }
+      } finally {
+        if (!cancelled) {
+          setStoreSubscriptionLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleVerifyReceipt = async (
     platform: "apple" | "google",
@@ -122,7 +180,7 @@ export default function PaywallScreen() {
         try {
           await getSubscriptions([productId]);
         } catch {
-          // Missing/invalid products still fail at purchase with E_ITEM_UNAVAILABLE
+          /* missing products fail at purchase */
         }
 
         const result = await requestPurchase({
@@ -171,6 +229,29 @@ export default function PaywallScreen() {
         return;
       }
 
+      const subsList = await getSubscriptions([productId]);
+      const androidSub =
+        subsList.find((s) => s.id === productId) ?? subsList[0];
+
+      if (
+        !androidSub ||
+        androidSub.platform !== "android" ||
+        !androidSub.subscriptionOfferDetails?.length
+      ) {
+        cleanup();
+        setLoading(null);
+        await endConnection();
+        alertInvalidProductId();
+        return;
+      }
+
+      const subscriptionOffers = androidSub.subscriptionOfferDetails.map(
+        (d) => ({
+          sku: productId,
+          offerToken: d.offerToken,
+        })
+      );
+
       const platform = "google";
       updateSub = purchaseUpdatedListener(async (purchase: IapPurchase) => {
         cleanup();
@@ -191,7 +272,13 @@ export default function PaywallScreen() {
         }
       });
 
-      await requestPurchase({ request: { skus: [productId] }, type: "inapp" });
+      await requestPurchase({
+        request: {
+          skus: [productId],
+          subscriptionOffers,
+        },
+        type: "subs",
+      });
     } catch (e) {
       cleanup();
       setLoading(null);
@@ -285,6 +372,33 @@ export default function PaywallScreen() {
     });
   };
 
+  const periodText = subscriptionPeriodLabel(storeSubscription, t);
+  const subscriptionTitle =
+    subscriptionDisplayTitle(storeSubscription) ?? t("subscriptionStoreTitleFallback");
+  const priceText =
+    storeSubscription?.displayPrice ?? t("subscriptionPeriodSeeStore");
+
+  const legalLinks = (
+    <View style={styles.legalBlock}>
+      <Pressable
+        onPress={() => openLegalUrl(PRIVACY_POLICY_URL)}
+        accessibilityRole="link"
+        accessibilityLabel={t("privacyPolicyLink")}
+      >
+        <Text style={styles.legalLink}>{t("privacyPolicyLink")}</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => openLegalUrl(TERMS_OF_USE_URL)}
+        accessibilityRole="link"
+        accessibilityLabel={t("termsOfUseLink")}
+      >
+        <Text style={styles.legalLink}>{t("termsOfUseLink")}</Text>
+      </Pressable>
+    </View>
+  );
+
+  const scrollBottomPadding = insets.bottom + 32;
+
   if (isPremium) {
     const expiresAtRaw = user && "subscription_expires_at" in user
       ? (user as { subscription_expires_at?: string | null }).subscription_expires_at
@@ -302,7 +416,11 @@ export default function PaywallScreen() {
         : null;
 
     return (
-      <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
+      <ScrollView
+        style={[styles.container, { paddingTop: insets.top + 24 }]}
+        contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.title}>{t("upgradeToPremium")}</Text>
         <Text style={styles.subtitle}>{t("alreadyHavePremium")}</Text>
         {expiresLabel && (
@@ -310,6 +428,8 @@ export default function PaywallScreen() {
             {t("premiumUntil")} {expiresLabel}
           </Text>
         )}
+        <Text style={styles.autoRenewNote}>{t("subscriptionAutoRenewNote")}</Text>
+        {legalLinks}
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.back()}
@@ -326,20 +446,61 @@ export default function PaywallScreen() {
         >
           <Text style={styles.buttonText}>{t("cancelPremium")}</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
+    <ScrollView
+      style={[styles.container, { paddingTop: insets.top + 24 }]}
+      contentContainerStyle={{ paddingBottom: scrollBottomPadding }}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>{t("upgradeToPremium")}</Text>
-      <Text style={styles.sectionLabel}>{t("premiumWhatYouGet")}</Text>
+
+      {!isWeb && (
+        <View style={styles.disclosureCard}>
+          <Text style={styles.disclosureTitle}>{subscriptionTitle}</Text>
+          <View style={styles.disclosureRow}>
+            <Text style={styles.disclosureLabel}>
+              {t("subscriptionBillingPeriodLabel")}
+            </Text>
+            {storeSubscriptionLoading ? (
+              <ActivityIndicator size="small" color={COLORS.GRAY_TEXT} />
+            ) : (
+              <Text style={styles.disclosureValue}>{periodText}</Text>
+            )}
+          </View>
+          <View style={styles.disclosureRow}>
+            <Text style={styles.disclosureLabel}>
+              {t("subscriptionPriceLabel")}
+            </Text>
+            {storeSubscriptionLoading ? (
+              <ActivityIndicator size="small" color={COLORS.GRAY_TEXT} />
+            ) : (
+              <Text style={styles.disclosureValue}>{priceText}</Text>
+            )}
+          </View>
+        </View>
+      )}
+
+      {isWeb && (
+        <Text style={styles.webSubscriptionHint}>
+          {t("subscriptionDetailsOnMobile")}
+        </Text>
+      )}
+
+      <Text style={styles.sectionLabel}>{t("subscriptionDuringPeriodHeading")}</Text>
+      <Text style={styles.sectionLabelMuted}>{t("premiumWhatYouGet")}</Text>
       <Text style={styles.benefitItem}>• {t("premiumBenefit1")}</Text>
       <Text style={styles.benefitItem}>• {t("premiumBenefit2")}</Text>
       <Text style={styles.benefitItem}>• {t("premiumBenefit3")}</Text>
       <Text style={styles.benefitItem}>• {t("premiumBenefit4")}</Text>
       <Text style={styles.comingSoon}>{t("premiumComingSoonCompetitions")}</Text>
 
+      <Text style={styles.autoRenewNote}>{t("subscriptionAutoRenewNote")}</Text>
+
+      {legalLinks}
 
       <TouchableOpacity
         style={[styles.button, styles.primaryButton]}
@@ -366,7 +527,7 @@ export default function PaywallScreen() {
           <Text style={styles.buttonText}>{t("restorePurchases")}</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -397,13 +558,65 @@ const styles = StyleSheet.create({
     color: COLORS.GRAY_TEXT_SECONDARY,
     marginBottom: 24,
   },
+  disclosureCard: {
+    backgroundColor: COLORS.CARD,
+    borderRadius: RADIUS.LG,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+    padding: 16,
+    marginBottom: 20,
+  },
+  disclosureTitle: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "600",
+    fontSize: 17,
+    color: COLORS.WHITE,
+    marginBottom: 12,
+  },
+  disclosureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 8,
+  },
+  disclosureLabel: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT_SECONDARY,
+    flexShrink: 0,
+  },
+  disclosureValue: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "500",
+    fontSize: 15,
+    color: COLORS.WHITE,
+    flex: 1,
+    textAlign: "right",
+  },
+  webSubscriptionHint: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 14,
+    color: COLORS.GRAY_TEXT,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
   sectionLabel: {
     fontFamily: FONTS.EXO2_MEDIUM,
     fontWeight: "500",
     fontSize: 16,
     color: COLORS.WHITE,
     marginTop: 8,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  sectionLabelMuted: {
+    fontFamily: FONTS.EXO2_LIGHT,
+    fontWeight: "300",
+    fontSize: 15,
+    color: COLORS.GRAY_TEXT,
+    marginBottom: 8,
   },
   benefitItem: {
     fontFamily: FONTS.EXO2_LIGHT,
@@ -421,16 +634,27 @@ const styles = StyleSheet.create({
     color: COLORS.GRAY_TEXT_SECONDARY,
     fontStyle: "italic",
     marginTop: 16,
-    marginBottom: 32,
+    marginBottom: 16,
     lineHeight: 20,
   },
-  webOnlyHint: {
+  autoRenewNote: {
     fontFamily: FONTS.EXO2_LIGHT,
     fontWeight: "300",
-    fontSize: 14,
-    color: COLORS.ACCENT_ORANGE,
+    fontSize: 12,
+    color: COLORS.GRAY_TEXT_SECONDARY,
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  legalBlock: {
     marginBottom: 20,
-    lineHeight: 20,
+    gap: 10,
+  },
+  legalLink: {
+    fontFamily: FONTS.EXO2_MEDIUM,
+    fontWeight: "500",
+    fontSize: 15,
+    color: COLORS.ACCENT_BLUE,
+    textDecorationLine: "underline",
   },
   button: {
     backgroundColor: COLORS.CARD,

@@ -173,6 +173,24 @@ const en = {
     "This subscription is not available from the store. In App Store Connect (or Play Console), create a subscription whose Product ID exactly matches EXPO_PUBLIC_PREMIUM_PRODUCT_ID for this app bundle, then rebuild.",
   iapMobileOnly: "Subscriptions are available in the iOS and Android app, not in the browser.",
   iapProductIdUsedByApp: "This build requests Product ID (must match App Store Connect exactly):",
+
+  // Subscription disclosure (App Store Guideline 3.1.2)
+  privacyPolicyLink: "Privacy Policy",
+  termsOfUseLink: "Terms of Use",
+  subscriptionBillingPeriodLabel: "Billing period",
+  subscriptionPriceLabel: "Price",
+  subscriptionDuringPeriodHeading: "Content and services during each subscription period",
+  subscriptionStoreTitleFallback: "Jiu Tracker Premium",
+  subscriptionDetailsOnMobile:
+    "Subscription pricing and billing period are shown in the iOS or Android app from the store.",
+  subscriptionPeriodDay: "Daily",
+  subscriptionPeriodWeek: "Weekly",
+  subscriptionPeriodMonth: "Monthly",
+  subscriptionPeriodThreeMonths: "Every 3 months",
+  subscriptionPeriodYear: "Yearly",
+  subscriptionPeriodSeeStore: "See the store at purchase for current billing period and price.",
+  subscriptionAutoRenewNote:
+    "Subscription renews automatically unless you cancel at least 24 hours before the end of the current period. Manage or cancel in your Apple ID or Google Play account settings.",
 } as const;
 
 export type TranslationKeys = keyof typeof en;

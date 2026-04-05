@@ -129,7 +129,7 @@ export default function AccountDeletionPage() {
             pessoais nos nossos sistemas em até <strong>30 dias</strong>, salvo
             obrigação legal de retenção por período maior. Esse prazo está
             alinhado à nossa{" "}
-            <Link href="/privacy-policy">Política de Privacidade</Link>.
+            <Link href="/privacy">Política de Privacidade</Link>.
           </p>
 
           <h2>5. Contato</h2>
@@ -162,8 +162,9 @@ export default function AccountDeletionPage() {
 
         <div className="footer-links">
           <a href={`mailto:${CONTACT_EMAIL}`}>Contato</a>
-          <Link href="/">Inicio</Link>
-          <Link href="/privacy-policy">Privacidade</Link>
+          <Link href="/">Início</Link>
+          <Link href="/privacy">Privacidade</Link>
+          <Link href="/terms">Termos de uso</Link>
           <Link href="/#recursos">Recursos</Link>
         </div>
       </footer>

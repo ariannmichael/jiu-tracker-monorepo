@@ -177,6 +177,24 @@ const pt: Record<TranslationKeys, string> = {
     "As assinaturas estão disponíveis na app iOS e Android, não no browser.",
   iapProductIdUsedByApp:
     "Este build pede o Product ID (tem de coincidir com a App Store Connect):",
+
+  // Subscription disclosure (App Store Guideline 3.1.2)
+  privacyPolicyLink: "Política de privacidade",
+  termsOfUseLink: "Termos de uso",
+  subscriptionBillingPeriodLabel: "Período de cobrança",
+  subscriptionPriceLabel: "Preço",
+  subscriptionDuringPeriodHeading: "Conteúdo e serviços em cada período de assinatura",
+  subscriptionStoreTitleFallback: "Jiu Tracker Premium",
+  subscriptionDetailsOnMobile:
+    "O preço e o período de cobrança aparecem na app iOS ou Android, conforme a loja.",
+  subscriptionPeriodDay: "Diária",
+  subscriptionPeriodWeek: "Semanal",
+  subscriptionPeriodMonth: "Mensal",
+  subscriptionPeriodThreeMonths: "A cada 3 meses",
+  subscriptionPeriodYear: "Anual",
+  subscriptionPeriodSeeStore: "Veja na loja no momento da compra o período e o preço atuais.",
+  subscriptionAutoRenewNote:
+    "A assinatura renova automaticamente, salvo se cancelar com pelo menos 24 horas de antecedência ao fim do período. Gerencie ou cancele nas definições da sua conta Apple ID ou Google Play.",
 };
 
 export default pt;
