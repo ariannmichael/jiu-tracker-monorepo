@@ -26,8 +26,9 @@ COPY package.json package-lock.json ./
 COPY packages ./packages
 COPY jiu-tracker-nest ./jiu-tracker-nest
 
-# Install production deps only at root; workspaces are linked
-RUN npm ci --omit=dev
+# Install production deps only; reuse builder output instead of rerunning
+# workspace lifecycle scripts like @jiu-tracker/shared prepare/build.
+RUN npm ci --omit=dev --ignore-scripts
 
 # Ensure shared dist exists (copy from builder)
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
