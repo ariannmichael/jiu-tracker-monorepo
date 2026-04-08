@@ -26,9 +26,15 @@ COPY package.json package-lock.json ./
 COPY packages ./packages
 COPY jiu-tracker-nest ./jiu-tracker-nest
 
-# Install production deps only; reuse builder output instead of rerunning
-# workspace lifecycle scripts like @jiu-tracker/shared prepare/build.
-RUN npm ci --omit=dev --ignore-scripts
+# Strip the prepare script from shared so npm ci doesn't try to rebuild it
+# (the built dist is copied from the builder stage below).
+RUN node -e "\
+  const fs = require('fs'); \
+  const p = JSON.parse(fs.readFileSync('./packages/shared/package.json','utf8')); \
+  delete p.scripts.prepare; \
+  fs.writeFileSync('./packages/shared/package.json', JSON.stringify(p,null,2)+'\n');"
+
+RUN npm ci --omit=dev
 
 # Ensure shared dist exists (copy from builder)
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
