@@ -35,9 +35,10 @@ export class SubscriptionService {
           event: 'subscription.verify.rejected',
           userId,
           platform,
+          appleStatus: result.appleStatus,
         });
         throw new HttpException(
-          { error: 'Invalid or expired receipt' },
+          { error: `Invalid or expired receipt (apple status: ${result.appleStatus})` },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -74,7 +75,7 @@ export class SubscriptionService {
 
   private async verifyAppleReceipt(
     receiptData: string,
-  ): Promise<{ valid: boolean; expiresAt: Date | null }> {
+  ): Promise<{ valid: boolean; expiresAt: Date | null; appleStatus?: number }> {
     const sharedSecret = this.configService.get<string>('APPLE_SHARED_SECRET');
     if (!sharedSecret) {
       throw new HttpException(
@@ -115,7 +116,12 @@ export class SubscriptionService {
     }
 
     if (data.status !== 0) {
-      return { valid: false, expiresAt: null };
+      this.logger.warn({
+        event: 'subscription.apple.rejected',
+        appleStatus: data.status,
+        receiptPrefix: receiptData.substring(0, 30),
+      });
+      return { valid: false, expiresAt: null, appleStatus: data.status };
     }
 
     let expiresAt: Date | null = null;

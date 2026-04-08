@@ -200,24 +200,24 @@ export default function PaywallScreen() {
           return;
         }
 
-        // Use the receipt already attached to the purchase object (available
-        // immediately after requestPurchase). Falling back to getReceiptIos()
-        // avoids the "App Store receipt not found" error on TestFlight/sandbox
-        // where the receipt file may not yet be written to disk.
-        let receipt = getReceiptString(purchase.transactionReceipt).trim();
+        // Try the on-disk App Store receipt first; fall back to the
+        // transactionReceipt attached to the purchase object (StoreKit 2
+        // environments may not write the legacy receipt file).
+        await sync();
+        let receipt = "";
+        try {
+          receipt = (await getReceiptIos()).trim();
+        } catch {
+          receipt = getReceiptString(purchase.transactionReceipt).trim();
+        }
         if (!receipt.length) {
-          await sync();
-          try {
-            receipt = (await getReceiptIos()).trim();
-          } catch (receiptErr) {
-            setLoading(null);
-            await endConnection();
-            Alert.alert(
-              t("error"),
-              (receiptErr as Error).message ?? t("pleaseTryAgain")
-            );
-            return;
-          }
+          receipt = getReceiptString(purchase.transactionReceipt).trim();
+        }
+        if (!receipt.length) {
+          setLoading(null);
+          await endConnection();
+          Alert.alert(t("error"), t("pleaseTryAgain"));
+          return;
         }
 
         if (!receipt?.length) {
