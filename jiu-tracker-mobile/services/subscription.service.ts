@@ -28,7 +28,18 @@ export default class SubscriptionService {
     });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      throw new Error((data as { error?: string }).error ?? "Verification failed");
+      const errorData = data as {
+        error?: string;
+        message?: string | string[];
+      };
+      const validationMessage = Array.isArray(errorData.message)
+        ? errorData.message.join(", ")
+        : errorData.message;
+      throw new Error(
+        errorData.error === "Bad Request"
+          ? validationMessage ?? errorData.error
+          : errorData.error ?? validationMessage ?? "Verification failed"
+      );
     }
     return response.json();
   }

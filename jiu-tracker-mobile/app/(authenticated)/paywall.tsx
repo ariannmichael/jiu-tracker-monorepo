@@ -29,8 +29,8 @@ import {
 /** Mirrors expo-iap Purchase fields we use — avoid importing expo-iap at module load (breaks web). */
 type IapPurchase = {
   id: string;
-  transactionReceipt: string;
-  purchaseTokenAndroid?: string;
+  transactionReceipt?: unknown;
+  purchaseTokenAndroid?: string | null;
 };
 
 function normalizePurchaseResult(
@@ -38,6 +38,10 @@ function normalizePurchaseResult(
 ): IapPurchase | null {
   if (result == null) return null;
   return Array.isArray(result) ? result[0] ?? null : result;
+}
+
+function getReceiptString(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 export default function PaywallScreen() {
@@ -200,11 +204,11 @@ export default function PaywallScreen() {
         // immediately after requestPurchase). Falling back to getReceiptIos()
         // avoids the "App Store receipt not found" error on TestFlight/sandbox
         // where the receipt file may not yet be written to disk.
-        let receipt: string = purchase.transactionReceipt ?? "";
+        let receipt = getReceiptString(purchase.transactionReceipt).trim();
         if (!receipt.length) {
           await sync();
           try {
-            receipt = await getReceiptIos();
+            receipt = (await getReceiptIos()).trim();
           } catch (receiptErr) {
             setLoading(null);
             await endConnection();
@@ -264,9 +268,11 @@ export default function PaywallScreen() {
         cleanup();
         setLoading(null);
         const receipt =
-          "purchaseTokenAndroid" in purchase && purchase.purchaseTokenAndroid
+          "purchaseTokenAndroid" in purchase &&
+          typeof purchase.purchaseTokenAndroid === "string" &&
+          purchase.purchaseTokenAndroid.length
             ? purchase.purchaseTokenAndroid
-            : purchase.transactionReceipt;
+            : getReceiptString(purchase.transactionReceipt);
         if (receipt && token) {
           try {
             const verified = await handleVerifyReceipt(platform, receipt);
@@ -353,9 +359,11 @@ export default function PaywallScreen() {
         const premiumPurchase =
           history.find((p: IapPurchase) => p.id === productId) ?? history[0];
         const receipt =
-          "purchaseTokenAndroid" in premiumPurchase && premiumPurchase.purchaseTokenAndroid
+          "purchaseTokenAndroid" in premiumPurchase &&
+          typeof premiumPurchase.purchaseTokenAndroid === "string" &&
+          premiumPurchase.purchaseTokenAndroid.length
             ? premiumPurchase.purchaseTokenAndroid
-            : premiumPurchase.transactionReceipt;
+            : getReceiptString(premiumPurchase.transactionReceipt);
         if (receipt) {
           await handleVerifyReceipt(platform, receipt);
           return;
