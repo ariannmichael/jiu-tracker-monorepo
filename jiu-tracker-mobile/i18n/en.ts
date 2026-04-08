@@ -38,7 +38,7 @@ const en = {
   select: "Select",
 
   // Dashboard
-  dayStreak: "day streak",
+  weekStreak: "week streak",
   sessions: "Sessions",
   totalHours: "Total Hours",
   winRatio: "Win Ratio",

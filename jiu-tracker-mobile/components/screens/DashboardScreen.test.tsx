@@ -31,7 +31,7 @@ describe('DashboardScreen', () => {
   it('renders streak card with current streak', () => {
     render(<DashboardScreen />);
     expect(screen.getByText('5')).toBeTruthy();
-    expect(screen.getByText('day streak')).toBeTruthy();
+    expect(screen.getByText('week streak')).toBeTruthy();
   });
 
   it('renders stat cards for sessions and total hours', () => {

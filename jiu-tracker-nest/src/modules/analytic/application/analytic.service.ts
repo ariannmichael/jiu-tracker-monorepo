@@ -248,6 +248,14 @@ export class AnalyticService {
     return date.toISOString().slice(0, 10);
   }
 
+  private toWeekKey(date: Date): string {
+    const d = new Date(date);
+    const day = d.getDay(); // 0=Sunday, 1=Monday
+    const diff = day === 0 ? -6 : 1 - day; // shift to Monday
+    d.setDate(d.getDate() + diff);
+    return this.toDateKey(d);
+  }
+
   private parseDateKey(key: string): Date {
     const [y, m, d] = key.split('-').map(Number);
     return new Date(y, m - 1, d);
@@ -266,14 +274,16 @@ export class AnalyticService {
     if (sortedDates.length === 0) {
       return { currentStreak: 0, maxStreak: 0 };
     }
-    const uniqueDates = [...new Set(sortedDates)].sort();
+    const uniqueWeeks = [
+      ...new Set(sortedDates.map((d) => this.toWeekKey(this.parseDateKey(d)))),
+    ].sort();
     let maxStreak = 1;
     let run = 1;
-    for (let i = 1; i < uniqueDates.length; i++) {
-      const prev = this.parseDateKey(uniqueDates[i - 1]);
-      const curr = this.parseDateKey(uniqueDates[i]);
+    for (let i = 1; i < uniqueWeeks.length; i++) {
+      const prev = this.parseDateKey(uniqueWeeks[i - 1]);
+      const curr = this.parseDateKey(uniqueWeeks[i]);
       const diff = Math.round(
-        (curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000),
+        (curr.getTime() - prev.getTime()) / (7 * 24 * 60 * 60 * 1000),
       );
       if (diff === 1) {
         run += 1;
@@ -282,22 +292,24 @@ export class AnalyticService {
         run = 1;
       }
     }
-    let currentStreak = 0;
-    const mostRecent = uniqueDates[uniqueDates.length - 1];
-    const mostRecentDate = this.parseDateKey(mostRecent);
-    const todayDate = this.parseDateKey(today);
-    const daysSinceMostRecent = Math.round(
-      (todayDate.getTime() - mostRecentDate.getTime()) / (24 * 60 * 60 * 1000),
+    const todayWeek = this.toWeekKey(this.parseDateKey(today));
+    const mostRecentWeek = uniqueWeeks[uniqueWeeks.length - 1];
+    const mostRecentWeekDate = this.parseDateKey(mostRecentWeek);
+    const todayWeekDate = this.parseDateKey(todayWeek);
+    const weeksSinceMostRecent = Math.round(
+      (todayWeekDate.getTime() - mostRecentWeekDate.getTime()) /
+        (7 * 24 * 60 * 60 * 1000),
     );
-    if (daysSinceMostRecent <= 1) {
+    let currentStreak = 0;
+    if (weeksSinceMostRecent <= 1) {
       currentStreak = 1;
-      let idx = uniqueDates.length - 2;
-      let expect = this.addDays(mostRecentDate, -1);
+      let idx = uniqueWeeks.length - 2;
+      let expect = this.addDays(mostRecentWeekDate, -7);
       while (idx >= 0) {
-        const d = this.parseDateKey(uniqueDates[idx]);
+        const d = this.parseDateKey(uniqueWeeks[idx]);
         if (d.getTime() === expect.getTime()) {
           currentStreak += 1;
-          expect = this.addDays(expect, -1);
+          expect = this.addDays(expect, -7);
           idx -= 1;
         } else {
           break;

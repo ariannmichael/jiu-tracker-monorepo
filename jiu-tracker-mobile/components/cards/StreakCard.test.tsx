@@ -4,9 +4,9 @@ import StreakCard from './StreakCard';
 
 describe('StreakCard', () => {
   it('renders value and label', () => {
-    render(<StreakCard value="7" label="day streak" />);
+    render(<StreakCard value="7" label="week streak" />);
     expect(screen.getByText('7')).toBeTruthy();
-    expect(screen.getByText('day streak')).toBeTruthy();
+    expect(screen.getByText('week streak')).toBeTruthy();
   });
 
   it('renders without milestone when not provided', () => {
@@ -19,13 +19,13 @@ describe('StreakCard', () => {
     render(
       <StreakCard
         value="15"
-        label="day streak"
+        label="week streak"
         nextMilestone={30}
         progressPercent={50}
       />
     );
     expect(screen.getByText('15')).toBeTruthy();
-    expect(screen.getByText('day streak')).toBeTruthy();
+    expect(screen.getByText('week streak')).toBeTruthy();
     expect(screen.getByText('Next milestone: 30')).toBeTruthy();
   });
 });

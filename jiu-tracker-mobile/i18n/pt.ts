@@ -40,7 +40,7 @@ const pt: Record<TranslationKeys, string> = {
   select: "Selecionar",
 
   // Dashboard
-  dayStreak: "dias seguidos",
+  weekStreak: "semanas",
   sessions: "Sessões",
   totalHours: "Horas Totais",
   winRatio: "Taxa de Vitória",

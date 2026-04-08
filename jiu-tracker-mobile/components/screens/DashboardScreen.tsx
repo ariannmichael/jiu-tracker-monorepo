@@ -91,7 +91,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const isPremium = user?.is_premium ?? false;
 
-  const nextMilestone = 30;
+  const nextMilestone = 4;
   const currentStreak = analytics?.current_streak ?? 0;
   const progressToMilestone = currentStreak >= nextMilestone ? 100 : (currentStreak / nextMilestone) * 100;
 
@@ -160,7 +160,7 @@ export default function DashboardScreen() {
       >
         <StreakCard
           value={currentStreak.toString()}
-          label={t("dayStreak")}
+          label={t("weekStreak")}
           nextMilestone={nextMilestone}
           progressPercent={progressToMilestone}
         />
