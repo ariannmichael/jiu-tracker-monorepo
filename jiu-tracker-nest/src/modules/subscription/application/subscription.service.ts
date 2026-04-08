@@ -1,4 +1,5 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { createVerify, X509Certificate } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/application/user.service';
 
@@ -29,7 +30,9 @@ export class SubscriptionService {
     let expiresAt: Date | null = null;
 
     if (platform === 'apple') {
-      const result = await this.verifyAppleReceipt(receipt);
+      const result = this.isJws(receipt)
+        ? await this.verifyAppleJws(receipt)
+        : await this.verifyAppleLegacyReceipt(receipt);
       if (!result.valid) {
         this.logger.warn({
           event: 'subscription.verify.rejected',
@@ -73,7 +76,111 @@ export class SubscriptionService {
     return { success: true };
   }
 
-  private async verifyAppleReceipt(
+  private isJws(data: string): boolean {
+    return data.startsWith('eyJ') && data.split('.').length === 3;
+  }
+
+  // ── StoreKit 2 JWS verification ──────────────────────────────────────
+
+  private async verifyAppleJws(
+    jws: string,
+  ): Promise<{ valid: boolean; expiresAt: Date | null; appleStatus?: number }> {
+    const parts = jws.split('.');
+    if (parts.length !== 3) {
+      return { valid: false, expiresAt: null, appleStatus: -1 };
+    }
+
+    const [headerB64, payloadB64, signatureB64] = parts;
+
+    let header: { alg?: string; x5c?: string[] };
+    let payload: {
+      transactionId?: string;
+      productId?: string;
+      expiresDate?: number;
+      environment?: string;
+      type?: string;
+    };
+    try {
+      header = JSON.parse(
+        Buffer.from(headerB64, 'base64url').toString(),
+      );
+      payload = JSON.parse(
+        Buffer.from(payloadB64, 'base64url').toString(),
+      );
+    } catch {
+      this.logger.warn({ event: 'subscription.apple.jws.decodeFailed' });
+      return { valid: false, expiresAt: null, appleStatus: -2 };
+    }
+
+    this.logger.debug({
+      event: 'subscription.apple.jws.decoded',
+      productId: payload.productId,
+      transactionId: payload.transactionId,
+      environment: payload.environment,
+      expiresDate: payload.expiresDate,
+    });
+
+    if (!header.x5c?.length) {
+      this.logger.warn({ event: 'subscription.apple.jws.noCerts' });
+      return { valid: false, expiresAt: null, appleStatus: -3 };
+    }
+
+    try {
+      const certs = header.x5c.map(
+        (c) => new X509Certificate(Buffer.from(c, 'base64')),
+      );
+
+      for (let i = 0; i < certs.length - 1; i++) {
+        if (!certs[i].checkIssued(certs[i + 1])) {
+          this.logger.warn({
+            event: 'subscription.apple.jws.chainBroken',
+            index: i,
+          });
+          return { valid: false, expiresAt: null, appleStatus: -4 };
+        }
+      }
+
+      const rootCert = certs[certs.length - 1];
+      if (!rootCert.issuer.includes('Apple')) {
+        this.logger.warn({
+          event: 'subscription.apple.jws.notAppleRoot',
+          issuer: rootCert.issuer,
+        });
+        return { valid: false, expiresAt: null, appleStatus: -5 };
+      }
+
+      const alg =
+        header.alg === 'ES256' ? 'SHA256' : header.alg === 'PS256' ? 'SHA256' : 'SHA256';
+      const verify = createVerify(alg);
+      verify.update(`${headerB64}.${payloadB64}`);
+      const sigValid = verify.verify(
+        certs[0].publicKey,
+        Buffer.from(signatureB64, 'base64url'),
+      );
+
+      if (!sigValid) {
+        this.logger.warn({ event: 'subscription.apple.jws.sigInvalid' });
+        return { valid: false, expiresAt: null, appleStatus: -6 };
+      }
+    } catch (err) {
+      this.logger.warn({
+        event: 'subscription.apple.jws.verifyError',
+        err: (err as Error).message,
+      });
+      return { valid: false, expiresAt: null, appleStatus: -7 };
+    }
+
+    const expiresAt = payload.expiresDate
+      ? new Date(payload.expiresDate)
+      : null;
+    const valid = expiresAt ? expiresAt.getTime() > Date.now() : true;
+
+    return { valid, expiresAt };
+  }
+
+  // ── Legacy base64 receipt verification (/verifyReceipt) ──────────────
+
+  private async verifyAppleLegacyReceipt(
     receiptData: string,
   ): Promise<{ valid: boolean; expiresAt: Date | null; appleStatus?: number }> {
     const sharedSecret = this.configService.get<string>('APPLE_SHARED_SECRET');
