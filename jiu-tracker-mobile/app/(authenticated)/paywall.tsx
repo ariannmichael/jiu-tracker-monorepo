@@ -45,6 +45,13 @@ function getReceiptString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+const IOS_RECEIPT_ATTEMPTS = 5;
+const IOS_RECEIPT_RETRY_MS = 350;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const { token, user, refreshUser } = useAuth();
@@ -202,28 +209,38 @@ export default function PaywallScreen() {
           return;
         }
 
-        await sync();
-        let receipt = "";
-        if (typeof purchase.jwsRepresentationIos === "string" && purchase.jwsRepresentationIos.length) {
-          receipt = purchase.jwsRepresentationIos;
-        }
-        if (!receipt.length) {
-          try {
-            receipt = await getTransactionJws(productId);
-          } catch {
-            /* JWS not available */
+        /** Prefer StoreKit's current transaction JWS — purchase.jwsRepresentationIos can be stale. */
+        const collectIosReceipt = async (): Promise<string> => {
+          for (let attempt = 0; attempt < IOS_RECEIPT_ATTEMPTS; attempt++) {
+            if (attempt > 0) {
+              await delay(IOS_RECEIPT_RETRY_MS);
+            }
+            await sync();
+            let r = "";
+            try {
+              r = await getTransactionJws(productId);
+            } catch {
+              /* JWS not available yet */
+            }
+            if (!r.length && typeof purchase.jwsRepresentationIos === "string" && purchase.jwsRepresentationIos.length) {
+              r = purchase.jwsRepresentationIos;
+            }
+            if (!r.length) {
+              r = getReceiptString(purchase.transactionReceipt).trim();
+            }
+            if (!r.length) {
+              try {
+                r = (await getReceiptIos()).trim();
+              } catch {
+                /* legacy receipt not available */
+              }
+            }
+            if (r.length) return r;
           }
-        }
-        if (!receipt.length) {
-          receipt = getReceiptString(purchase.transactionReceipt).trim();
-        }
-        if (!receipt.length) {
-          try {
-            receipt = (await getReceiptIos()).trim();
-          } catch {
-            /* legacy receipt not available */
-          }
-        }
+          return "";
+        };
+
+        let receipt = await collectIosReceipt();
         if (!receipt.length) {
           setLoading(null);
           await endConnection();
@@ -231,14 +248,46 @@ export default function PaywallScreen() {
           return;
         }
 
+        let lastVerifyError: Error | null = null;
+        const verifyAppleOnce = async (r: string): Promise<boolean> => {
+          try {
+            await SubscriptionService.verifyIap(token, "apple", r);
+            await refreshUser();
+            router.back();
+            return true;
+          } catch (e) {
+            lastVerifyError =
+              e instanceof Error ? e : new Error(String(e));
+            return false;
+          }
+        };
+
         try {
-          const verified = await handleVerifyReceipt("apple", receipt);
-          if (verified) {
+          let verified = await verifyAppleOnce(receipt);
+          if (!verified) {
+            await delay(500);
+            await sync();
+            const alt =
+              (await getTransactionJws(productId).catch(() => "")) ||
+              (typeof purchase.jwsRepresentationIos === "string" && purchase.jwsRepresentationIos.length
+                ? purchase.jwsRepresentationIos
+                : "");
+            if (alt.length && alt !== receipt) {
+              verified = await verifyAppleOnce(alt);
+            }
+          }
+          if (!verified) {
+            Alert.alert(
+              t("error"),
+              lastVerifyError?.message ?? t("pleaseTryAgain")
+            );
+          } else {
             await finishTransaction({ purchase: purchase as Purchase, isConsumable: false });
           }
         } catch (e) {
           Alert.alert(t("error"), (e as Error).message ?? t("pleaseTryAgain"));
         } finally {
+          setLoading(null);
           await endConnection();
         }
         return;
@@ -271,6 +320,11 @@ export default function PaywallScreen() {
       updateSub = purchaseUpdatedListener(async (purchase: IapPurchase) => {
         cleanup();
         setLoading(null);
+        try {
+          await sync();
+        } catch {
+          /* best-effort: Play may still verify */
+        }
         const receipt =
           "purchaseTokenAndroid" in purchase &&
           typeof purchase.purchaseTokenAndroid === "string" &&
@@ -541,7 +595,7 @@ export default function PaywallScreen() {
       <TouchableOpacity
         style={[styles.button, styles.primaryButton]}
         onPress={handlePurchase}
-        disabled={loading !== null || isWeb}
+        disabled={loading !== null || isWeb || storeSubscriptionLoading}
       >
         {loading === "purchase" ? (
           <ActivityIndicator color={COLORS.WHITE} />
@@ -555,7 +609,7 @@ export default function PaywallScreen() {
       <TouchableOpacity
         style={styles.button}
         onPress={handleRestore}
-        disabled={loading !== null || isWeb}
+        disabled={loading !== null || isWeb || storeSubscriptionLoading}
       >
         {loading === "restore" ? (
           <ActivityIndicator color={COLORS.WHITE} />

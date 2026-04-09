@@ -41,7 +41,9 @@ export class SubscriptionService {
           appleStatus: result.appleStatus,
         });
         throw new HttpException(
-          { error: `Invalid or expired receipt (apple status: ${result.appleStatus})` },
+          {
+            error: `Invalid or expired receipt (apple status: ${result.appleStatus ?? 'rejected'})`,
+          },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -93,28 +95,39 @@ export class SubscriptionService {
     const [headerB64, payloadB64, signatureB64] = parts;
 
     let header: { alg?: string; x5c?: string[] };
-    let payload: {
-      transactionId?: string;
-      productId?: string;
-      expiresDate?: number;
-      environment?: string;
-      type?: string;
-    };
+    let payload: Record<string, unknown>;
     try {
       header = JSON.parse(
         Buffer.from(headerB64, 'base64url').toString(),
       );
       payload = JSON.parse(
         Buffer.from(payloadB64, 'base64url').toString(),
-      );
+      ) as Record<string, unknown>;
     } catch {
       this.logger.warn({ event: 'subscription.apple.jws.decodeFailed' });
       return { valid: false, expiresAt: null, appleStatus: -2 };
     }
 
+    const expectedProductId =
+      this.configService.get<string>('APPLE_PREMIUM_PRODUCT_ID') ??
+      'premium_analytics';
+    const productId = payload.productId;
+    if (
+      typeof productId === 'string' &&
+      productId.length > 0 &&
+      productId !== expectedProductId
+    ) {
+      this.logger.warn({
+        event: 'subscription.apple.jws.productMismatch',
+        expected: expectedProductId,
+        got: productId,
+      });
+      return { valid: false, expiresAt: null, appleStatus: -9 };
+    }
+
     this.logger.debug({
       event: 'subscription.apple.jws.decoded',
-      productId: payload.productId,
+      productId,
       transactionId: payload.transactionId,
       environment: payload.environment,
       expiresDate: payload.expiresDate,
@@ -173,12 +186,43 @@ export class SubscriptionService {
       return { valid: false, expiresAt: null, appleStatus: -7 };
     }
 
-    const expiresAt = payload.expiresDate
-      ? new Date(payload.expiresDate)
-      : null;
-    const valid = expiresAt ? expiresAt.getTime() > Date.now() : true;
+    const expiresMs = this.parseAppleJwsExpiresMs(payload);
+    const expiresAt = expiresMs != null ? new Date(expiresMs) : null;
 
-    return { valid, expiresAt };
+    /** Grace for sandbox skew / latency so a just-issued JWS is not rejected. */
+    const EXPIRY_GRACE_MS = 120_000;
+    const valid =
+      expiresMs != null
+        ? expiresMs > Date.now() - EXPIRY_GRACE_MS
+        : true;
+
+    if (!valid) {
+      return {
+        valid: false,
+        expiresAt,
+        appleStatus: -8,
+      };
+    }
+
+    return { valid: true, expiresAt };
+  }
+
+  /**
+   * Apple documents expiresDate as ms since 1970; some payloads use seconds or strings.
+   */
+  private parseAppleJwsExpiresMs(payload: Record<string, unknown>): number | null {
+    const raw = payload.expiresDate ?? payload.expires_date;
+    if (raw == null) return null;
+    const n =
+      typeof raw === 'string'
+        ? Number(raw.trim())
+        : typeof raw === 'number'
+          ? raw
+          : NaN;
+    if (!Number.isFinite(n) || n <= 0) return null;
+    /** Values below 1e10 are UNIX seconds; Apple documents ms (>= ~1e12 for current dates). */
+    const ms = n < 10_000_000_000 ? n * 1000 : n;
+    return Number.isFinite(ms) ? ms : null;
   }
 
   // ── Legacy base64 receipt verification (/verifyReceipt) ──────────────
@@ -286,9 +330,16 @@ export class SubscriptionService {
       'premium_analytics';
     const accessToken = await this.getGoogleAccessToken(credentials);
     const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${subscriptionId}/tokens/${encodeURIComponent(purchaseToken)}`;
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+
+    if (!res.ok && res.status === 404) {
+      await new Promise((r) => setTimeout(r, 500));
+      res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+    }
 
     if (!res.ok) {
       this.logger.warn({
