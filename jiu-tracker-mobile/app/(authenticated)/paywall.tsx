@@ -31,6 +31,7 @@ type IapPurchase = {
   id: string;
   transactionReceipt?: unknown;
   purchaseTokenAndroid?: string | null;
+  jwsRepresentationIos?: string;
 };
 
 function normalizePurchaseResult(
@@ -139,6 +140,7 @@ export default function PaywallScreen() {
       finishTransaction,
       getReceiptIos,
       getSubscriptions,
+      getTransactionJws,
       initConnection,
       purchaseErrorListener,
       purchaseUpdatedListener,
@@ -200,27 +202,29 @@ export default function PaywallScreen() {
           return;
         }
 
-        // Try the on-disk App Store receipt first; fall back to the
-        // transactionReceipt attached to the purchase object (StoreKit 2
-        // environments may not write the legacy receipt file).
         await sync();
         let receipt = "";
-        try {
-          receipt = (await getReceiptIos()).trim();
-        } catch {
-          receipt = getReceiptString(purchase.transactionReceipt).trim();
+        if (typeof purchase.jwsRepresentationIos === "string" && purchase.jwsRepresentationIos.length) {
+          receipt = purchase.jwsRepresentationIos;
+        }
+        if (!receipt.length) {
+          try {
+            receipt = await getTransactionJws(productId);
+          } catch {
+            /* JWS not available */
+          }
         }
         if (!receipt.length) {
           receipt = getReceiptString(purchase.transactionReceipt).trim();
         }
         if (!receipt.length) {
-          setLoading(null);
-          await endConnection();
-          Alert.alert(t("error"), t("pleaseTryAgain"));
-          return;
+          try {
+            receipt = (await getReceiptIos()).trim();
+          } catch {
+            /* legacy receipt not available */
+          }
         }
-
-        if (!receipt?.length) {
+        if (!receipt.length) {
           setLoading(null);
           await endConnection();
           Alert.alert(t("error"), t("pleaseTryAgain"));
@@ -320,7 +324,7 @@ export default function PaywallScreen() {
     const {
       endConnection,
       getPurchaseHistory,
-      getReceiptIos,
+      getTransactionJws,
       initConnection,
       sync,
       validateReceiptIos,
@@ -334,19 +338,27 @@ export default function PaywallScreen() {
 
       if (Platform.OS === "ios") {
         await sync();
-        let receipt: string | undefined;
+        let receipt = "";
         try {
-          receipt = await getReceiptIos();
+          receipt = await getTransactionJws(productId);
         } catch {
-          const validated = await validateReceiptIos(productId);
-          receipt = validated.receiptData || undefined;
+          /* JWS not available */
+        }
+        if (!receipt.length) {
+          try {
+            const validated = await validateReceiptIos(productId);
+            receipt = validated.jwsRepresentation || validated.receiptData || "";
+          } catch {
+            /* validation not available */
+          }
         }
         await endConnection();
 
-        if (receipt?.length) {
+        if (receipt.length) {
           await handleVerifyReceipt("apple", receipt);
           return;
         }
+
         Alert.alert(t("error"), t("noPreviousPurchase"));
         return;
       }

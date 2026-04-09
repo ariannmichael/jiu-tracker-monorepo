@@ -151,10 +151,13 @@ export class SubscriptionService {
 
       const alg =
         header.alg === 'ES256' ? 'SHA256' : header.alg === 'PS256' ? 'SHA256' : 'SHA256';
-      const verify = createVerify(alg);
-      verify.update(`${headerB64}.${payloadB64}`);
-      const sigValid = verify.verify(
-        certs[0].publicKey,
+      const isEcdsa = header.alg === 'ES256';
+      const verifier = createVerify(alg);
+      verifier.update(`${headerB64}.${payloadB64}`);
+      const sigValid = verifier.verify(
+        isEcdsa
+          ? { key: certs[0].publicKey, dsaEncoding: 'ieee-p1363' as const }
+          : certs[0].publicKey,
         Buffer.from(signatureB64, 'base64url'),
       );
 
