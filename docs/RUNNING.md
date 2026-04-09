@@ -26,13 +26,13 @@ This installs dependencies for all workspaces (shared, jiu-tracker-nest, jiu-tra
 The backend needs PostgreSQL and Redis. Easiest is Docker Compose:
 
 ```bash
-docker compose up -d db redis
+docker compose up -d postgres redis
 ```
 
 Optional (not required for analytics): RabbitMQ
 
 ```bash
-docker compose up -d db redis rabbitmq
+docker compose up -d postgres redis rabbitmq
 ```
 
 Then set env for the backend (see below).
@@ -115,7 +115,7 @@ On a physical device, use your machine’s LAN IP for `EXPO_PUBLIC_API_URL` (e.g
 
 ## 5. Run backend + mobile together (dev)
 
-With `db` and `redis` already up:
+With `postgres` and `redis` already up:
 
 ```bash
 npm run dev
@@ -139,7 +139,7 @@ docker compose up --build
 Backend only (no frontend container):
 
 ```bash
-docker compose up -d db redis backend
+docker compose up -d postgres redis backend
 ```
 
 ---
@@ -157,7 +157,7 @@ npm run backend:test
 
 ```bash
 # Start infra first
-docker compose up -d db redis
+docker compose up -d postgres redis
 
 # Set env and run (from repo root)
 export DB_HOST=localhost DB_PORT=5432 DB_USERNAME=postgres DB_PASSWORD=postgres DB_NAME=jiu_tracker
@@ -208,13 +208,13 @@ k6 run -e AUTH_HEADER="Bearer YOUR_JWT" -e API_URL=http://localhost:3006/api ben
 | Task              | Command |
 |-------------------|--------|
 | Install           | `npm install` |
-| Infra (DB+Redis)  | `docker compose up -d db redis` |
+| Infra (DB+Redis)  | `docker compose up -d postgres redis` |
 | Backend dev       | `npm run backend:dev` |
 | Mobile web       | `npm run mobile:web` |
 | Backend + mobile | `npm run dev` |
 | Full stack (Docker) | `docker compose up --build` |
 | Migrations       | `npm run migration:run -w jiu-tracker-nest` |
 | Backend tests    | `npm run backend:test` |
-| E2E tests        | `npm run test:e2e -w jiu-tracker-nest` (with db+redis up) |
+| E2E tests        | `npm run test:e2e -w jiu-tracker-nest` (with postgres+redis up) |
 | Build all        | `npm run build:all` |
 | k6 baseline     | `k6 run benchmarks/baseline.js` |
