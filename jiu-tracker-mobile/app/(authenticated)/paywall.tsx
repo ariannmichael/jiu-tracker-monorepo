@@ -21,10 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SubscriptionService from "@/services/subscription.service";
 import { Purchase } from "expo-iap";
-import {
-  subscriptionDisplayTitle,
-  subscriptionPeriodLabel,
-} from "@/utils/subscriptionDisplay";
+import { subscriptionDisplayTitle } from "@/utils/subscriptionDisplay";
 
 /** Mirrors expo-iap Purchase fields we use — avoid importing expo-iap at module load (breaks web). */
 type IapPurchase = {
@@ -453,7 +450,7 @@ export default function PaywallScreen() {
     });
   };
 
-  const periodText = subscriptionPeriodLabel(storeSubscription, t);
+  const periodText = t("subscriptionPeriodMonth");
   const subscriptionTitle =
     subscriptionDisplayTitle(storeSubscription) ?? t("subscriptionStoreTitleFallback");
   const priceText =

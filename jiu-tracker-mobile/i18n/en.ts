@@ -185,7 +185,7 @@ const en = {
     "Subscription pricing and billing period are shown in the iOS or Android app from the store.",
   subscriptionPeriodDay: "Daily",
   subscriptionPeriodWeek: "Weekly",
-  subscriptionPeriodMonth: "Monthly",
+  subscriptionPeriodMonth: "1 month",
   subscriptionPeriodThreeMonths: "Every 3 months",
   subscriptionPeriodYear: "Yearly",
   subscriptionPeriodSeeStore: "See the store at purchase for current billing period and price.",

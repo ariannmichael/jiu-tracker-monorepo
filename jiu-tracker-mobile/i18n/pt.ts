@@ -189,7 +189,7 @@ const pt: Record<TranslationKeys, string> = {
     "O preço e o período de cobrança aparecem na app iOS ou Android, conforme a loja.",
   subscriptionPeriodDay: "Diária",
   subscriptionPeriodWeek: "Semanal",
-  subscriptionPeriodMonth: "Mensal",
+  subscriptionPeriodMonth: "1 mês",
   subscriptionPeriodThreeMonths: "A cada 3 meses",
   subscriptionPeriodYear: "Anual",
   subscriptionPeriodSeeStore: "Veja na loja no momento da compra o período e o preço atuais.",
