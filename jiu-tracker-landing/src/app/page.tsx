@@ -86,16 +86,50 @@ const credibilityItems = [
   "Base ideal para coaches e atletas",
 ];
 
-const storeBadges = [
+const APP_STORE_URL =
+  "https://apps.apple.com/br/app/jiu-tracker/id6761373635";
+
+type StoreBadge = {
+  title: string;
+  subtitle: string;
+  href?: string;
+};
+
+const storeBadges: StoreBadge[] = [
+  {
+    title: "App Store",
+    subtitle: "Baixar para iPhone e iPad",
+    href: APP_STORE_URL,
+  },
   {
     title: "Google Play",
     subtitle: "Disponível em breve",
   },
-  {
-    title: "App Store",
-    subtitle: "Disponível em breve",
-  },
 ];
+
+function StoreBadgeItem({ badge }: { badge: StoreBadge }) {
+  const content = (
+    <>
+      <span className="store-badge-kicker">{badge.subtitle}</span>
+      <strong>{badge.title}</strong>
+    </>
+  );
+
+  if (badge.href) {
+    return (
+      <a
+        className="store-badge store-badge-link"
+        href={badge.href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return <div className="store-badge">{content}</div>;
+}
 
 export default function Home() {
   return (
@@ -125,20 +159,22 @@ export default function Home() {
             </p>
 
             <div className="hero-actions">
-              <a className="button-primary" href="#download">
-                Baixar app
+              <a
+                className="button-primary"
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Baixar na App Store
               </a>
               <a className="button-secondary" href="#recursos">
                 Ver recursos
               </a>
             </div>
 
-            <div className="store-badge-row" aria-label="Plataformas previstas">
+            <div className="store-badge-row" aria-label="Plataformas disponíveis">
               {storeBadges.map((badge) => (
-                <div className="store-badge" key={badge.title}>
-                  <span className="store-badge-kicker">{badge.subtitle}</span>
-                  <strong>{badge.title}</strong>
-                </div>
+                <StoreBadgeItem badge={badge} key={badge.title} />
               ))}
             </div>
 
@@ -290,26 +326,27 @@ export default function Home() {
           <p className="section-kicker">Pronto para o próximo nível</p>
           <h2>Baixe o Jiu Tracker e transforme treino solto em progresso visível.</h2>
           <p>
-            A base da página já está pronta para receber os links finais das
-            lojas. Até lá, o posicionamento e a experiência visual já trabalham
-            a conversão.
+            O Jiu Tracker já está disponível na App Store para iPhone e iPad.
+            A versão para Android chega em breve.
           </p>
 
           <div className="hero-actions">
-            <a className="button-primary" href="#hero-showcase">
-              Ver o app em ação
+            <a
+              className="button-primary"
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Baixar na App Store
             </a>
             <a className="button-secondary" href="mailto:contato@jiutracker.app">
               Falar com a equipe
             </a>
           </div>
 
-          <div className="store-badge-row" aria-label="Lojas planejadas">
+          <div className="store-badge-row" aria-label="Lojas disponíveis">
             {storeBadges.map((badge) => (
-              <div className="store-badge" key={badge.title}>
-                <span className="store-badge-kicker">{badge.subtitle}</span>
-                <strong>{badge.title}</strong>
-              </div>
+              <StoreBadgeItem badge={badge} key={badge.title} />
             ))}
           </div>
         </div>
@@ -337,7 +374,9 @@ export default function Home() {
 
         <div className="footer-links">
           <a href="mailto:contato@jiutracker.app">Contato</a>
-          <a href="#download">Download</a>
+          <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+            Download
+          </a>
           <a href="#recursos">Recursos</a>
           <Link href="/privacy">Privacidade</Link>
           <Link href="/terms">Termos de uso</Link>
